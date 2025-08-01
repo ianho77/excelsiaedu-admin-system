@@ -501,6 +501,16 @@ app.put('/api/teacher-billing-status/:id', async (req, res) => {
   }
 });
 
+// ==================== 健康檢查API ====================
+
+app.get('/', (req, res) => {
+  res.json({ 
+    message: 'ExcelsiaEdu API Server is running',
+    status: 'healthy',
+    timestamp: new Date().toISOString()
+  });
+});
+
 // ==================== 服務器啟動 ====================
 
 const PORT = process.env.PORT || 4000;
