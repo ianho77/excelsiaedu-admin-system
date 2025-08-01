@@ -1,0 +1,131 @@
+.confirm-delete-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  animation: fadeIn 0.3s ease;
+}
+
+.confirm-delete-modal-container {
+  background: #ffffff;
+  border-radius: 16px;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  width: 90%;
+  max-width: 400px;
+  animation: slideIn 0.3s ease;
+  overflow: hidden;
+}
+
+.confirm-delete-modal-header {
+  background: #0f766e;
+  color: white;
+  padding: 16px 20px;
+  border-radius: 16px 16px 0 0;
+  border-bottom: 1px solid #374151;
+}
+
+.confirm-delete-modal-header h3 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.confirm-delete-modal-content {
+  padding: 20px;
+  color: #374151;
+}
+
+.confirm-delete-modal-content p {
+  margin: 0;
+  font-size: 16px;
+  line-height: 1.5;
+  text-align: center;
+}
+
+.confirm-delete-modal-footer {
+  padding: 16px 20px;
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  border-top: 1px solid #e5e7eb;
+  background: #f9fafb;
+  border-radius: 0 0 16px 16px;
+}
+
+.confirm-delete-modal-footer .cancel-button {
+  background: transparent;
+  color: #6b7280;
+  border: 2px solid #d1d5db;
+  padding: 8px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.confirm-delete-modal-footer .cancel-button:hover {
+  background: #f3f4f6;
+  border-color: #9ca3af;
+  color: #374151;
+}
+
+.confirm-delete-modal-footer .confirm-button {
+  background: #dc2626;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.confirm-delete-modal-footer .confirm-button:hover {
+  background: #b91c1c;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(220, 38, 38, 0.3);
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-20px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@media (max-width: 480px) {
+  .confirm-delete-modal-container {
+    width: 95%;
+    margin: 20px;
+  }
+  
+  .confirm-delete-modal-footer {
+    flex-direction: column;
+  }
+  
+  .confirm-delete-modal-footer .cancel-button,
+  .confirm-delete-modal-footer .confirm-button {
+    width: 100%;
+  }
+} 
