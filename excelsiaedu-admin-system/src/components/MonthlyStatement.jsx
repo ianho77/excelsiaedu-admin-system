@@ -119,11 +119,19 @@ const MonthlyStatement = ({ classes, students, courses, teachers, selectedMonth,
         if (teacherIdCompare !== 0) return teacherIdCompare;
       }
       
+      // 如果只有一個教師有ID，優先顯示有ID的
+      if (teacherA && !teacherB) return -1;
+      if (!teacherA && teacherB) return 1;
+      
       // 第二優先度：課程ID（小到大）
       if (courseA && courseB) {
         const courseIdCompare = courseA.courseId.localeCompare(courseB.courseId);
         if (courseIdCompare !== 0) return courseIdCompare;
       }
+      
+      // 如果只有一個課程有ID，優先顯示有ID的
+      if (courseA && !courseB) return -1;
+      if (!courseA && courseB) return 1;
       
       // 第三優先度：日期（遠到近）
       return new Date(b.date) - new Date(a.date);
@@ -132,6 +140,14 @@ const MonthlyStatement = ({ classes, students, courses, teachers, selectedMonth,
     // 課程表格
     const tableData = [];
     let totalAmount = 0;
+
+    // 調試：打印排序後的課堂信息
+    console.log('排序後的課堂信息:');
+    sortedClasses.forEach((cls, index) => {
+      const course = getCourseInfo(cls.courseId);
+      const teacher = course ? getTeacherInfo(course.teacherId) : null;
+      console.log(`${index + 1}. 教師ID: ${teacher ? teacher.teacherId : 'N/A'}, 教師名: ${teacher ? teacher.name : 'N/A'}, 課程ID: ${course ? course.courseId : 'N/A'}, 日期: ${cls.date}`);
+    });
 
     sortedClasses.forEach(cls => {
       const course = getCourseInfo(cls.courseId);
