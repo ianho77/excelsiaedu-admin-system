@@ -616,32 +616,23 @@ function AddClass() {
         isOpen={showConfirmModal}
         title="確認新增課堂"
         message={confirmData ? `
-          <div class="info-item">
-            <span class="info-icon">📚</span>
-            <span class="info-label">課程：</span>
-            <span class="info-value">${confirmData.courseInfo}</span>
+          <div style="margin-bottom: 16px;">
+            <strong>課程：</strong>${confirmData.courseInfo}
           </div>
-          <div class="info-item">
-            <span class="info-icon">📅</span>
-            <span class="info-label">日期：</span>
-            <span class="info-value">${confirmData.date}</span>
+          <div style="margin-bottom: 16px;">
+            <strong>日期：</strong>${confirmData.date}
           </div>
-          <div class="info-item">
-            <span class="info-icon">💰</span>
-            <span class="info-label">價格：</span>
-            <span class="info-value">$${confirmData.price}</span>
+          <div style="margin-bottom: 16px;">
+            <strong>價格：</strong>$${confirmData.price}
           </div>
-          <div class="info-item">
-            <span class="info-icon">👥</span>
-            <span class="info-label">學生人數：</span>
-            <span class="info-value">${confirmData.studentCount}人</span>
+          <div style="margin-bottom: 16px;">
+            <strong>學生人數：</strong>${confirmData.studentCount}人
           </div>
-          <div class="info-item">
-            <span class="info-icon">📝</span>
-            <span class="info-label">學生名單：</span>
+          <div style="margin-bottom: 16px;">
+            <strong>學生名單：</strong>
           </div>
-          <div class="student-list">
-            ${confirmData.studentInfo.map(student => `<div>${student}</div>`).join('')}
+          <div style="margin-bottom: 20px; padding-left: 16px;">
+            ${confirmData.studentInfo.map(student => `<div style="margin-bottom: 4px;">${student}</div>`).join('')}
           </div>
           <div style="margin-top: 20px; text-align: center; font-weight: 600; color: #495057;">
             確定要新增這${confirmData.studentCount}筆課堂記錄嗎？

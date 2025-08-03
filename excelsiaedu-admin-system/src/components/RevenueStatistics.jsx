@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
-import { Chart as ChartJS, ArcElement, Tooltip, Legend, CategoryScale, LinearScale, BarElement } from 'chart.js';
-import { Pie, Bar } from 'react-chartjs-2';
+import { Chart as ChartJS, ArcElement, Tooltip, Legend, CategoryScale, LinearScale, BarElement, PointElement, LineElement } from 'chart.js';
+import { Pie, Bar, Line } from 'react-chartjs-2';
 import * as XLSX from 'xlsx';
 import './RevenueStatistics.css';
 
-ChartJS.register(ArcElement, Tooltip, Legend, CategoryScale, LinearScale, BarElement);
+ChartJS.register(ArcElement, Tooltip, Legend, CategoryScale, LinearScale, BarElement, PointElement, LineElement);
 
 const RevenueStatistics = () => {
   const location = useLocation();
@@ -51,7 +51,8 @@ const RevenueStatistics = () => {
   const [overviewData, setOverviewData] = useState({
     teacherRevenue: [],
     courseRevenue: [],
-    gradeRevenue: []
+    gradeRevenue: [],
+    monthlyRevenue: []
   });
 
   // 生成月份選項（12個月+全部月份）
@@ -544,6 +545,7 @@ const RevenueStatistics = () => {
     const teacherRevenue = {};
     const courseRevenue = {};
     const gradeRevenue = {};
+    const monthlyRevenue = {};
 
     filteredClasses.forEach(cls => {
       const course = courses.find(c => c.courseId === cls.courseId);
@@ -606,15 +608,40 @@ const RevenueStatistics = () => {
         }
         gradeRevenue['未知年級'].amount += cls.price;
       }
+
+      // 按月份統計營業額
+      const classDate = new Date(cls.date);
+      const monthKey = `${classDate.getFullYear()}-${String(classDate.getMonth() + 1).padStart(2, '0')}`;
+      const monthLabel = `${classDate.getFullYear()}年${classDate.getMonth() + 1}月`;
+      
+      if (!monthlyRevenue[monthKey]) {
+        monthlyRevenue[monthKey] = {
+          month: monthLabel,
+          amount: 0
+        };
+      }
+      monthlyRevenue[monthKey].amount += cls.price;
     });
     
     // 計算總金額
     const total = Object.values(teacherRevenue).reduce((sum, item) => sum + item.amount, 0);
     
+    // 將月度數據按時間排序
+    const sortedMonthlyRevenue = Object.values(monthlyRevenue).sort((a, b) => {
+      const aYear = parseInt(a.month.split('年')[0]);
+      const aMonth = parseInt(a.month.split('年')[1].split('月')[0]);
+      const bYear = parseInt(b.month.split('年')[0]);
+      const bMonth = parseInt(b.month.split('年')[1].split('月')[0]);
+      
+      if (aYear !== bYear) return aYear - bYear;
+      return aMonth - bMonth;
+    });
+    
     setOverviewData({
       teacherRevenue: Object.values(teacherRevenue),
       courseRevenue: Object.values(courseRevenue).sort((a, b) => b.amount - a.amount).slice(0, 8),
-      gradeRevenue: Object.values(gradeRevenue)
+      gradeRevenue: Object.values(gradeRevenue),
+      monthlyRevenue: sortedMonthlyRevenue
     });
     
     setTotalAmount(total);
@@ -724,6 +751,36 @@ const RevenueStatistics = () => {
     };
   };
 
+  // 生成折線圖數據
+  const generateLineChartData = (data, title) => {
+    // 確保數據是有效的
+    if (!data || data.length === 0) {
+      return {
+        labels: [],
+        datasets: [{
+          data: [],
+          borderColor: '#0f766e',
+          backgroundColor: 'rgba(15, 118, 110, 0.1)',
+          borderWidth: 2,
+          fill: true
+        }]
+      };
+    }
+    
+    return {
+      labels: data.map(item => item.month),
+      datasets: [{
+        label: '月營業額',
+        data: data.map(item => item.amount),
+        borderColor: '#0f766e',
+        backgroundColor: 'rgba(15, 118, 110, 0.1)',
+        borderWidth: 2,
+        fill: true,
+        tension: 0.4
+      }]
+    };
+  };
+
   const pieChartOptions = {
     responsive: true,
     plugins: {
@@ -769,6 +826,34 @@ const RevenueStatistics = () => {
             }
             return context[0].label || '';
           },
+          label: function(context) {
+            const value = context.parsed.y;
+            return `營業額: $${value.toLocaleString()}`;
+          }
+        }
+      }
+    },
+    scales: {
+      y: {
+        beginAtZero: true,
+        ticks: {
+          callback: function(value) {
+            return '$' + value.toLocaleString();
+          }
+        }
+      }
+    }
+  };
+
+  const lineChartOptions = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: {
+        display: false
+      },
+      tooltip: {
+        callbacks: {
           label: function(context) {
             const value = context.parsed.y;
             return `營業額: $${value.toLocaleString()}`;
@@ -954,6 +1039,17 @@ const RevenueStatistics = () => {
               <div className="chart-wrapper">
                 {overviewData.gradeRevenue.length > 0 ? (
                   <Pie data={generatePieChartData(overviewData.gradeRevenue, '年級營業額')} options={pieChartOptions} />
+                ) : (
+                  <div className="no-data">無數據</div>
+                )}
+              </div>
+            </div>
+
+            <div className="chart-container">
+              <h3>營業額趨勢</h3>
+              <div className="chart-wrapper" style={{ height: '400px' }}>
+                {overviewData.monthlyRevenue.length > 0 ? (
+                  <Line data={generateLineChartData(overviewData.monthlyRevenue, '營業額趨勢')} options={lineChartOptions} />
                 ) : (
                   <div className="no-data">無數據</div>
                 )}
