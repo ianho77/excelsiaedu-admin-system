@@ -982,6 +982,7 @@ function AddStudent() {
     grade: '',
     nickname: '',
     phone: '',
+    wechat: '',
     school: ''
   });
   const [students, setStudents] = React.useState([]);
@@ -1016,19 +1017,20 @@ function AddStudent() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     
-    // 驗證必填欄位
-    if (!form.nameZh || !form.nameEn || !form.grade) {
-      alert('請填寫所有必填欄位');
+    // 驗證必填欄位（英文姓名改為非必填）
+    if (!form.nameZh || !form.grade) {
+      alert('請填寫中文姓名和年級');
       return;
     }
     
     // 設置確認數據並顯示彈窗
     setConfirmData({
       nameZh: form.nameZh,
-      nameEn: form.nameEn,
+      nameEn: form.nameEn || '無',
       grade: form.grade,
       nickname: form.nickname || '無',
       phone: form.phone || '無',
+      wechat: form.wechat || '無',
       school: form.school || '無'
     });
     setShowConfirmModal(true);
@@ -1047,7 +1049,7 @@ function AddStudent() {
       });
       const data = await res.json();
       setStudents(prev => [...prev, data]);
-      setForm({ nameZh: '', nameEn: '', grade: '', nickname: '', phone: '', school: '' });
+      setForm({ nameZh: '', nameEn: '', grade: '', nickname: '', phone: '', wechat: '', school: '' });
     } catch (error) {
       console.error('新增學生時發生錯誤:', error);
       alert('❌ 新增學生時發生錯誤，請重試');
@@ -1210,8 +1212,7 @@ function AddStudent() {
               name="nameEn"
               value={form.nameEn}
               onChange={handleChange}
-              placeholder="請輸入英文姓名"
-              required
+              placeholder="請輸入英文姓名（選填）"
             />
           </div>
           <div className="form-group">
@@ -1232,6 +1233,16 @@ function AddStudent() {
               value={form.phone}
               onChange={handleChange}
               placeholder="請輸入電話號碼"
+            />
+          </div>
+          <div className="form-group">
+            <label>微信號碼</label>
+            <input
+              type="text"
+              name="wechat"
+              value={form.wechat}
+              onChange={handleChange}
+              placeholder="請輸入微信號碼"
             />
           </div>
           <div className="form-group">
@@ -1271,6 +1282,7 @@ function AddStudent() {
                 <th>姓名（英文）</th>
                 <th>暱稱</th>
                 <th>電話號碼</th>
+                <th>微信號碼</th>
                 <th>年級</th>
                 <th>學校</th>
               </tr>
@@ -1283,6 +1295,7 @@ function AddStudent() {
                   <td>{student.nameEn}</td>
                   <td>{student.nickname}</td>
                   <td>{student.phone}</td>
+                  <td>{student.wechat}</td>
                   <td>{student.grade}</td>
                   <td>{student.school}</td>
                 </tr>
@@ -1303,6 +1316,7 @@ function AddStudent() {
             <p><strong>年級：</strong>${confirmData.grade}</p>
             <p><strong>暱稱：</strong>${confirmData.nickname}</p>
             <p><strong>電話號碼：</strong>${confirmData.phone}</p>
+            <p><strong>微信號碼：</strong>${confirmData.wechat}</p>
             <p><strong>學校：</strong>${confirmData.school}</p>
             <p style="margin-top: 16px; color: #666; font-size: 14px;">
               請確認以上資料是否正確，確認後將新增此學生。

@@ -38,6 +38,7 @@ const StudentSchema = new mongoose.Schema({
   grade: String,
   nickname: String, // 新增暱稱
   phone: String,    // 新增電話號碼
+  wechat: String,   // 新增微信號碼
   school: String,   // 新增學校
 });
 
