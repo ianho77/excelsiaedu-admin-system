@@ -2218,6 +2218,7 @@ function StudentList() {
       ]
     },
     { name: 'phone', label: '電話號碼', type: 'text' },
+    { name: 'wechat', label: '微信號碼', type: 'text' },
     { name: 'school', label: '學校', type: 'text' }
   ];
 
@@ -2242,6 +2243,7 @@ function StudentList() {
             <th>暱稱</th>
             <th>年級</th>
             <th>電話號碼</th>
+            <th>微信號碼</th>
             <th>學校</th>
             <th>操作</th>
           </tr>
@@ -2255,6 +2257,7 @@ function StudentList() {
               <td>{student.nickname || '-'}</td>
               <td>{student.grade}</td>
               <td>{student.phone || '-'}</td>
+              <td>{student.wechat || '-'}</td>
               <td>{student.school || '-'}</td>
               <td>
                 <div className="action-buttons">
