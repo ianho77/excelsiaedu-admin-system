@@ -252,6 +252,25 @@
   max-width: 100%;
 }
 
+/* 柱狀圖滾動條樣式 */
+.chart-wrapper::-webkit-scrollbar {
+  height: 8px;
+}
+
+.chart-wrapper::-webkit-scrollbar-track {
+  background: #f1f5f9;
+  border-radius: 4px;
+}
+
+.chart-wrapper::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
+}
+
+.chart-wrapper::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
 /* 課程營業額圖表特殊樣式 */
 .chart-container:has(h3:contains("課程營業額比例")) .chart-wrapper {
   height: 350px;

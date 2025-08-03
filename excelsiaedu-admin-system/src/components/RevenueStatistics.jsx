@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
-import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Tooltip, Legend } from 'chart.js';
-import { Bar } from 'react-chartjs-2';
+import { Chart as ChartJS, ArcElement, Tooltip, Legend, CategoryScale, LinearScale, BarElement } from 'chart.js';
+import { Pie, Bar } from 'react-chartjs-2';
 import * as XLSX from 'xlsx';
 import './RevenueStatistics.css';
 
-ChartJS.register(CategoryScale, LinearScale, BarElement, Tooltip, Legend);
+ChartJS.register(ArcElement, Tooltip, Legend, CategoryScale, LinearScale, BarElement);
 
 const RevenueStatistics = () => {
   const location = useLocation();
@@ -620,6 +620,52 @@ const RevenueStatistics = () => {
     return `${date.getFullYear()}/${date.getMonth() + 1}/${date.getDate()}`;
   };
 
+  // 生成餅圖數據
+  const generatePieChartData = (data, title) => {
+    // 確保數據是有效的
+    if (!data || data.length === 0) {
+      return {
+        labels: [],
+        datasets: [{
+          data: [],
+          backgroundColor: [],
+          borderColor: [],
+          borderWidth: 2
+        }]
+      };
+    }
+    
+    // 過濾掉沒有名稱或名稱為undefined的數據
+    const validData = data.filter(item => item && item.name && item.name !== 'undefined' && item.name !== undefined);
+    
+    if (validData.length === 0) {
+      return {
+        labels: [],
+        datasets: [{
+          data: [],
+          backgroundColor: [],
+          borderColor: [],
+          borderWidth: 2
+        }]
+      };
+    }
+    
+    const colors = [
+      '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF',
+      '#FF9F40', '#FF6384', '#C9CBCF', '#4BC0C0', '#FF6384'
+    ];
+
+    return {
+      labels: validData.map(item => item.name || '未知'),
+      datasets: [{
+        data: validData.map(item => item.amount),
+        backgroundColor: colors.slice(0, validData.length),
+        borderColor: colors.slice(0, validData.length).map(color => color + '80'),
+        borderWidth: 2
+      }]
+    };
+  };
+
   // 生成柱狀圖數據
   const generateBarChartData = (data, title) => {
     // 確保數據是有效的
@@ -665,6 +711,33 @@ const RevenueStatistics = () => {
         borderWidth: 1
       }]
     };
+  };
+
+  const pieChartOptions = {
+    responsive: true,
+    plugins: {
+      legend: {
+        position: 'bottom',
+        labels: {
+          padding: 20,
+          usePointStyle: true,
+          font: {
+            size: 12
+          }
+        }
+      },
+      tooltip: {
+        callbacks: {
+          label: function(context) {
+            const label = context.label || '';
+            const value = context.parsed;
+            const total = context.dataset.data.reduce((a, b) => a + b, 0);
+            const percentage = ((value / total) * 100).toFixed(1);
+            return `${label}: $${value.toLocaleString()} (${percentage}%)`;
+          }
+        }
+      }
+    }
   };
 
   const barChartOptions = {
@@ -837,7 +910,7 @@ const RevenueStatistics = () => {
           <div className="overview-charts">
             <div className="chart-container">
               <h3>老師營業額比例</h3>
-              <div className="chart-wrapper" style={{ height: '300px', overflowY: 'auto' }}>
+              <div className="chart-wrapper" style={{ height: '400px', overflowX: 'auto' }}>
                 {overviewData.teacherRevenue.length > 0 ? (
                   <Bar data={generateBarChartData(overviewData.teacherRevenue, '老師營業額')} options={barChartOptions} />
                 ) : (
@@ -848,9 +921,9 @@ const RevenueStatistics = () => {
 
             <div className="chart-container">
               <h3>課程營業額比例</h3>
-              <div className="chart-wrapper" style={{ height: '300px', overflowY: 'auto' }}>
+              <div className="chart-wrapper">
                 {overviewData.courseRevenue.length > 0 ? (
-                  <Bar data={generateBarChartData(overviewData.courseRevenue, '課程營業額')} options={barChartOptions} />
+                  <Pie data={generatePieChartData(overviewData.courseRevenue, '課程營業額')} options={pieChartOptions} />
                 ) : (
                   <div className="no-data">無數據</div>
                 )}
@@ -859,9 +932,9 @@ const RevenueStatistics = () => {
 
             <div className="chart-container">
               <h3>年級營業額比例</h3>
-              <div className="chart-wrapper" style={{ height: '300px', overflowY: 'auto' }}>
+              <div className="chart-wrapper">
                 {overviewData.gradeRevenue.length > 0 ? (
-                  <Bar data={generateBarChartData(overviewData.gradeRevenue, '年級營業額')} options={barChartOptions} />
+                  <Pie data={generatePieChartData(overviewData.gradeRevenue, '年級營業額')} options={pieChartOptions} />
                 ) : (
                   <div className="no-data">無數據</div>
                 )}
