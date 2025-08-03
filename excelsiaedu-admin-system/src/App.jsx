@@ -1098,6 +1098,7 @@ function AddStudent() {
                   grade: student.grade,
                   nickname: student.nickname || '',
                   phone: student.phone || '',
+                  wechat: student.wechat || '',
                   school: student.school || ''
                 })
               });
