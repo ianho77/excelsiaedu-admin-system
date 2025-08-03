@@ -1212,7 +1212,7 @@ function AddStudent() {
               name="nameEn"
               value={form.nameEn}
               onChange={handleChange}
-              placeholder="請輸入英文姓名（選填）"
+              placeholder="請輸入英文姓名"
             />
           </div>
           <div className="form-group">
@@ -1249,9 +1249,6 @@ function AddStudent() {
             <label>年級</label>
             <select name="grade" value={form.grade} onChange={handleChange} required>
               <option value="">請選擇年級</option>
-              <option value="初中">初中</option>
-              <option value="高中">高中</option>
-              <option value="試堂">試堂</option>
               <option value="中一">中一</option>
               <option value="中二">中二</option>
               <option value="中三">中三</option>
