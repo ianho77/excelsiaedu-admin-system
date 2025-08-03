@@ -515,7 +515,7 @@ function AddClass() {
           </div>
           <div className="form-group">
             <label>價格</label>
-            <input type="number" name="price" value={form.price} onChange={handleChange} step="1" placeholder="請輸入價格（可輸入負數）" required />
+            <input type="number" name="price" value={form.price} onChange={handleChange} step="1" placeholder="請輸入價格" required />
           </div>
           <div className="form-group">
             <label>學生人數</label>
