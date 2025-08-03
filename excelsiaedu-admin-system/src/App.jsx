@@ -690,6 +690,7 @@ function AddCourse() {
     
     // 設置確認數據並顯示彈窗
     const confirmDataToSet = {
+      teacherId: form.teacherId,  // 添加teacherId
       teacherInfo,
       grade: form.grade,
       subject: form.subject
