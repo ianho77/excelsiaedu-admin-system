@@ -113,20 +113,22 @@ const MonthlyStatement = ({ classes, students, courses, teachers, selectedMonth,
       const teacherA = courseA ? getTeacherInfo(courseA.teacherId) : null;
       const teacherB = courseB ? getTeacherInfo(courseB.teacherId) : null;
       
-      // 第一優先度：教師ID（小到大）
+      // 第一優先度：教師ID（小到大）- 數值比較
       if (teacherA && teacherB) {
-        const teacherIdCompare = teacherA.teacherId.localeCompare(teacherB.teacherId);
-        if (teacherIdCompare !== 0) return teacherIdCompare;
+        const teacherIdA = parseInt(teacherA.teacherId) || 0;
+        const teacherIdB = parseInt(teacherB.teacherId) || 0;
+        if (teacherIdA !== teacherIdB) return teacherIdA - teacherIdB;
       }
       
       // 如果只有一個教師有ID，優先顯示有ID的
       if (teacherA && !teacherB) return -1;
       if (!teacherA && teacherB) return 1;
       
-      // 第二優先度：課程ID（小到大）
+      // 第二優先度：課程ID（小到大）- 數值比較
       if (courseA && courseB) {
-        const courseIdCompare = courseA.courseId.localeCompare(courseB.courseId);
-        if (courseIdCompare !== 0) return courseIdCompare;
+        const courseIdA = parseInt(courseA.courseId) || 0;
+        const courseIdB = parseInt(courseB.courseId) || 0;
+        if (courseIdA !== courseIdB) return courseIdA - courseIdB;
       }
       
       // 如果只有一個課程有ID，優先顯示有ID的
