@@ -714,13 +714,12 @@ const RevenueStatistics = () => {
       labels: validData.map(item => item.name || '未知'),
       datasets: [{
         label: '營業額',
-        data: validData.map(item => ({
-          amount: item.amount,
-          fullName: item.fullName || item.name
-        })),
+        data: validData.map(item => item.amount),
         backgroundColor: colors.slice(0, validData.length),
         borderColor: colors.slice(0, validData.length).map(color => color + '80'),
-        borderWidth: 1
+        borderWidth: 1,
+        // 將完整信息存儲在自定義屬性中
+        _fullNames: validData.map(item => item.fullName || item.name)
       }]
     };
   };
@@ -765,9 +764,8 @@ const RevenueStatistics = () => {
             // 顯示完整信息（課程ID-課程名字（教師名））
             const dataIndex = context[0].dataIndex;
             const dataset = context[0].dataset;
-            const data = dataset.data;
-            if (data && data[dataIndex] && data[dataIndex].fullName) {
-              return data[dataIndex].fullName;
+            if (dataset._fullNames && dataset._fullNames[dataIndex]) {
+              return dataset._fullNames[dataIndex];
             }
             return context[0].label || '';
           },
