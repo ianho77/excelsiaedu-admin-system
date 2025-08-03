@@ -604,11 +604,16 @@ const RevenueStatistics = () => {
       }
     });
     
+    // 計算總金額
+    const total = Object.values(teacherRevenue).reduce((sum, item) => sum + item.amount, 0);
+    
     setOverviewData({
       teacherRevenue: Object.values(teacherRevenue),
       courseRevenue: Object.values(courseRevenue).sort((a, b) => b.amount - a.amount).slice(0, 8),
       gradeRevenue: Object.values(gradeRevenue)
     });
+    
+    setTotalAmount(total);
   };
 
   const formatCurrency = (amount) => {
