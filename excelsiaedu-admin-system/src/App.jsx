@@ -2299,6 +2299,15 @@ function CourseList() {
   const [showDeleteModal, setShowDeleteModal] = React.useState(false);
   const [editingCourse, setEditingCourse] = React.useState(null);
   const [showEditModal, setShowEditModal] = React.useState(false);
+  
+  // 篩選功能狀態
+  const [subjectFilter, setSubjectFilter] = React.useState('');
+  const [gradeFilter, setGradeFilter] = React.useState('');
+  const [teacherFilter, setTeacherFilter] = React.useState('');
+  
+  // 一鍵刪除功能狀態
+  const [showDeleteAllModal, setShowDeleteAllModal] = React.useState(false);
+  const [deleteConfirmText, setDeleteConfirmText] = React.useState('');
 
   React.useEffect(() => {
     fetchAllData();
@@ -2382,6 +2391,65 @@ function CourseList() {
     setEditingCourse(null);
   };
 
+  // 篩選邏輯
+  const filteredCourses = courses.filter(course => {
+    const teacher = teachers.find(t => t.teacherId === course.teacherId);
+    const teacherName = teacher ? teacher.name : '';
+    
+    return (
+      (subjectFilter === '' || course.subject.includes(subjectFilter)) &&
+      (gradeFilter === '' || course.grade === gradeFilter) &&
+      (teacherFilter === '' || 
+       course.teacherId.includes(teacherFilter) || 
+       teacherName.includes(teacherFilter))
+    );
+  });
+
+  // 一鍵刪除功能
+  const handleDeleteAll = () => {
+    setShowDeleteAllModal(true);
+  };
+
+  const handleConfirmDeleteAll = async () => {
+    if (deleteConfirmText !== '刪除') {
+      alert('請輸入"刪除"以確認操作');
+      return;
+    }
+
+    try {
+      // 獲取當前篩選後顯示的課程ID列表
+      const courseIdsToDelete = filteredCourses.map(course => course._id);
+      
+      if (courseIdsToDelete.length === 0) {
+        alert('沒有可刪除的課程資料');
+        setShowDeleteAllModal(false);
+        setDeleteConfirmText('');
+        return;
+      }
+
+      // 並行刪除所有課程
+      const deletePromises = courseIdsToDelete.map(courseId =>
+        fetch(`http://localhost:4000/api/courses/${courseId}`, {
+          method: 'DELETE'
+        })
+      );
+
+      await Promise.all(deletePromises);
+      
+      setShowDeleteAllModal(false);
+      setDeleteConfirmText('');
+      fetchAllData(); // 重新載入數據
+    } catch (error) {
+      console.error('刪除失敗:', error);
+      alert('刪除失敗，請重試');
+    }
+  };
+
+  const handleCancelDeleteAll = () => {
+    setShowDeleteAllModal(false);
+    setDeleteConfirmText('');
+  };
+
   const courseFields = [
     { name: 'subject', label: '科目', type: 'text', required: true },
     { 
@@ -2422,6 +2490,89 @@ function CourseList() {
   return (
     <div className="content">
       <h1>課程列表</h1>
+      
+      {/* 篩選控件 */}
+      <div style={{ 
+        display: 'flex', 
+        gap: '20px', 
+        marginBottom: '20px',
+        flexWrap: 'wrap',
+        alignItems: 'center'
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <label style={{ fontWeight: 'bold', minWidth: '60px' }}>科目篩選:</label>
+          <input
+            type="text"
+            value={subjectFilter}
+            onChange={(e) => setSubjectFilter(e.target.value)}
+            placeholder="輸入科目名稱"
+            style={{
+              padding: '8px 12px',
+              border: '1px solid #ddd',
+              borderRadius: '4px',
+              fontSize: '14px',
+              minWidth: '150px'
+            }}
+          />
+        </div>
+        
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <label style={{ fontWeight: 'bold', minWidth: '60px' }}>年級篩選:</label>
+          <select
+            value={gradeFilter}
+            onChange={(e) => setGradeFilter(e.target.value)}
+            style={{
+              padding: '8px 12px',
+              border: '1px solid #ddd',
+              borderRadius: '4px',
+              fontSize: '14px',
+              minWidth: '120px'
+            }}
+          >
+            <option value="">全部年級</option>
+            <option value="中一">中一</option>
+            <option value="中二">中二</option>
+            <option value="中三">中三</option>
+            <option value="中四">中四</option>
+            <option value="中五">中五</option>
+            <option value="中六">中六</option>
+          </select>
+        </div>
+        
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <label style={{ fontWeight: 'bold', minWidth: '60px' }}>教師篩選:</label>
+          <input
+            type="text"
+            value={teacherFilter}
+            onChange={(e) => setTeacherFilter(e.target.value)}
+            placeholder="輸入教師ID或姓名"
+            style={{
+              padding: '8px 12px',
+              border: '1px solid #ddd',
+              borderRadius: '4px',
+              fontSize: '14px',
+              minWidth: '150px'
+            }}
+          />
+        </div>
+        
+        <button
+          onClick={handleDeleteAll}
+          style={{
+            padding: '8px 16px',
+            backgroundColor: '#dc3545',
+            color: 'white',
+            border: 'none',
+            borderRadius: '4px',
+            cursor: 'pointer',
+            fontSize: '14px',
+            fontWeight: 'bold'
+          }}
+        >
+          一鍵刪除篩選結果 ({filteredCourses.length} 筆)
+        </button>
+      </div>
+      
       <table className="course-table">
         <thead>
           <tr>
@@ -2433,7 +2584,7 @@ function CourseList() {
           </tr>
         </thead>
         <tbody>
-          {courses.map(course => {
+          {filteredCourses.map(course => {
             const teacher = teachers.find(t => t.teacherId === course.teacherId);
             return (
               <tr key={course._id}>
@@ -2471,6 +2622,45 @@ function CourseList() {
         onConfirm={handleConfirmDelete}
         title="確認刪除"
         message="確定要刪除這個課程嗎？"
+      />
+      
+      {/* 一鍵刪除確認彈窗 */}
+      <ConfirmModal
+        isOpen={showDeleteAllModal}
+        onConfirm={handleConfirmDeleteAll}
+        onCancel={handleCancelDeleteAll}
+        title="確認一鍵刪除"
+        message={`
+          <div style="text-align: left; line-height: 1.6;">
+            <p><strong>警告：</strong>此操作將刪除所有篩選結果中的課程資料</p>
+            <p><strong>篩選條件：</strong></p>
+            <ul style="margin: 10px 0; padding-left: 20px;">
+              ${subjectFilter ? `<li>科目包含：${subjectFilter}</li>` : ''}
+              ${gradeFilter ? `<li>年級：${gradeFilter}</li>` : ''}
+              ${teacherFilter ? `<li>教師包含：${teacherFilter}</li>` : ''}
+              ${!subjectFilter && !gradeFilter && !teacherFilter ? '<li>全部課程</li>' : ''}
+            </ul>
+            <p><strong>將刪除的課程數量：</strong>${filteredCourses.length} 筆</p>
+            <p style="margin-top: 16px; color: #dc3545; font-weight: bold;">
+              請在下方輸入框中輸入"刪除"以確認此操作
+            </p>
+            <input
+              type="text"
+              value={deleteConfirmText}
+              onChange={(e) => setDeleteConfirmText(e.target.value)}
+              placeholder="請輸入'刪除'"
+              style={{
+                width: '100%',
+                padding: '8px 12px',
+                border: '1px solid #ddd',
+                borderRadius: '4px',
+                marginTop: '10px'
+              }}
+            />
+          </div>
+        `}
+        confirmText="確認刪除"
+        cancelText="取消"
       />
     </div>
   );
