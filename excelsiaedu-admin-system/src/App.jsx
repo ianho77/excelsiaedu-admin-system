@@ -901,6 +901,9 @@ function AddCourse() {
           <label>年級</label>
           <select name="grade" value={form.grade} onChange={handleChange} required>
             <option value="">請選擇年級</option>
+            <option value="初中">初中</option>
+            <option value="高中">高中</option>
+            <option value="試堂">試堂</option>
             <option value="中一">中一</option>
             <option value="中二">中二</option>
             <option value="中三">中三</option>
@@ -1234,6 +1237,9 @@ function AddStudent() {
             <label>年級</label>
             <select name="grade" value={form.grade} onChange={handleChange} required>
               <option value="">請選擇年級</option>
+              <option value="初中">初中</option>
+              <option value="高中">高中</option>
+              <option value="試堂">試堂</option>
               <option value="中一">中一</option>
               <option value="中二">中二</option>
               <option value="中三">中三</option>
