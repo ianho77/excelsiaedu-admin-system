@@ -110,8 +110,9 @@ const MonthlyStatement = ({ classes, students, courses, teachers, selectedMonth,
     const sortedClasses = studentClasses.sort((a, b) => {
       const courseA = getCourseInfo(a.courseId);
       const courseB = getCourseInfo(b.courseId);
-      const teacherA = courseA ? getTeacherInfo(courseA.teacherId) : null;
-      const teacherB = courseB ? getTeacherInfo(courseB.teacherId) : null;
+      // 優先使用課堂的teacherId，如果沒有則使用課程的teacherId
+      const teacherA = a.teacherId ? getTeacherInfo(a.teacherId) : (courseA ? getTeacherInfo(courseA.teacherId) : null);
+      const teacherB = b.teacherId ? getTeacherInfo(b.teacherId) : (courseB ? getTeacherInfo(courseB.teacherId) : null);
       
       // 第一優先度：教師ID（小到大）- 數值比較
       if (teacherA && teacherB) {
@@ -143,17 +144,10 @@ const MonthlyStatement = ({ classes, students, courses, teachers, selectedMonth,
     const tableData = [];
     let totalAmount = 0;
 
-    // 調試：打印排序後的課堂信息
-    console.log('排序後的課堂信息:');
-    sortedClasses.forEach((cls, index) => {
-      const course = getCourseInfo(cls.courseId);
-      const teacher = course ? getTeacherInfo(course.teacherId) : null;
-      console.log(`${index + 1}. 教師ID: ${teacher ? teacher.teacherId : 'N/A'}, 教師名: ${teacher ? teacher.name : 'N/A'}, 課程ID: ${course ? course.courseId : 'N/A'}, 日期: ${cls.date}`);
-    });
-
     sortedClasses.forEach(cls => {
       const course = getCourseInfo(cls.courseId);
-      const teacher = course ? getTeacherInfo(course.teacherId) : null;
+      // 優先使用課堂的teacherId，如果沒有則使用課程的teacherId
+      const teacher = cls.teacherId ? getTeacherInfo(cls.teacherId) : (course ? getTeacherInfo(course.teacherId) : null);
       
       tableData.push([
         teacher ? teacher.name : 'N/A',
