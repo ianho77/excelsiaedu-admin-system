@@ -930,26 +930,31 @@ function AddCourse() {
       
       <div className="class-form-right">
         <div className="class-form-right-title">課程列表</div>
-        <table className="course-table">
-          <thead>
-            <tr>
-              <th>課程ID</th>
-              <th>老師ID</th>
-              <th>年級</th>
-              <th>科目</th>
-            </tr>
-          </thead>
-          <tbody>
-            {courses.map(course => (
-                <tr key={course._id || course.courseId}>
-                  <td>{course.courseId}</td>
-                <td>{course.teacherId}</td>
-                <td>{course.grade}</td>
-                <td>{course.subject}</td>
+        <div className="course-list-scroll">
+          <table className="course-table">
+            <thead>
+              <tr>
+                <th>課程ID</th>
+                <th>教師</th>
+                <th>年級</th>
+                <th>科目</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {courses.map(course => {
+                const teacher = teachers.find(t => t.teacherId === course.teacherId);
+                return (
+                  <tr key={course._id || course.courseId}>
+                    <td>{course.courseId}</td>
+                    <td>{teacher ? `${teacher.teacherId}-${teacher.name}` : `查無教師 (ID: ${course.teacherId})`}</td>
+                    <td>{course.grade}</td>
+                    <td>{course.subject}</td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
       </div>
       </div>
       
@@ -1272,34 +1277,36 @@ function AddStudent() {
         </form>
         <div className="class-form-right">
           <div className="class-form-right-title">學生列表</div>
-          <table className="course-table">
-            <thead>
-              <tr>
-                <th>學生ID</th>
-                <th>姓名（中文）</th>
-                <th>姓名（英文）</th>
-                <th>暱稱</th>
-                <th>電話號碼</th>
-                <th>微信號碼</th>
-                <th>年級</th>
-                <th>學校</th>
-              </tr>
-            </thead>
-            <tbody>
-              {students.map(student => (
-                <tr key={student._id || student.studentId}>
-                  <td>{student.studentId}</td>
-                  <td>{student.nameZh}</td>
-                  <td>{student.nameEn}</td>
-                  <td>{student.nickname}</td>
-                  <td>{student.phone}</td>
-                  <td>{student.wechat}</td>
-                  <td>{student.grade}</td>
-                  <td>{student.school}</td>
+          <div className="course-list-scroll">
+            <table className="course-table">
+              <thead>
+                <tr>
+                  <th>學生ID</th>
+                  <th>姓名（中文）</th>
+                  <th>姓名（英文）</th>
+                  <th>暱稱</th>
+                  <th>電話號碼</th>
+                  <th>微信號碼</th>
+                  <th>年級</th>
+                  <th>學校</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {students.map(student => (
+                  <tr key={student._id || student.studentId}>
+                    <td>{student.studentId}</td>
+                    <td>{student.nameZh}</td>
+                    <td>{student.nameEn}</td>
+                    <td>{student.nickname}</td>
+                    <td>{student.phone}</td>
+                    <td>{student.wechat}</td>
+                    <td>{student.grade}</td>
+                    <td>{student.school}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
       
@@ -1543,24 +1550,26 @@ function AddTeacher() {
         </form>
         <div className="class-form-right">
           <div className="class-form-right-title">教師列表</div>
-          <table className="course-table">
-            <thead>
-              <tr>
-                <th>教師ID</th>
-                <th>教師姓名</th>
-                <th>電話號碼</th>
-              </tr>
-            </thead>
-            <tbody>
-              {teachers.map(t => (
-                <tr key={t._id || t.teacherId}>
-                  <td>{t.teacherId}</td>
-                  <td>{t.name}</td>
-                  <td>{t.phone || '-'}</td>
+          <div className="course-list-scroll">
+            <table className="course-table">
+              <thead>
+                <tr>
+                  <th>教師ID</th>
+                  <th>教師姓名</th>
+                  <th>電話號碼</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {teachers.map(t => (
+                  <tr key={t._id || t.teacherId}>
+                    <td>{t.teacherId}</td>
+                    <td>{t.name}</td>
+                    <td>{t.phone || '-'}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
       
@@ -1993,49 +2002,51 @@ function ClassList() {
         </div>
       )}
       
-      <table className="course-table">
-        <thead>
-          <tr>
-            <th>課堂日期</th>
-            <th>學生資料</th>
-            <th>課程資料</th>
-            <th>老師</th>
-            <th>價格</th>
-            <th>電話號碼</th>
-            <th>操作</th>
-          </tr>
-        </thead>
-        <tbody>
-          {filteredClasses.map(cls => {
-            const stu = studentMap[String(cls.studentId)] || {};
-            const course = courseMap[String(cls.courseId)] || {};
-            const teacher = teacherMap[String(course.teacherId)] || {};
-            return (
-              <tr key={cls._id}>
-                <td>{formatDate(cls.date)}</td>
-                <td>
-                  {cls.studentId}
-                  {stu.nameZh ? ` - ${stu.nameZh}（${stu.nameEn}）${stu.nickname ? ` [${stu.nickname}]` : ''}` : ' - 查無學生'}
-                </td>
-                <td>
-                  {course.courseId ? `${course.courseId} ${course.grade}${course.subject}` : '查無課程'}
-                </td>
-                <td>
-                  {teacher.teacherId ? `${teacher.teacherId}-${teacher.name}` : '查無老師'}
-                </td>
-                <td>${cls.price}</td>
-                <td>{stu.phone || '-'}</td>
-                <td>
-                  <div className="action-buttons">
-                    <button className="action-button edit" onClick={() => handleEdit(cls)}>編輯</button>
-                    <button className="action-button delete" onClick={() => handleDelete(cls._id)}>刪除</button>
-                  </div>
-                </td>
-              </tr>
-            );
-          })}
-        </tbody>
-      </table>
+      <div className="course-list-scroll">
+        <table className="course-table">
+          <thead>
+            <tr>
+              <th>課堂日期</th>
+              <th>學生資料</th>
+              <th>課程資料</th>
+              <th>老師</th>
+              <th>價格</th>
+              <th>電話號碼</th>
+              <th>操作</th>
+            </tr>
+          </thead>
+          <tbody>
+            {filteredClasses.map(cls => {
+              const stu = studentMap[String(cls.studentId)] || {};
+              const course = courseMap[String(cls.courseId)] || {};
+              const teacher = teacherMap[String(course.teacherId)] || {};
+              return (
+                <tr key={cls._id}>
+                  <td>{formatDate(cls.date)}</td>
+                  <td>
+                    {cls.studentId}
+                    {stu.nameZh ? ` - ${stu.nameZh}（${stu.nameEn}）${stu.nickname ? ` [${stu.nickname}]` : ''}` : ' - 查無學生'}
+                  </td>
+                  <td>
+                    {course.courseId ? `${course.courseId} ${course.grade}${course.subject}` : '查無課程'}
+                  </td>
+                  <td>
+                    {teacher.teacherId ? `${teacher.teacherId}-${teacher.name}` : '查無老師'}
+                  </td>
+                  <td>${cls.price}</td>
+                  <td>{stu.phone || '-'}</td>
+                  <td>
+                    <div className="action-buttons">
+                      <button className="action-button edit" onClick={() => handleEdit(cls)}>編輯</button>
+                      <button className="action-button delete" onClick={() => handleDelete(cls._id)}>刪除</button>
+                    </div>
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
 
       <EditModal
         isOpen={showEditModal}
@@ -2123,6 +2134,10 @@ function StudentList() {
   const [showDeleteModal, setShowDeleteModal] = React.useState(false);
   const [editingStudent, setEditingStudent] = React.useState(null);
   const [showEditModal, setShowEditModal] = React.useState(false);
+  
+  // 搜索功能狀態
+  const [searchFilter, setSearchFilter] = React.useState('');
+  const [searchDisplay, setSearchDisplay] = React.useState('');
 
   React.useEffect(() => {
     fetchStudents();
@@ -2199,6 +2214,33 @@ function StudentList() {
     setEditingStudent(null);
   };
 
+  // 搜索邏輯
+  const filteredStudents = students.filter(student => {
+    if (searchDisplay === '' || searchDisplay === '全部') {
+      return true;
+    }
+    
+    // 檢查是否是從下拉選項選擇的完整顯示文本
+    const studentDisplayText = `${student.studentId} - ${student.nameZh}（${student.nameEn}）${student.nickname ? ` [${student.nickname}]` : ''}`;
+    if (searchDisplay === studentDisplayText) {
+      return true;
+    }
+    
+    // 如果不是完整匹配，則進行部分匹配
+    return (student.studentId && student.studentId.includes(searchDisplay)) ||
+           (student.nameZh && student.nameZh.includes(searchDisplay)) ||
+           (student.nameEn && student.nameEn.toLowerCase().includes(searchDisplay.toLowerCase())) ||
+           (student.nickname && student.nickname.includes(searchDisplay));
+  });
+
+  // 搜索選項過濾
+  const searchOptions = students.filter(student =>
+    (student.studentId && student.studentId.includes(searchFilter)) ||
+    (student.nameZh && student.nameZh.includes(searchFilter)) ||
+    (student.nameEn && student.nameEn.toLowerCase().includes(searchFilter.toLowerCase())) ||
+    (student.nickname && student.nickname.includes(searchFilter))
+  );
+
   const studentFields = [
     { name: 'nameZh', label: '中文姓名', type: 'text', required: true },
     { name: 'nameEn', label: '英文姓名', type: 'text', required: true },
@@ -2234,41 +2276,96 @@ function StudentList() {
   return (
     <div className="content">
       <h1>學生列表</h1>
-      <table className="course-table">
-        <thead>
-          <tr>
-            <th>學生ID</th>
-            <th>中文姓名</th>
-            <th>英文姓名</th>
-            <th>暱稱</th>
-            <th>年級</th>
-            <th>電話號碼</th>
-            <th>微信號碼</th>
-            <th>學校</th>
-            <th>操作</th>
-          </tr>
-        </thead>
-        <tbody>
-          {students.map(student => (
-            <tr key={student._id}>
-              <td>{student.studentId}</td>
-              <td>{student.nameZh}</td>
-              <td>{student.nameEn}</td>
-              <td>{student.nickname || '-'}</td>
-              <td>{student.grade}</td>
-              <td>{student.phone || '-'}</td>
-              <td>{student.wechat || '-'}</td>
-              <td>{student.school || '-'}</td>
-              <td>
-                <div className="action-buttons">
-                  <button className="action-button edit" onClick={() => handleEdit(student)}>編輯</button>
-                  <button className="action-button delete" onClick={() => handleDelete(student._id)}>刪除</button>
-                </div>
-              </td>
+      
+      <div className="filter-section">
+        <div className="filter-container">
+          <div className="filter-group">
+            <label>搜索學生</label>
+            <input
+              type="text"
+              className="filter-input"
+              value={searchDisplay}
+              onChange={e => { setSearchDisplay(e.target.value); setSearchFilter(e.target.value); }}
+              placeholder="請輸入學生資料"
+              autoComplete="off"
+            />
+            {searchFilter && (
+              <ul className="dropdown">
+                <li key="all" onClick={() => { setSearchDisplay('全部'); setSearchFilter(''); }}>
+                  全部
+                </li>
+                {searchOptions.map(student => (
+                  <li key={student.studentId} onClick={() => { 
+                    setSearchDisplay(`${student.studentId} - ${student.nameZh}（${student.nameEn}）${student.nickname ? ` [${student.nickname}]` : ''}`); 
+                    setSearchFilter(''); 
+                  }}>
+                    {student.studentId} - {student.nameZh}（{student.nameEn}）{student.nickname ? ` [${student.nickname}]` : ''}
+                  </li>
+                ))}
+                {searchOptions.length === 0 && <li>無符合選項</li>}
+              </ul>
+            )}
+          </div>
+          
+          <div className="filter-buttons">
+            <button 
+              className="filter-button clear"
+              onClick={() => {
+                setSearchDisplay('');
+                setSearchFilter('');
+              }}
+            >
+              清除搜索
+            </button>
+          </div>
+        </div>
+      </div>
+      
+      {/* 顯示當前搜索條件 */}
+      {searchDisplay && (
+        <div style={{ marginBottom: '20px', padding: '10px', background: '#e9ecef', borderRadius: '4px' }}>
+          <strong>當前搜索：</strong>
+          {searchDisplay}
+        </div>
+      )}
+      
+      <div className="course-list-scroll">
+        <table className="course-table">
+          <thead>
+            <tr>
+              <th>學生ID</th>
+              <th>中文姓名</th>
+              <th>英文姓名</th>
+              <th>暱稱</th>
+              <th>年級</th>
+              <th>電話號碼</th>
+              <th>微信號碼</th>
+              <th>學校</th>
+              <th>操作</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {filteredStudents.map(student => (
+              <tr key={student._id}>
+                <td>{student.studentId}</td>
+                <td>{student.nameZh}</td>
+                <td>{student.nameEn}</td>
+                <td>{student.nickname || '-'}</td>
+                <td>{student.grade}</td>
+                <td>{student.phone || '-'}</td>
+                <td>{student.wechat || '-'}</td>
+                <td>{student.school || '-'}</td>
+                <td>
+                  <div className="action-buttons">
+                    <button className="action-button edit" onClick={() => handleEdit(student)}>編輯</button>
+                    <button className="action-button delete" onClick={() => handleDelete(student._id)}>刪除</button>
+                  </div>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
 
       <EditModal
         isOpen={showEditModal}
@@ -2302,8 +2399,11 @@ function CourseList() {
   
   // 篩選功能狀態
   const [subjectFilter, setSubjectFilter] = React.useState('');
+  const [subjectDisplay, setSubjectDisplay] = React.useState('');
   const [gradeFilter, setGradeFilter] = React.useState('');
+  const [gradeDisplay, setGradeDisplay] = React.useState('');
   const [teacherFilter, setTeacherFilter] = React.useState('');
+  const [teacherDisplay, setTeacherDisplay] = React.useState('');
   
   // 一鍵刪除功能狀態
   const [showDeleteAllModal, setShowDeleteAllModal] = React.useState(false);
@@ -2397,13 +2497,28 @@ function CourseList() {
     const teacherName = teacher ? teacher.name : '';
     
     return (
-      (subjectFilter === '' || course.subject.includes(subjectFilter)) &&
-      (gradeFilter === '' || course.grade === gradeFilter) &&
-      (teacherFilter === '' || 
-       course.teacherId.includes(teacherFilter) || 
-       teacherName.includes(teacherFilter))
+      (subjectDisplay === '' || subjectDisplay === '全部' || course.subject === subjectDisplay) &&
+      (gradeDisplay === '' || gradeDisplay === '全部' || course.grade === gradeDisplay) &&
+      (teacherDisplay === '' || teacherDisplay === '全部' || 
+       `${teacher?.teacherId} - ${teacher?.name}` === teacherDisplay)
     );
   });
+
+  // 科目選項過濾
+  const filteredSubjects = Array.from(new Set(courses.map(c => c.subject))).filter(s =>
+    s.includes(subjectFilter)
+  );
+  
+  // 年級選項過濾
+  const filteredGrades = ['中一', '中二', '中三', '中四', '中五', '中六'].filter(g =>
+    g.includes(gradeFilter)
+  );
+  
+  // 教師選項過濾
+  const filteredTeachers = teachers.filter(t =>
+    t.teacherId.includes(teacherFilter) ||
+    (t.name && t.name.includes(teacherFilter))
+  );
 
   // 一鍵刪除功能
   const handleDeleteAll = () => {
@@ -2491,120 +2606,152 @@ function CourseList() {
     <div className="content">
       <h1>課程列表</h1>
       
-      {/* 篩選控件 */}
-      <div style={{ 
-        display: 'flex', 
-        gap: '20px', 
-        marginBottom: '20px',
-        flexWrap: 'wrap',
-        alignItems: 'center'
-      }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <label style={{ fontWeight: 'bold', minWidth: '60px' }}>科目篩選:</label>
-          <input
-            type="text"
-            value={subjectFilter}
-            onChange={(e) => setSubjectFilter(e.target.value)}
-            placeholder="輸入科目名稱"
-            style={{
-              padding: '8px 12px',
-              border: '1px solid #ddd',
-              borderRadius: '4px',
-              fontSize: '14px',
-              minWidth: '150px'
-            }}
-          />
+      <div className="filter-section">
+        <div className="filter-container">
+          <div className="filter-group">
+            <label>科目</label>
+            <input
+              type="text"
+              className="filter-input"
+              value={subjectDisplay}
+              onChange={e => { setSubjectDisplay(e.target.value); setSubjectFilter(e.target.value); }}
+              placeholder="請輸入科目名稱"
+              autoComplete="off"
+            />
+            {subjectFilter && (
+              <ul className="dropdown">
+                <li key="all" onClick={() => { setSubjectDisplay('全部'); setSubjectFilter(''); }}>
+                  全部
+                </li>
+                {filteredSubjects.map(s => (
+                  <li key={s} onClick={() => { setSubjectDisplay(s); setSubjectFilter(''); }}>
+                    {s}
+                  </li>
+                ))}
+                {filteredSubjects.length === 0 && <li>無符合選項</li>}
+              </ul>
+            )}
+          </div>
+          
+          <div className="filter-group">
+            <label>年級</label>
+            <input
+              type="text"
+              className="filter-input"
+              value={gradeDisplay}
+              onChange={e => { setGradeDisplay(e.target.value); setGradeFilter(e.target.value); }}
+              placeholder="請輸入年級"
+              autoComplete="off"
+            />
+            {gradeFilter && (
+              <ul className="dropdown">
+                <li key="all" onClick={() => { setGradeDisplay('全部'); setGradeFilter(''); }}>
+                  全部
+                </li>
+                {filteredGrades.map(g => (
+                  <li key={g} onClick={() => { setGradeDisplay(g); setGradeFilter(''); }}>
+                    {g}
+                  </li>
+                ))}
+                {filteredGrades.length === 0 && <li>無符合選項</li>}
+              </ul>
+            )}
+          </div>
+          
+          <div className="filter-group">
+            <label>教師</label>
+            <input
+              type="text"
+              className="filter-input"
+              value={teacherDisplay}
+              onChange={e => { setTeacherDisplay(e.target.value); setTeacherFilter(e.target.value); }}
+              placeholder="請輸入教師ID或姓名"
+              autoComplete="off"
+            />
+            {teacherFilter && (
+              <ul className="dropdown">
+                <li key="all" onClick={() => { setTeacherDisplay('全部'); setTeacherFilter(''); }}>
+                  全部
+                </li>
+                {filteredTeachers.map(t => (
+                  <li key={t.teacherId} onClick={() => { setTeacherDisplay(`${t.teacherId} - ${t.name}`); setTeacherFilter(''); }}>
+                    {t.teacherId} - {t.name}
+                  </li>
+                ))}
+                {filteredTeachers.length === 0 && <li>無符合選項</li>}
+              </ul>
+            )}
+          </div>
+          
+          <div className="filter-buttons">
+            <button 
+              className="filter-button clear"
+              onClick={() => {
+                setSubjectDisplay('');
+                setGradeDisplay('');
+                setTeacherDisplay('');
+                setSubjectFilter('');
+                setGradeFilter('');
+                setTeacherFilter('');
+              }}
+            >
+              清除篩選
+            </button>
+            <button 
+              className="filter-button delete-all"
+              onClick={handleDeleteAll}
+              style={{ backgroundColor: '#dc3545', color: 'white' }}
+            >
+              一鍵刪除
+            </button>
+          </div>
         </div>
-        
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <label style={{ fontWeight: 'bold', minWidth: '60px' }}>年級篩選:</label>
-          <select
-            value={gradeFilter}
-            onChange={(e) => setGradeFilter(e.target.value)}
-            style={{
-              padding: '8px 12px',
-              border: '1px solid #ddd',
-              borderRadius: '4px',
-              fontSize: '14px',
-              minWidth: '120px'
-            }}
-          >
-            <option value="">全部年級</option>
-            <option value="中一">中一</option>
-            <option value="中二">中二</option>
-            <option value="中三">中三</option>
-            <option value="中四">中四</option>
-            <option value="中五">中五</option>
-            <option value="中六">中六</option>
-          </select>
-        </div>
-        
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <label style={{ fontWeight: 'bold', minWidth: '60px' }}>教師篩選:</label>
-          <input
-            type="text"
-            value={teacherFilter}
-            onChange={(e) => setTeacherFilter(e.target.value)}
-            placeholder="輸入教師ID或姓名"
-            style={{
-              padding: '8px 12px',
-              border: '1px solid #ddd',
-              borderRadius: '4px',
-              fontSize: '14px',
-              minWidth: '150px'
-            }}
-          />
-        </div>
-        
-        <button
-          onClick={handleDeleteAll}
-          style={{
-            padding: '8px 16px',
-            backgroundColor: '#dc3545',
-            color: 'white',
-            border: 'none',
-            borderRadius: '4px',
-            cursor: 'pointer',
-            fontSize: '14px',
-            fontWeight: 'bold'
-          }}
-        >
-          一鍵刪除篩選結果 ({filteredCourses.length} 筆)
-        </button>
       </div>
       
-      <table className="course-table">
-        <thead>
-          <tr>
-            <th>課程ID</th>
-            <th>科目</th>
-            <th>年級</th>
-            <th>教師</th>
-            <th>操作</th>
-          </tr>
-        </thead>
-        <tbody>
-          {filteredCourses.map(course => {
-            const teacher = teachers.find(t => t.teacherId === course.teacherId);
-            return (
-              <tr key={course._id}>
-                <td>{course.courseId}</td>
-                <td>{course.subject}</td>
-                <td>{course.grade}</td>
-                <td>
-                  {teacher ? `${teacher.teacherId} - ${teacher.name}` : '查無教師'}
-                </td>
-                <td>
-                  <div className="action-buttons">
-                    <button className="action-button edit" onClick={() => handleEdit(course)}>編輯</button>
-                    <button className="action-button delete" onClick={() => handleDelete(course._id)}>刪除</button>
-                  </div>
-                </td>
-              </tr>
-            );
-          })}
-        </tbody>
-      </table>
+      {/* 顯示當前篩選條件 */}
+      {(subjectDisplay || gradeDisplay || teacherDisplay) && (
+        <div style={{ marginBottom: '20px', padding: '10px', background: '#e9ecef', borderRadius: '4px' }}>
+          <strong>當前篩選：</strong>
+          {subjectDisplay && <span style={{ marginRight: '20px' }}>科目：{subjectDisplay}</span>}
+          {gradeDisplay && <span style={{ marginRight: '20px' }}>年級：{gradeDisplay}</span>}
+          {teacherDisplay && <span>教師：{teacherDisplay}</span>}
+        </div>
+      )}
+      
+      <div className="course-list-scroll">
+        <table className="course-table">
+          <thead>
+            <tr>
+              <th>課程ID</th>
+              <th>科目</th>
+              <th>年級</th>
+              <th>教師</th>
+              <th>操作</th>
+            </tr>
+          </thead>
+          <tbody>
+            {filteredCourses.map(course => {
+              const teacher = teachers.find(t => t.teacherId === course.teacherId);
+              return (
+                <tr key={course._id}>
+                  <td>{course.courseId}</td>
+                  <td>{course.subject}</td>
+                  <td>{course.grade}</td>
+                  <td>
+                    {teacher ? `${teacher.teacherId} - ${teacher.name}` : '查無教師'}
+                  </td>
+                  <td>
+                    <div className="action-buttons">
+                      <button className="action-button edit" onClick={() => handleEdit(course)}>編輯</button>
+                      <button className="action-button delete" onClick={() => handleDelete(course._id)}>刪除</button>
+                    </div>
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
 
       <EditModal
         isOpen={showEditModal}
@@ -2625,43 +2772,62 @@ function CourseList() {
       />
       
       {/* 一鍵刪除確認彈窗 */}
-      <ConfirmModal
-        isOpen={showDeleteAllModal}
-        onConfirm={handleConfirmDeleteAll}
-        onCancel={handleCancelDeleteAll}
-        title="確認一鍵刪除"
-        message={`
-          <div style="text-align: left; line-height: 1.6;">
-            <p><strong>警告：</strong>此操作將刪除所有篩選結果中的課程資料</p>
-            <p><strong>篩選條件：</strong></p>
-            <ul style="margin: 10px 0; padding-left: 20px;">
-              ${subjectFilter ? `<li>科目包含：${subjectFilter}</li>` : ''}
-              ${gradeFilter ? `<li>年級：${gradeFilter}</li>` : ''}
-              ${teacherFilter ? `<li>教師包含：${teacherFilter}</li>` : ''}
-              ${!subjectFilter && !gradeFilter && !teacherFilter ? '<li>全部課程</li>' : ''}
-            </ul>
-            <p><strong>將刪除的課程數量：</strong>${filteredCourses.length} 筆</p>
-            <p style="margin-top: 16px; color: #dc3545; font-weight: bold;">
-              請在下方輸入框中輸入"刪除"以確認此操作
+      {showDeleteAllModal && (
+        <div className="modal-overlay">
+          <div className="modal">
+            <h3>確認一鍵刪除</h3>
+            <p>確定要刪除當前顯示的所有課程資料嗎？</p>
+            <p style={{ color: '#dc3545', fontWeight: 'bold' }}>
+              此操作將刪除 {filteredCourses.length} 個課程資料，無法撤銷！
             </p>
-            <input
-              type="text"
-              value={deleteConfirmText}
-              onChange={(e) => setDeleteConfirmText(e.target.value)}
-              placeholder="請輸入'刪除'"
-              style={{
-                width: '100%',
-                padding: '8px 12px',
-                border: '1px solid #ddd',
-                borderRadius: '4px',
-                marginTop: '10px'
-              }}
-            />
+            <div style={{ marginTop: '20px' }}>
+              <label>請輸入"刪除"以確認操作：</label>
+              <input
+                type="text"
+                value={deleteConfirmText}
+                onChange={(e) => setDeleteConfirmText(e.target.value)}
+                placeholder="請輸入：刪除"
+                style={{ 
+                  width: '100%', 
+                  padding: '8px', 
+                  marginTop: '5px',
+                  border: '1px solid #ccc',
+                  borderRadius: '4px'
+                }}
+              />
+            </div>
+            <div className="modal-buttons" style={{ marginTop: '20px' }}>
+              <button 
+                onClick={handleCancelDeleteAll}
+                style={{ 
+                  backgroundColor: '#6c757d', 
+                  color: 'white',
+                  border: 'none',
+                  padding: '8px 16px',
+                  borderRadius: '4px',
+                  marginRight: '10px'
+                }}
+              >
+                取消
+              </button>
+              <button 
+                onClick={handleConfirmDeleteAll}
+                disabled={deleteConfirmText !== '刪除'}
+                style={{ 
+                  backgroundColor: deleteConfirmText === '刪除' ? '#dc3545' : '#6c757d', 
+                  color: 'white',
+                  border: 'none',
+                  padding: '8px 16px',
+                  borderRadius: '4px',
+                  cursor: deleteConfirmText === '刪除' ? 'pointer' : 'not-allowed'
+                }}
+              >
+                確認刪除
+              </button>
+            </div>
           </div>
-        `}
-        confirmText="確認刪除"
-        cancelText="取消"
-      />
+        </div>
+      )}
     </div>
   );
 }
@@ -2673,6 +2839,10 @@ function TeacherList() {
   const [showDeleteModal, setShowDeleteModal] = React.useState(false);
   const [editingTeacher, setEditingTeacher] = React.useState(null);
   const [showEditModal, setShowEditModal] = React.useState(false);
+  
+  // 搜索功能狀態
+  const [searchFilter, setSearchFilter] = React.useState('');
+  const [searchDisplay, setSearchDisplay] = React.useState('');
 
   React.useEffect(() => {
     fetchTeachers();
@@ -2749,6 +2919,29 @@ function TeacherList() {
     setEditingTeacher(null);
   };
 
+  // 搜索邏輯
+  const filteredTeachers = teachers.filter(teacher => {
+    if (searchDisplay === '' || searchDisplay === '全部') {
+      return true;
+    }
+    
+    // 檢查是否是從下拉選項選擇的完整顯示文本
+    const teacherDisplayText = `${teacher.teacherId} - ${teacher.name}`;
+    if (searchDisplay === teacherDisplayText) {
+      return true;
+    }
+    
+    // 如果不是完整匹配，則進行部分匹配
+    return (teacher.teacherId && teacher.teacherId.includes(searchDisplay)) ||
+           (teacher.name && teacher.name.includes(searchDisplay));
+  });
+
+  // 搜索選項過濾
+  const searchOptions = teachers.filter(teacher =>
+    (teacher.teacherId && teacher.teacherId.includes(searchFilter)) ||
+    (teacher.name && teacher.name.includes(searchFilter))
+  );
+
   const teacherFields = [
     { name: 'name', label: '姓名', type: 'text', required: true },
     { name: 'phone', label: '電話號碼', type: 'text' }
@@ -2766,31 +2959,86 @@ function TeacherList() {
   return (
     <div className="content">
       <h1>教師列表</h1>
-      <table className="course-table">
-        <thead>
-          <tr>
-            <th>教師ID</th>
-            <th>姓名</th>
-            <th>電話號碼</th>
-            <th>操作</th>
-          </tr>
-        </thead>
-        <tbody>
-          {teachers.map(teacher => (
-            <tr key={teacher._id}>
-              <td>{teacher.teacherId}</td>
-              <td>{teacher.name}</td>
-              <td>{teacher.phone || '-'}</td>
-              <td>
-                <div className="action-buttons">
-                  <button className="action-button edit" onClick={() => handleEdit(teacher)}>編輯</button>
-                  <button className="action-button delete" onClick={() => handleDelete(teacher._id)}>刪除</button>
-                </div>
-              </td>
+      
+      <div className="filter-section">
+        <div className="filter-container">
+          <div className="filter-group">
+            <label>搜索教師</label>
+            <input
+              type="text"
+              className="filter-input"
+              value={searchDisplay}
+              onChange={e => { setSearchDisplay(e.target.value); setSearchFilter(e.target.value); }}
+              placeholder="請輸入教師資料"
+              autoComplete="off"
+            />
+            {searchFilter && (
+              <ul className="dropdown">
+                <li key="all" onClick={() => { setSearchDisplay('全部'); setSearchFilter(''); }}>
+                  全部
+                </li>
+                {searchOptions.map(teacher => (
+                  <li key={teacher.teacherId} onClick={() => { 
+                    setSearchDisplay(`${teacher.teacherId} - ${teacher.name}`); 
+                    setSearchFilter(''); 
+                  }}>
+                    {teacher.teacherId} - {teacher.name}
+                  </li>
+                ))}
+                {searchOptions.length === 0 && <li>無符合選項</li>}
+              </ul>
+            )}
+          </div>
+          
+          <div className="filter-buttons">
+            <button 
+              className="filter-button clear"
+              onClick={() => {
+                setSearchDisplay('');
+                setSearchFilter('');
+              }}
+            >
+              清除搜索
+            </button>
+          </div>
+        </div>
+      </div>
+      
+      {/* 顯示當前搜索條件 */}
+      {searchDisplay && (
+        <div style={{ marginBottom: '20px', padding: '10px', background: '#e9ecef', borderRadius: '4px' }}>
+          <strong>當前搜索：</strong>
+          {searchDisplay}
+        </div>
+      )}
+      
+      <div className="course-list-scroll">
+        <table className="course-table">
+          <thead>
+            <tr>
+              <th>教師ID</th>
+              <th>姓名</th>
+              <th>電話號碼</th>
+              <th>操作</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {filteredTeachers.map(teacher => (
+              <tr key={teacher._id}>
+                <td>{teacher.teacherId}</td>
+                <td>{teacher.name}</td>
+                <td>{teacher.phone || '-'}</td>
+                <td>
+                  <div className="action-buttons">
+                    <button className="action-button edit" onClick={() => handleEdit(teacher)}>編輯</button>
+                    <button className="action-button delete" onClick={() => handleDelete(teacher._id)}>刪除</button>
+                  </div>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
 
       <EditModal
         isOpen={showEditModal}

@@ -1063,3 +1063,316 @@ button[type="submit"]:hover {
     width: 100%;
   }
 }
+
+/* Modal 樣式 */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(8px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 10000;
+  animation: fadeIn 0.3s ease-out;
+}
+
+.modal {
+  background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+  border-radius: 16px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  max-width: 500px;
+  width: 90%;
+  max-height: 80vh;
+  overflow: hidden;
+  animation: slideIn 0.3s ease-out;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  padding: 24px;
+}
+
+.modal h3 {
+  margin: 0 0 16px 0;
+  font-size: 20px;
+  font-weight: 600;
+  color: #333;
+  text-align: center;
+}
+
+.modal p {
+  margin: 0 0 12px 0;
+  font-size: 16px;
+  line-height: 1.6;
+  color: #333;
+}
+
+.modal-buttons {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+  margin-top: 20px;
+}
+
+.modal-buttons button {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 4px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  min-width: 80px;
+}
+
+.modal-buttons button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+/* 動畫效果 */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-50px) scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* Modal 響應式設計 */
+@media (max-width: 768px) {
+  .modal {
+    width: 95%;
+    margin: 20px;
+    padding: 20px;
+  }
+  
+  .modal h3 {
+    font-size: 18px;
+  }
+  
+  .modal-buttons {
+    flex-direction: column;
+  }
+  
+  .modal-buttons button {
+    width: 100%;
+  }
+}
+
+/* 課程列表滾動區域樣式 */
+.course-list-scroll {
+  max-height: 600px !important;
+  height: 600px !important;
+  overflow-y: auto !important;
+  border-radius: 12px !important;
+  border: 1px solid #e2e8f0 !important;
+  position: relative !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  background: #ffffff !important;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05) !important;
+  transition: filter 0.3s ease !important;
+}
+
+/* 當彈窗出現時，表格容器會被虛化 */
+.modal-overlay ~ .course-list-scroll,
+.confirm-delete-modal-overlay ~ .course-list-scroll,
+.edit-modal-overlay ~ .course-list-scroll {
+  filter: blur(2px) !important;
+  transition: filter 0.3s ease !important;
+}
+
+.course-list-scroll::-webkit-scrollbar {
+  width: 10px !important;
+}
+
+.course-list-scroll::-webkit-scrollbar-track {
+  background: #f1f5f9 !important;
+  border-radius: 6px !important;
+}
+
+.course-list-scroll::-webkit-scrollbar-thumb {
+  background: #cbd5e1 !important;
+  border-radius: 6px !important;
+  border: 2px solid #f1f5f9 !important;
+}
+
+.course-list-scroll::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8 !important;
+}
+
+/* 固定表頭樣式 - 強制性解決方案 */
+.course-list-scroll .course-table {
+  width: 100% !important;
+  border-collapse: separate !important;
+  border-spacing: 0 !important;
+  margin: 0 !important;
+  background: #ffffff !important;
+  overflow: visible !important;
+}
+
+.course-list-scroll .course-table thead {
+  position: -webkit-sticky !important;
+  position: sticky !important;
+  top: 0 !important;
+  z-index: 9999 !important;
+  background: #0f766e !important;
+  border: none !important;
+}
+
+.course-list-scroll .course-table thead tr {
+  background: #0f766e !important;
+  border: none !important;
+}
+
+.course-list-scroll .course-table thead th {
+  background: #0f766e !important;
+  color: white !important;
+  padding: 16px 12px !important;
+  font-weight: 700 !important;
+  font-size: 14px !important;
+  text-align: left !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.5px !important;
+  border: none !important;
+  border-right: 1px solid rgba(255, 255, 255, 0.1) !important;
+  position: -webkit-sticky !important;
+  position: sticky !important;
+  top: 0 !important;
+  z-index: 9999 !important;
+  box-sizing: border-box !important;
+}
+
+.course-list-scroll .course-table thead th:last-child {
+  border-right: none !important;
+}
+
+.course-list-scroll .course-table tbody {
+  background: #ffffff !important;
+  border: none !important;
+}
+
+.course-list-scroll .course-table tbody tr {
+  border-bottom: 1px solid #f1f5f9 !important;
+  background: #ffffff !important;
+  border: none !important;
+}
+
+.course-list-scroll .course-table tbody tr:hover {
+  background-color: #f8fafc !important;
+}
+
+.course-list-scroll .course-table tbody td {
+  padding: 12px !important;
+  font-size: 14px !important;
+  color: #374151 !important;
+  border: none !important;
+  border-right: 1px solid #f1f5f9 !important;
+  background: inherit !important;
+  box-sizing: border-box !important;
+}
+
+.course-list-scroll .course-table tbody td:last-child {
+  border-right: none !important;
+}
+
+/* 操作按鈕樣式 */
+.course-list-scroll .course-table .action-buttons {
+  display: flex !important;
+  gap: 8px !important;
+  justify-content: flex-start !important;
+  align-items: center !important;
+}
+
+.course-list-scroll .course-table .action-button {
+  padding: 6px 12px !important;
+  font-size: 12px !important;
+  border-radius: 6px !important;
+  border: none !important;
+  cursor: pointer !important;
+  font-weight: 600 !important;
+  transition: all 0.2s ease !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.5px !important;
+}
+
+.course-list-scroll .course-table .action-button.edit {
+  background: #3b82f6 !important;
+  color: white !important;
+}
+
+.course-list-scroll .course-table .action-button.edit:hover {
+  background: #2563eb !important;
+  transform: translateY(-1px) !important;
+}
+
+.course-list-scroll .course-table .action-button.delete {
+  background: #ef4444 !important;
+  color: white !important;
+}
+
+.course-list-scroll .course-table .action-button.delete:hover {
+  background: #dc2626 !important;
+  transform: translateY(-1px) !important;
+}
+
+/* 響應式設計 */
+@media (max-width: 768px) {
+  .course-list-scroll {
+    max-height: 500px !important;
+    height: 500px !important;
+  }
+  
+  .course-list-scroll .course-table thead th {
+    padding: 12px 8px !important;
+    font-size: 12px !important;
+  }
+  
+  .course-list-scroll .course-table tbody td {
+    padding: 8px !important;
+    font-size: 12px !important;
+  }
+  
+  .course-list-scroll .course-table .action-buttons {
+    flex-direction: column !important;
+    gap: 4px !important;
+    justify-content: flex-start !important;
+    align-items: flex-start !important;
+  }
+  
+  .course-list-scroll .course-table .action-button {
+    padding: 4px 8px !important;
+    font-size: 10px !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .course-list-scroll {
+    max-height: 400px !important;
+    height: 400px !important;
+  }
+  
+  .course-list-scroll .course-table thead th {
+    padding: 8px 4px !important;
+    font-size: 11px !important;
+  }
+  
+  .course-list-scroll .course-table tbody td {
+    padding: 6px 4px !important;
+    font-size: 11px !important;
+  }
+}
