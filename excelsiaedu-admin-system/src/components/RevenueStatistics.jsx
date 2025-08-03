@@ -921,9 +921,9 @@ const RevenueStatistics = () => {
 
             <div className="chart-container">
               <h3>課程營業額比例</h3>
-              <div className="chart-wrapper">
+              <div className="chart-wrapper" style={{ height: '400px', overflowX: 'auto' }}>
                 {overviewData.courseRevenue.length > 0 ? (
-                  <Pie data={generatePieChartData(overviewData.courseRevenue, '課程營業額')} options={pieChartOptions} />
+                  <Bar data={generateBarChartData(overviewData.courseRevenue, '課程營業額')} options={barChartOptions} />
                 ) : (
                   <div className="no-data">無數據</div>
                 )}
