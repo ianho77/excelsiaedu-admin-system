@@ -66,6 +66,9 @@ const MonthlyStatement = ({ classes, students, courses, teachers, selectedMonth,
   // 生成單個學生的月結單PDF
   const generateStudentPDF = (studentId, studentClasses) => {
     try {
+      console.warn(`=== 開始生成學生 ${studentId} 的月結單 ===`);
+      console.warn(`課堂數量: ${studentClasses.length}`);
+      
       const student = getStudentInfo(studentId);
       if (!student) {
         console.error('Student not found:', studentId);
@@ -114,10 +117,15 @@ const MonthlyStatement = ({ classes, students, courses, teachers, selectedMonth,
       const teacherA = a.teacherId ? getTeacherInfo(a.teacherId) : (courseA ? getTeacherInfo(courseA.teacherId) : null);
       const teacherB = b.teacherId ? getTeacherInfo(b.teacherId) : (courseB ? getTeacherInfo(courseB.teacherId) : null);
       
+      // 調試：打印教師信息
+      console.warn(`=== 排序調試 ===`);
+      console.warn(`比較: ${teacherA ? teacherA.name : 'N/A'} (ID: ${teacherA ? teacherA.teacherId : 'N/A'}) vs ${teacherB ? teacherB.name : 'N/A'} (ID: ${teacherB ? teacherB.teacherId : 'N/A'})`);
+      
       // 第一優先度：教師ID（小到大）- 數值比較
       if (teacherA && teacherB) {
         const teacherIdA = parseInt(teacherA.teacherId) || 0;
         const teacherIdB = parseInt(teacherB.teacherId) || 0;
+        console.warn(`教師ID數值比較: ${teacherIdA} vs ${teacherIdB}`);
         if (teacherIdA !== teacherIdB) return teacherIdA - teacherIdB;
       }
       
@@ -129,6 +137,7 @@ const MonthlyStatement = ({ classes, students, courses, teachers, selectedMonth,
       if (courseA && courseB) {
         const courseIdA = parseInt(courseA.courseId) || 0;
         const courseIdB = parseInt(courseB.courseId) || 0;
+        console.warn(`課程ID數值比較: ${courseIdA} vs ${courseIdB}`);
         if (courseIdA !== courseIdB) return courseIdA - courseIdB;
       }
       
