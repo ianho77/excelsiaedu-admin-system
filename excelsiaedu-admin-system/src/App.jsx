@@ -149,6 +149,13 @@ function AddClass() {
   const [csvMessage, setCsvMessage] = React.useState('');
   const [showConfirmModal, setShowConfirmModal] = React.useState(false);
   const [confirmData, setConfirmData] = React.useState(null);
+  const [formErrors, setFormErrors] = React.useState({
+    courseId: '',
+    date: '',
+    price: '',
+    studentCount: '',
+    studentNames: []
+  });
 
   React.useEffect(() => {
     fetchAllData();
@@ -270,9 +277,42 @@ function AddClass() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     
+    // 重置錯誤狀態
+    const newErrors = {
+      courseId: '',
+      date: '',
+      price: '',
+      studentCount: '',
+      studentNames: []
+    };
+    
     // 驗證必填欄位
-    if (!form.courseId || !form.date || !form.price || form.studentNames.length === 0) {
-      alert('請填寫所有必填欄位');
+    if (!form.courseId) {
+      newErrors.courseId = '請選擇課程';
+    }
+    if (!form.date) {
+      newErrors.date = '請選擇日期';
+    }
+    if (!form.price) {
+      newErrors.price = '請輸入價格';
+    }
+    if (!form.studentCount) {
+      newErrors.studentCount = '請輸入學生人數';
+    }
+    
+    // 驗證學生名稱是否都已填寫
+    const studentNameErrors = [];
+    form.studentNames.forEach((name, index) => {
+      if (!name.trim()) {
+        studentNameErrors[index] = '請填寫學生名稱';
+      }
+    });
+    newErrors.studentNames = studentNameErrors;
+    
+    setFormErrors(newErrors);
+    
+    // 如果有錯誤，不繼續提交
+    if (newErrors.courseId || newErrors.date || newErrors.price || newErrors.studentCount || studentNameErrors.some(error => error)) {
       return;
     }
     
@@ -495,6 +535,7 @@ function AddClass() {
               autoComplete="off"
               required
             />
+            {formErrors.courseId && <div style={{color: 'red', fontSize: '0.9em', marginTop: 4}}>{formErrors.courseId}</div>}
             {courseFilter && (
               <ul className="dropdown">
                 {filteredCourses.map(c => {
@@ -512,14 +553,17 @@ function AddClass() {
           <div className="form-group">
             <label>日期</label>
             <input type="date" name="date" value={form.date} onChange={handleChange} required />
+            {formErrors.date && <div style={{color: 'red', fontSize: '0.9em', marginTop: 4}}>{formErrors.date}</div>}
           </div>
           <div className="form-group">
             <label>價格</label>
             <input type="number" name="price" value={form.price} onChange={handleChange} step="1" placeholder="請輸入價格" required />
+            {formErrors.price && <div style={{color: 'red', fontSize: '0.9em', marginTop: 4}}>{formErrors.price}</div>}
           </div>
           <div className="form-group">
             <label>學生人數</label>
             <input type="text" name="studentCount" value={form.studentCount} onChange={handleChange} pattern="^[1-9][0-9]*$" placeholder="請輸入學生人數" required />
+            {formErrors.studentCount && <div style={{color: 'red', fontSize: '0.9em', marginTop: 4}}>{formErrors.studentCount}</div>}
             {studentCountError && <div style={{color: 'red', fontSize: '0.95em', marginTop: 4}}>{studentCountError}</div>}
           </div>
           <button type="submit" disabled={loading}>{loading ? '新增中...' : '新增課堂'}</button>
@@ -539,6 +583,7 @@ function AddClass() {
                     required
                     style={{minWidth: 120}}
                   />
+                  {formErrors.studentNames[idx] && <div style={{color: 'red', fontSize: '0.9em', marginTop: 4}}>{formErrors.studentNames[idx]}</div>}
                   {studentFilters[idx] && (
                     <ul className="dropdown">
                       {students.filter(s =>
