@@ -106,27 +106,27 @@ const MonthlyStatement = ({ classes, students, courses, teachers, selectedMonth,
       doc.text('Student Name:', margin, 75);
       doc.text(studentDisplayName, margin + 30, 75);
 
-          // 對課堂資料進行排序：教師ID -> 課程ID -> 日期
+          // 對課堂資料進行排序：教師ID（小到大）-> 課程ID（小到大）-> 日期（遠到近）
     const sortedClasses = studentClasses.sort((a, b) => {
       const courseA = getCourseInfo(a.courseId);
       const courseB = getCourseInfo(b.courseId);
       const teacherA = courseA ? getTeacherInfo(courseA.teacherId) : null;
       const teacherB = courseB ? getTeacherInfo(courseB.teacherId) : null;
       
-      // 首先按教師ID排序
+      // 第一優先度：教師ID（小到大）
       if (teacherA && teacherB) {
         const teacherIdCompare = teacherA.teacherId.localeCompare(teacherB.teacherId);
         if (teacherIdCompare !== 0) return teacherIdCompare;
       }
       
-      // 然後按課程ID排序
+      // 第二優先度：課程ID（小到大）
       if (courseA && courseB) {
         const courseIdCompare = courseA.courseId.localeCompare(courseB.courseId);
         if (courseIdCompare !== 0) return courseIdCompare;
       }
       
-      // 最後按日期排序（從早到晚）
-      return new Date(a.date) - new Date(b.date);
+      // 第三優先度：日期（遠到近）
+      return new Date(b.date) - new Date(a.date);
     });
 
     // 課程表格
