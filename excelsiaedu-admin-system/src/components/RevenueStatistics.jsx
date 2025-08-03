@@ -565,9 +565,12 @@ const RevenueStatistics = () => {
         if (!courseRevenue[courseId]) {
           const grade = course.grade || '未知年級';
           const subject = course.subject || '未知科目';
+          const teacher = teachers.find(t => t.teacherId === course.teacherId);
+          const teacherName = teacher ? teacher.name : '未知教師';
           const courseName = `${courseId}-${grade}${subject}`;
           courseRevenue[courseId] = {
             name: courseName,
+            fullName: `${courseName}（${teacherName}）`,
             amount: 0
           };
         }
@@ -578,6 +581,7 @@ const RevenueStatistics = () => {
         if (!courseRevenue[fallbackId]) {
           courseRevenue[fallbackId] = {
             name: `課程ID: ${fallbackId}`,
+            fullName: `課程ID: ${fallbackId}（未知教師）`,
             amount: 0
           };
         }
@@ -710,7 +714,10 @@ const RevenueStatistics = () => {
       labels: validData.map(item => item.name || '未知'),
       datasets: [{
         label: '營業額',
-        data: validData.map(item => item.amount),
+        data: validData.map(item => ({
+          amount: item.amount,
+          fullName: item.fullName || item.name
+        })),
         backgroundColor: colors.slice(0, validData.length),
         borderColor: colors.slice(0, validData.length).map(color => color + '80'),
         borderWidth: 1
@@ -754,10 +761,19 @@ const RevenueStatistics = () => {
       },
       tooltip: {
         callbacks: {
+          title: function(context) {
+            // 顯示完整信息（課程ID-課程名字（教師名））
+            const dataIndex = context[0].dataIndex;
+            const dataset = context[0].dataset;
+            const data = dataset.data;
+            if (data && data[dataIndex] && data[dataIndex].fullName) {
+              return data[dataIndex].fullName;
+            }
+            return context[0].label || '';
+          },
           label: function(context) {
-            const label = context.label || '';
             const value = context.parsed.y;
-            return `${label}: $${value.toLocaleString()}`;
+            return `營業額: $${value.toLocaleString()}`;
           }
         }
       }
