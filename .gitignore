@@ -30,4 +30,8 @@ Thumbs.db
 
 # Temporary files
 *.tmp
-*.temp 
+*.temp
+
+# Strange files
+Gitbingit.exe*
+tatus* 
