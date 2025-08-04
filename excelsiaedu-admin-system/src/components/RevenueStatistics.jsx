@@ -399,11 +399,12 @@ const RevenueStatistics = () => {
 
     // 按教師ID排序（第一優先度），然後按學生ID排序（第二優先度）
     const sortedTeacherData = Object.values(groupedData).sort((a, b) => {
-      // 第一優先度：教師ID（升序）
-      const teacherIdCompare = a.teacherId.localeCompare(b.teacherId);
+      // 第一優先度：教師ID（升序）- 數值比較
+      const teacherIdA = parseInt(a.teacherId) || 0;
+      const teacherIdB = parseInt(b.teacherId) || 0;
       
-      if (teacherIdCompare !== 0) {
-        return teacherIdCompare;
+      if (teacherIdA !== teacherIdB) {
+        return teacherIdA - teacherIdB;
       }
       
       // 第二優先度：學生ID（降序）

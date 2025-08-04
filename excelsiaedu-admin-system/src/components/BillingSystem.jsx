@@ -427,27 +427,37 @@ const BillingSystem = () => {
     const student = students.find(s => s.studentId === studentId);
     if (!student) return;
 
-    // 對課堂資料進行排序：教師ID -> 課程ID -> 日期
+    // 對課堂資料進行排序：教師ID（小到大）-> 課程ID（小到大）-> 日期（遠到近）
     const sortedClasses = studentClasses.sort((a, b) => {
       const courseA = courses.find(c => c.courseId === a.courseId);
       const courseB = courses.find(c => c.courseId === b.courseId);
       const teacherA = courseA ? teachers.find(t => t.teacherId === courseA.teacherId) : null;
       const teacherB = courseB ? teachers.find(t => t.teacherId === courseB.teacherId) : null;
       
-      // 首先按教師ID排序
+      // 第一優先度：教師ID（小到大）- 數值比較
       if (teacherA && teacherB) {
-        const teacherIdCompare = teacherA.teacherId.localeCompare(teacherB.teacherId);
-        if (teacherIdCompare !== 0) return teacherIdCompare;
+        const teacherIdA = parseInt(teacherA.teacherId) || 0;
+        const teacherIdB = parseInt(teacherB.teacherId) || 0;
+        if (teacherIdA !== teacherIdB) return teacherIdA - teacherIdB;
       }
       
-      // 然後按課程ID排序
+      // 如果只有一個教師有ID，優先顯示有ID的
+      if (teacherA && !teacherB) return -1;
+      if (!teacherA && teacherB) return 1;
+      
+      // 第二優先度：課程ID（小到大）- 數值比較
       if (courseA && courseB) {
-        const courseIdCompare = courseA.courseId.localeCompare(courseB.courseId);
-        if (courseIdCompare !== 0) return courseIdCompare;
+        const courseIdA = parseInt(courseA.courseId) || 0;
+        const courseIdB = parseInt(courseB.courseId) || 0;
+        if (courseIdA !== courseIdB) return courseIdA - courseIdB;
       }
       
-      // 最後按日期排序（從早到晚）
-      return new Date(a.date) - new Date(b.date);
+      // 如果只有一個課程有ID，優先顯示有ID的
+      if (courseA && !courseB) return -1;
+      if (!courseA && courseB) return 1;
+      
+      // 第三優先度：日期（遠到近）
+      return new Date(b.date) - new Date(a.date);
     });
 
     let totalAmount = 0;
@@ -548,27 +558,37 @@ const BillingSystem = () => {
     const student = students.find(s => s.studentId === studentId);
     if (!student) return;
 
-    // 對課堂資料進行排序：教師ID -> 課程ID -> 日期
+    // 對課堂資料進行排序：教師ID（小到大）-> 課程ID（小到大）-> 日期（遠到近）
     const sortedClasses = studentClasses.sort((a, b) => {
       const courseA = courses.find(c => c.courseId === a.courseId);
       const courseB = courses.find(c => c.courseId === b.courseId);
       const teacherA = courseA ? teachers.find(t => t.teacherId === courseA.teacherId) : null;
       const teacherB = courseB ? teachers.find(t => t.teacherId === courseB.teacherId) : null;
       
-      // 首先按教師ID排序
+      // 第一優先度：教師ID（小到大）- 數值比較
       if (teacherA && teacherB) {
-        const teacherIdCompare = teacherA.teacherId.localeCompare(teacherB.teacherId);
-        if (teacherIdCompare !== 0) return teacherIdCompare;
+        const teacherIdA = parseInt(teacherA.teacherId) || 0;
+        const teacherIdB = parseInt(teacherB.teacherId) || 0;
+        if (teacherIdA !== teacherIdB) return teacherIdA - teacherIdB;
       }
       
-      // 然後按課程ID排序
+      // 如果只有一個教師有ID，優先顯示有ID的
+      if (teacherA && !teacherB) return -1;
+      if (!teacherA && teacherB) return 1;
+      
+      // 第二優先度：課程ID（小到大）- 數值比較
       if (courseA && courseB) {
-        const courseIdCompare = courseA.courseId.localeCompare(courseB.courseId);
-        if (courseIdCompare !== 0) return courseIdCompare;
+        const courseIdA = parseInt(courseA.courseId) || 0;
+        const courseIdB = parseInt(courseB.courseId) || 0;
+        if (courseIdA !== courseIdB) return courseIdA - courseIdB;
       }
       
-      // 最後按日期排序（從早到晚）
-      return new Date(a.date) - new Date(b.date);
+      // 如果只有一個課程有ID，優先顯示有ID的
+      if (courseA && !courseB) return -1;
+      if (!courseA && courseB) return 1;
+      
+      // 第三優先度：日期（遠到近）
+      return new Date(b.date) - new Date(a.date);
     });
 
     let totalAmount = 0;
