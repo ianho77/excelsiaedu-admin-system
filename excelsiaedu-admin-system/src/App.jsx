@@ -1024,7 +1024,8 @@ function AddStudent() {
     nickname: '',
     phone: '',
     wechat: '',
-    school: ''
+    school: '',
+    notes: ''
   });
   const [students, setStudents] = React.useState([]);
   const [loading, setLoading] = React.useState(false);
@@ -1072,7 +1073,8 @@ function AddStudent() {
       nickname: form.nickname || '無',
       phone: form.phone || '無',
       wechat: form.wechat || '無',
-      school: form.school || '無'
+      school: form.school || '無',
+      notes: form.notes || '無'
     });
     setShowConfirmModal(true);
   };
@@ -1090,7 +1092,7 @@ function AddStudent() {
       });
       const data = await res.json();
       setStudents(prev => [...prev, data]);
-      setForm({ nameZh: '', nameEn: '', grade: '', nickname: '', phone: '', wechat: '', school: '' });
+      setForm({ nameZh: '', nameEn: '', grade: '', nickname: '', phone: '', wechat: '', school: '', notes: '' });
     } catch (error) {
       console.error('新增學生時發生錯誤:', error);
       alert('❌ 新增學生時發生錯誤，請重試');
@@ -1140,7 +1142,8 @@ function AddStudent() {
                   nickname: student.nickname || '',
                   phone: student.phone || '',
                   wechat: student.wechat || '',
-                  school: student.school || ''
+                  school: student.school || '',
+                  notes: student.notes || ''
                 })
               });
 
@@ -1309,6 +1312,25 @@ function AddStudent() {
               placeholder="請輸入學校名稱"
             />
           </div>
+          <div className="form-group">
+            <label>備註</label>
+            <textarea
+              name="notes"
+              value={form.notes}
+              onChange={handleChange}
+              placeholder="請輸入備註"
+              rows="3"
+              style={{
+                width: '100%',
+                padding: '8px 12px',
+                border: '1px solid #ddd',
+                borderRadius: '4px',
+                fontSize: '14px',
+                fontFamily: 'inherit',
+                resize: 'vertical'
+              }}
+            />
+          </div>
           <button type="submit" disabled={loading}>{loading ? '新增中...' : '新增學生'}</button>
         </form>
         <div className="class-form-right">
@@ -1325,6 +1347,7 @@ function AddStudent() {
                   <th>微信號碼</th>
                   <th>年級</th>
                   <th>學校</th>
+                  <th>備註</th>
                 </tr>
               </thead>
               <tbody>
@@ -1338,6 +1361,7 @@ function AddStudent() {
                     <td>{student.wechat}</td>
                     <td>{student.grade}</td>
                     <td>{student.school}</td>
+                    <td>{student.notes}</td>
                   </tr>
                 ))}
               </tbody>
@@ -1359,6 +1383,7 @@ function AddStudent() {
             <p><strong>電話號碼：</strong>${confirmData.phone}</p>
             <p><strong>微信號碼：</strong>${confirmData.wechat}</p>
             <p><strong>學校：</strong>${confirmData.school}</p>
+            <p><strong>備註：</strong>${confirmData.notes}</p>
             <p style="margin-top: 16px; color: #666; font-size: 14px;">
               請確認以上資料是否正確，確認後將新增此學生。
             </p>
@@ -2266,7 +2291,8 @@ function StudentList() {
     return (student.studentId && student.studentId.includes(searchDisplay)) ||
            (student.nameZh && student.nameZh.includes(searchDisplay)) ||
            (student.nameEn && student.nameEn.toLowerCase().includes(searchDisplay.toLowerCase())) ||
-           (student.nickname && student.nickname.includes(searchDisplay));
+           (student.nickname && student.nickname.includes(searchDisplay)) ||
+           (student.notes && student.notes.includes(searchDisplay));
   });
 
   // 搜索選項過濾
@@ -2274,7 +2300,8 @@ function StudentList() {
     (student.studentId && student.studentId.includes(searchFilter)) ||
     (student.nameZh && student.nameZh.includes(searchFilter)) ||
     (student.nameEn && student.nameEn.toLowerCase().includes(searchFilter.toLowerCase())) ||
-    (student.nickname && student.nickname.includes(searchFilter))
+    (student.nickname && student.nickname.includes(searchFilter)) ||
+    (student.notes && student.notes.includes(searchFilter))
   );
 
   const studentFields = [
@@ -2297,7 +2324,8 @@ function StudentList() {
     },
     { name: 'phone', label: '電話號碼', type: 'text' },
     { name: 'wechat', label: '微信號碼', type: 'text' },
-    { name: 'school', label: '學校', type: 'text' }
+    { name: 'school', label: '學校', type: 'text' },
+    { name: 'notes', label: '備註', type: 'textarea' }
   ];
 
   if (isLoading) {
@@ -2377,6 +2405,7 @@ function StudentList() {
               <th>電話號碼</th>
               <th>微信號碼</th>
               <th>學校</th>
+              <th>備註</th>
               <th>操作</th>
             </tr>
           </thead>
@@ -2391,6 +2420,7 @@ function StudentList() {
                 <td>{student.phone || '-'}</td>
                 <td>{student.wechat || '-'}</td>
                 <td>{student.school || '-'}</td>
+                <td>{student.notes || '-'}</td>
                 <td>
                   <div className="action-buttons">
                     <button className="action-button edit" onClick={() => handleEdit(student)}>編輯</button>

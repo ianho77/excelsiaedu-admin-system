@@ -40,6 +40,7 @@ const StudentSchema = new mongoose.Schema({
   phone: String,    // 新增電話號碼
   wechat: String,   // 新增微信號碼
   school: String,   // 新增學校
+  notes: String,    // 新增備註
 });
 
 // 課程模型
