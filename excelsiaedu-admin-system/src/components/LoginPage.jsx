@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import './LoginPage.css';
+import config from '../config';
 
 const LoginPage = ({ onLogin }) => {
   const [loginType, setLoginType] = useState('teacher'); // 'teacher' or 'admin'
@@ -19,7 +20,7 @@ const LoginPage = ({ onLogin }) => {
 
     try {
       // 使用API進行驗證
-      const response = await fetch('http://localhost:4000/api/auth/login', {
+      const response = await fetch(`${config.API_URL}/api/auth/login`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

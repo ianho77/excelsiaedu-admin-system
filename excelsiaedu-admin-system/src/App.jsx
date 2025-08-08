@@ -164,10 +164,10 @@ function AddClass() {
   const fetchAllData = async () => {
     try {
       const [studentsRes, coursesRes, teachersRes, classesRes] = await Promise.all([
-        fetch('http://localhost:4000/api/students'),
-        fetch('http://localhost:4000/api/courses'),
-        fetch('http://localhost:4000/api/teachers'),
-        fetch('http://localhost:4000/api/classes')
+        fetch(`${config.API_URL}/api/students`),
+        fetch(`${config.API_URL}/api/courses`),
+        fetch(`${config.API_URL}/api/teachers`),
+        fetch(`${config.API_URL}/api/classes`)
       ]);
 
       const studentsData = await studentsRes.json();
@@ -671,7 +671,7 @@ function AddCourse() {
 
   const fetchTeachers = async () => {
     try {
-      const response = await fetch('http://localhost:4000/api/teachers');
+      const response = await fetch(`${config.API_URL}/api/teachers`);
       const data = await response.json();
       setTeachers(data);
     } catch (error) {
@@ -681,7 +681,7 @@ function AddCourse() {
 
   const fetchCourses = async () => {
     try {
-      const response = await fetch('http://localhost:4000/api/courses');
+      const response = await fetch(`${config.API_URL}/api/courses`);
       const data = await response.json();
       setCourses(data);
     } catch (error) {
@@ -1041,7 +1041,7 @@ function AddStudent() {
   const fetchStudents = async () => {
     setLoading(true);
     try {
-      const response = await fetch('http://localhost:4000/api/students');
+      const response = await fetch(`${config.API_URL}/api/students`);
       const data = await response.json();
       setStudents(data);
     } catch (error) {
@@ -1416,7 +1416,7 @@ function AddTeacher() {
 
   const fetchTeachers = async () => {
     try {
-      const response = await fetch('http://localhost:4000/api/teachers');
+      const response = await fetch(`${config.API_URL}/api/teachers`);
       const data = await response.json();
       setTeachers(data);
     } catch (error) {
@@ -1677,10 +1677,10 @@ function ClassList() {
     setIsLoading(true);
     try {
       const [classesRes, studentsRes, coursesRes, teachersRes] = await Promise.all([
-        fetch('http://localhost:4000/api/classes'),
-        fetch('http://localhost:4000/api/students'),
-        fetch('http://localhost:4000/api/courses'),
-        fetch('http://localhost:4000/api/teachers')
+        fetch(`${config.API_URL}/api/classes`),
+        fetch(`${config.API_URL}/api/students`),
+        fetch(`${config.API_URL}/api/courses`),
+        fetch(`${config.API_URL}/api/teachers`)
       ]);
 
       const classesData = await classesRes.json();
@@ -1706,7 +1706,7 @@ function ClassList() {
 
   const handleConfirmDelete = async () => {
     try {
-      const response = await fetch(`http://localhost:4000/api/classes/${deleteTarget}`, {
+      const response = await fetch(`${config.API_URL}/api/classes/${deleteTarget}`, {
         method: 'DELETE'
       });
       if (response.ok) {
@@ -1743,7 +1743,7 @@ function ClassList() {
         date: data.date ? data.date.replace(/-/g, '/') : data.date
       };
       
-      const response = await fetch(`http://localhost:4000/api/classes/${editingClass._id}`, {
+      const response = await fetch(`${config.API_URL}/api/classes/${editingClass._id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json'
@@ -1790,7 +1790,7 @@ function ClassList() {
 
       // 並行刪除所有課堂
       const deletePromises = classIdsToDelete.map(classId =>
-        fetch(`http://localhost:4000/api/classes/${classId}`, {
+        fetch(`${config.API_URL}/api/classes/${classId}`, {
           method: 'DELETE'
         })
       );
@@ -2207,7 +2207,7 @@ function StudentList() {
   const fetchStudents = async () => {
     setIsLoading(true);
     try {
-      const response = await fetch('http://localhost:4000/api/students');
+      const response = await fetch(`${config.API_URL}/api/students`);
       const data = await response.json();
       setStudents(data);
     } catch (error) {
@@ -2224,7 +2224,7 @@ function StudentList() {
 
   const handleConfirmDelete = async () => {
     try {
-      const response = await fetch(`http://localhost:4000/api/students/${deleteTarget}`, {
+      const response = await fetch(`${config.API_URL}/api/students/${deleteTarget}`, {
         method: 'DELETE'
       });
       if (response.ok) {
@@ -2251,7 +2251,7 @@ function StudentList() {
 
   const handleSave = async (data) => {
     try {
-      const response = await fetch(`http://localhost:4000/api/students/${editingStudent._id}`, {
+      const response = await fetch(`${config.API_URL}/api/students/${editingStudent._id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json'
@@ -2483,8 +2483,8 @@ function CourseList() {
     setIsLoading(true);
     try {
       const [coursesRes, teachersRes] = await Promise.all([
-        fetch('http://localhost:4000/api/courses'),
-        fetch('http://localhost:4000/api/teachers')
+        fetch(`${config.API_URL}/api/courses`),
+        fetch(`${config.API_URL}/api/teachers`)
       ]);
 
       const coursesData = await coursesRes.json();
@@ -2506,7 +2506,7 @@ function CourseList() {
 
   const handleConfirmDelete = async () => {
     try {
-      const response = await fetch(`http://localhost:4000/api/courses/${deleteTarget}`, {
+      const response = await fetch(`${config.API_URL}/api/courses/${deleteTarget}`, {
         method: 'DELETE'
       });
       if (response.ok) {
@@ -2533,7 +2533,7 @@ function CourseList() {
 
   const handleSave = async (data) => {
     try {
-      const response = await fetch(`http://localhost:4000/api/courses/${editingCourse._id}`, {
+      const response = await fetch(`${config.API_URL}/api/courses/${editingCourse._id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json'
@@ -2610,7 +2610,7 @@ function CourseList() {
 
       // 並行刪除所有課程
       const deletePromises = courseIdsToDelete.map(courseId =>
-        fetch(`http://localhost:4000/api/courses/${courseId}`, {
+        fetch(`${config.API_URL}/api/courses/${courseId}`, {
           method: 'DELETE'
         })
       );
@@ -2917,7 +2917,7 @@ function TeacherList() {
   const fetchTeachers = async () => {
     setIsLoading(true);
     try {
-      const response = await fetch('http://localhost:4000/api/teachers');
+      const response = await fetch(`${config.API_URL}/api/teachers`);
       const data = await response.json();
       setTeachers(data);
     } catch (error) {

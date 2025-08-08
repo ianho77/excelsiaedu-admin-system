@@ -297,69 +297,6 @@ const BillingSystem = () => {
     setShowStudentDropdown(false);
   };
 
-  const calculateBillingData = async () => {
-    const filteredClasses = classes.filter(cls => {
-      const classDate = new Date(cls.date);
-      const classMonth = `${classDate.getFullYear()}-${String(classDate.getMonth() + 1).padStart(2, '0')}`;
-      return classMonth === selectedMonth;
-    });
-
-    // 獲取該月份的學生賬單狀態
-    let billingStatuses = [];
-    try {
-      const statusResponse = await fetch(`http://localhost:4000/api/student-billing-status?month=${selectedMonth}`);
-      if (statusResponse.ok) {
-        billingStatuses = await statusResponse.json();
-      }
-    } catch (error) {
-      console.error('獲取賬單狀態失敗:', error);
-    }
-
-    const studentBilling = {};
-    let totalAmount = 0;
-    let paidAmount = 0;
-    let unpaidAmount = 0;
-
-    filteredClasses.forEach(cls => {
-      const student = students.find(s => s.studentId === cls.studentId);
-      if (student) {
-        if (!studentBilling[student.studentId]) {
-          // 查找該學生的賬單狀態
-          const status = billingStatuses.find(s => s.studentId === student.studentId);
-          
-          studentBilling[student.studentId] = {
-            studentId: student.studentId,
-            studentName: `${student.nameZh} (${student.nameEn})`,
-            school: student.school || '未知學校',
-            totalAmount: 0,
-            paymentStatus: status ? status.paymentStatus : '未繳交',
-            paymentMethod: status ? status.paymentMethod : 'N/A',
-            statementStatus: status ? status.statementStatus : '未生成',
-            notes: status ? status.notes : ''
-          };
-        }
-        studentBilling[student.studentId].totalAmount += cls.price;
-        totalAmount += cls.price;
-      }
-    });
-
-    const billingDataArray = Object.values(studentBilling);
-    
-    // 計算統計信息
-    paidAmount = billingDataArray
-      .filter(item => item.paymentStatus === '已繳交')
-      .reduce((sum, item) => sum + item.totalAmount, 0);
-    
-    unpaidAmount = totalAmount - paidAmount;
-
-    setBillingData(billingDataArray);
-    setStatistics({
-      totalAmount,
-      paidAmount,
-      unpaidAmount
-    });
-  };
-
   const updateBillingStatus = async (studentId, field, value) => {
     try {
       const response = await fetch('http://localhost:4000/api/student-billing-status', {
