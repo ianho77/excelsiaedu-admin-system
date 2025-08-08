@@ -8,13 +8,13 @@ const exportToExcel = async (billingData, statistics, selectedMonth, setExportin
   setExporting(true);
   
   try {
-  // 創建工作簿數據
-  const workbook = {
-    SheetNames: ['賬單詳情'],
-    Sheets: {
-      '賬單詳情': {}
-    }
-  };
+  // 創建工作簿數據（暫時不使用）
+  // const workbook = {
+  //   SheetNames: ['賬單詳情'],
+  //   Sheets: {
+  //     '賬單詳情': {}
+  //   }
+  // };
 
   // 準備表頭
   const headers = [
@@ -107,27 +107,27 @@ const BillingSystem = () => {
   const [classes, setClasses] = useState([]);
   const [teachers, setTeachers] = useState([]);
   const [courses, setCourses] = useState([]);
-  const [loading, setLoading] = useState(false);
+  // const [loading, setLoading] = useState(false);
   const [exporting, setExporting] = useState(false);
   const [studentFilter, setStudentFilter] = useState('');
   const [showStudentDropdown, setShowStudentDropdown] = useState(false);
   const [filteredStudents, setFilteredStudents] = useState([]);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [confirmAction, setConfirmAction] = useState('');
-  const [statistics, setStatistics] = useState({
+  const [, setStatistics] = useState({
     totalAmount: 0,
     paidAmount: 0,
     unpaidAmount: 0
   });
 
-  // 获取前一个月的默认值
-  const getPreviousMonth = () => {
-    const now = new Date();
-    const previousMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
-    const year = previousMonth.getFullYear();
-    const month = String(previousMonth.getMonth() + 1).padStart(2, '0');
-    return `${year}-${month}`;
-  };
+  // 获取前一个月的默认值（暫時不使用）
+  // const getPreviousMonth = () => {
+  //   const now = new Date();
+  //   const previousMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+  //   const year = previousMonth.getFullYear();
+  //   const month = String(previousMonth.getMonth() + 1).padStart(2, '0');
+  //   return `${year}-${month}`;
+  // };
 
   // 处理月份选择，同时保存到 localStorage
   const handleMonthChange = (month) => {
@@ -157,7 +157,7 @@ const BillingSystem = () => {
       setBillingData([]);
       setStatistics({ totalAmount: 0, paidAmount: 0, unpaidAmount: 0 });
     }
-  }, [selectedMonth, students, classes, courses]);
+  }, [selectedMonth, students, classes, courses, calculateBillingData]);
 
   const fetchStudents = async () => {
     try {
@@ -942,10 +942,10 @@ const BillingSystem = () => {
                   }
                   
                   // 篩選出匹配的學生
-                  filteredBillingData = billingData.filter(item => 
-                    item.studentId === studentId ||
-                    item.studentName.includes(studentFilter)
-                  );
+                  filteredBillingData = billingData.filter(item => {
+                    return item.studentId === studentId ||
+                           item.studentName.includes(studentFilter);
+                  });
                 }
                 
                 return filteredBillingData.map((item) => (

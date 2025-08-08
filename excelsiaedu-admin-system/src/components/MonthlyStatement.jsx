@@ -2,12 +2,12 @@ import React, { useState } from 'react';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 
-// 添加中文字體支持
-const addChineseFont = (doc) => {
-  // 使用系統默認字體，避免亂碼
-  doc.setFont('helvetica');
-  return doc;
-};
+// 添加中文字體支持（暫時不使用）
+// const addChineseFont = (doc) => {
+//   // 使用系統默認字體，避免亂碼
+//   doc.setFont('helvetica');
+//   return doc;
+// };
 
 const MonthlyStatement = ({ classes, students, courses, teachers, selectedMonth, onMonthChange, selectedStudent }) => {
   const [isGenerating, setIsGenerating] = useState(false);

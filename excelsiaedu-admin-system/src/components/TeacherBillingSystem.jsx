@@ -37,14 +37,14 @@ const TeacherBillingSystem = () => {
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [confirmAction, setConfirmAction] = useState('');
 
-  // 获取前一个月的默认值
-  const getPreviousMonth = () => {
-    const now = new Date();
-    const previousMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
-    const year = previousMonth.getFullYear();
-    const month = String(previousMonth.getMonth() + 1).padStart(2, '0');
-    return `${year}-${month}`;
-  };
+  // 获取前一个月的默认值（暫時不使用）
+  // const getPreviousMonth = () => {
+  //   const now = new Date();
+  //   const previousMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+  //   const year = previousMonth.getFullYear();
+  //   const month = String(previousMonth.getMonth() + 1).padStart(2, '0');
+  //   return `${year}-${month}`;
+  // };
 
   // 处理月份选择，同时保存到 localStorage
   const handleMonthChange = (month) => {
@@ -63,7 +63,7 @@ const TeacherBillingSystem = () => {
       setBillingData([]);
       setStatistics({ totalAmount: 0, paidAmount: 0, unpaidAmount: 0 });
     }
-  }, [selectedMonth, teachers, classes, courses, students]);
+  }, [selectedMonth, teachers, classes, courses, students, calculateBillingData]);
 
   const fetchData = async () => {
     setLoading(true);
@@ -187,10 +187,10 @@ const TeacherBillingSystem = () => {
     return `$${amount.toLocaleString()}`;
   };
 
-  const formatDate = (dateStr) => {
-    const date = new Date(dateStr);
-    return `${date.getFullYear()}/${date.getMonth() + 1}/${date.getDate()}`;
-  };
+  // const formatDate = (dateStr) => {
+  //   const date = new Date(dateStr);
+  //   return `${date.getFullYear()}/${date.getMonth() + 1}/${date.getDate()}`;
+  // };
 
   const handleVerificationChange = async (teacherId, isVerified) => {
     try {
@@ -293,6 +293,7 @@ const TeacherBillingSystem = () => {
         } else if (confirmAction === 'payment') {
           return handlePaymentChange(item.teacherId, true);
         }
+        return null;
       });
 
       await Promise.all(promises);

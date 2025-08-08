@@ -25,7 +25,7 @@ const RevenueStatistics = () => {
   // 新增 useEffect 來監聽 URL 變化並更新 activeTab
   useEffect(() => {
     setActiveTab(getDefaultTab());
-  }, [location.pathname]);
+  }, [location.pathname, getDefaultTab]);
   const [students, setStudents] = useState([]);
   const [teachers, setTeachers] = useState([]);
   const [classes, setClasses] = useState([]);
@@ -108,22 +108,22 @@ const RevenueStatistics = () => {
     }
   };
 
-  // 獲取已選擇月份的顯示文字
-  const getSelectedMonthsDisplay = () => {
-    if (selectedOverviewMonths.length === 0) return '';
-    if (selectedOverviewMonths.includes('all')) return '全部月份';
-    
-    const selectedLabels = selectedOverviewMonths.map(monthValue => {
-      const month = generateMonthOptionsWithAll().find(m => m.value === monthValue);
-      return month ? month.label : monthValue;
-    });
-    
-    if (selectedLabels.length <= 2) {
-      return selectedLabels.join(', ');
-    } else {
-      return `${selectedLabels[0]} 等 ${selectedLabels.length} 個月`;
-    }
-  };
+  // 獲取已選擇月份的顯示文字（暫時不使用）
+  // const getSelectedMonthsDisplay = () => {
+  //   if (selectedOverviewMonths.length === 0) return '';
+  //   if (selectedOverviewMonths.includes('all')) return '全部月份';
+  //   
+  //   const selectedLabels = selectedOverviewMonths.map(monthValue => {
+  //     const month = generateMonthOptionsWithAll().find(m => m.value === monthValue);
+  //     return month ? month.label : monthValue;
+  //   });
+  //   
+  //   if (selectedLabels.length <= 2) {
+  //     return selectedLabels.join(', ');
+  //   } else {
+  //     return `${selectedLabels[0]} 等 ${selectedLabels.length} 個月`;
+  //   }
+  // };
 
   // 生成年份選項
   const generateYearOptions = () => {
@@ -181,7 +181,7 @@ const RevenueStatistics = () => {
     } else if (activeTab === 'overview') {
       calculateOverviewData();
     }
-  }, [activeTab, selectedStudent, selectedMonth, selectedTeacher, selectedTeacherMonth, startDate, endDate, selectedOverviewMonths, selectedYear, classes, students, teachers, courses]);
+  }, [activeTab, selectedStudent, selectedMonth, selectedTeacher, selectedTeacherMonth, startDate, endDate, selectedOverviewMonths, selectedYear, classes, students, teachers, courses, calculateStudentData, calculateTeacherData, calculateDailyData, calculateOverviewData]);
 
   const fetchData = async () => {
     setLoading(true);
