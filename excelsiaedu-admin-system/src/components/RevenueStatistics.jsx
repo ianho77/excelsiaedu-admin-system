@@ -25,7 +25,7 @@ const RevenueStatistics = () => {
   // 新增 useEffect 來監聽 URL 變化並更新 activeTab
   useEffect(() => {
     setActiveTab(getDefaultTab());
-  }, [location.pathname, getDefaultTab]);
+  }, [location.pathname]);
   const [students, setStudents] = useState([]);
   const [teachers, setTeachers] = useState([]);
   const [classes, setClasses] = useState([]);
@@ -171,6 +171,404 @@ const RevenueStatistics = () => {
     fetchData();
   }, []);
 
+  const calculateStudentData = () => {
+    let filteredClasses = classes;
+
+    // 學生篩選
+    if (selectedStudent) {
+      filteredClasses = filteredClasses.filter(cls => {
+        const matches = String(cls.studentId) === String(selectedStudent);
+        return matches;
+      });
+    }
+
+    // 月份篩選
+    if (selectedMonth) {
+      filteredClasses = filteredClasses.filter(cls => {
+        const classDate = new Date(cls.date);
+        const classMonth = `${classDate.getFullYear()}-${classDate.getMonth() + 1}`;
+        return classMonth === selectedMonth;
+      });
+    }
+
+    // 按學生分組
+    const groupedData = {};
+    let total = 0;
+
+    filteredClasses.forEach(cls => {
+      const course = courses.find(c => c.courseId === cls.courseId);
+      // 嘗試從課程資料中獲取教師ID，如果課堂資料沒有 teacherId
+      const teacherId = cls.teacherId || (course ? course.teacherId : null);
+      const teacher = teachers.find(t => t.teacherId === teacherId);
+      
+      // 使用 studentId 查找學生
+      if (cls.studentId) {
+        const student = students.find(s => s.studentId === cls.studentId);
+        if (student) {
+          if (!groupedData[student.studentId]) {
+            groupedData[student.studentId] = {
+              studentId: student.studentId,
+              studentName: `${student.nameZh} (${student.nameEn})`,
+              classes: []
+            };
+          }
+          
+          groupedData[student.studentId].classes.push({
+            date: cls.date,
+            subject: course ? `${course.grade}${course.subject}` : '未知科目',
+            teacher: teacher ? teacher.name : '未知教師',
+            amount: cls.price
+          });
+          
+          total += cls.price;
+        }
+      }
+    });
+
+    // 按教師排序（第一優先度），然後按科目ID排序（第二優先度）
+    const sortedStudentData = Object.values(groupedData).map(student => {
+      // 對每個學生的課堂按教師和科目ID排序
+      const sortedClasses = student.classes.sort((a, b) => {
+        // 第一優先度：教師姓名（降序）
+        const teacherCompare = b.teacher.localeCompare(a.teacher);
+        
+        if (teacherCompare !== 0) {
+          return teacherCompare;
+        }
+        
+        // 第二優先度：科目ID（降序）
+        const aSubject = a.subject.replace(/^[中一二三四五六]/, '');
+        const bSubject = b.subject.replace(/^[中一二三四五六]/, '');
+        
+        const aCourse = courses.find(c => c.subject === aSubject);
+        const bCourse = courses.find(c => c.subject === bSubject);
+        
+        if (aCourse && bCourse) {
+          return bCourse.courseId.localeCompare(aCourse.courseId);
+        }
+        
+        // 如果找不到課程，按科目名稱排序（降序）
+        return bSubject.localeCompare(aSubject);
+      });
+      
+      return {
+        ...student,
+        classes: sortedClasses
+      };
+    });
+    
+    setStudentData(sortedStudentData);
+    setTotalAmount(total);
+  };
+
+  const calculateTeacherData = () => {
+    let filteredClasses = classes;
+
+    // 教師篩選
+    if (selectedTeacher) {
+      filteredClasses = filteredClasses.filter(cls => {
+        const course = courses.find(c => c.courseId === cls.courseId);
+        const teacherId = cls.teacherId || (course ? course.teacherId : null);
+        return String(teacherId) === String(selectedTeacher);
+      });
+    }
+
+    // 月份篩選
+    if (selectedTeacherMonth) {
+      filteredClasses = filteredClasses.filter(cls => {
+        const classDate = new Date(cls.date);
+        const classMonth = `${classDate.getFullYear()}-${classDate.getMonth() + 1}`;
+        return classMonth === selectedTeacherMonth;
+      });
+    }
+
+    // 按教師分組
+    const groupedData = {};
+    let total = 0;
+
+    filteredClasses.forEach(cls => {
+      const course = courses.find(c => c.courseId === cls.courseId);
+      // 嘗試從課程資料中獲取教師ID，如果課堂資料沒有 teacherId
+      const teacherId = cls.teacherId || (course ? course.teacherId : null);
+      const teacher = teachers.find(t => t.teacherId === teacherId);
+      
+      if (teacher) {
+        if (!groupedData[teacher.teacherId]) {
+          groupedData[teacher.teacherId] = {
+            teacherId: teacher.teacherId,
+            teacherName: teacher.name,
+            classes: []
+          };
+        }
+        
+        // 使用 studentId 查找學生
+        if (cls.studentId) {
+          const student = students.find(s => s.studentId === cls.studentId);
+          if (student) {
+            groupedData[teacher.teacherId].classes.push({
+              studentName: `${student.studentId} - ${student.nameZh} (${student.nameEn})`,
+              subject: course ? `${course.grade}${course.subject}` : '未知科目',
+              date: cls.date,
+              amount: cls.price
+            });
+            
+            total += cls.price;
+          }
+        }
+      }
+    });
+
+    // 按教師ID排序（第一優先度），然後按學生ID排序（第二優先度）
+    const sortedTeacherData = Object.values(groupedData).sort((a, b) => {
+      // 第一優先度：教師ID（升序）- 數值比較
+      const teacherIdA = parseInt(a.teacherId) || 0;
+      const teacherIdB = parseInt(b.teacherId) || 0;
+      
+      if (teacherIdA !== teacherIdB) {
+        return teacherIdA - teacherIdB;
+      }
+      
+      // 第二優先度：學生ID（降序）
+      const aFirstClass = a.classes[0];
+      const bFirstClass = b.classes[0];
+      
+      if (aFirstClass && bFirstClass) {
+        const aStudentId = aFirstClass.studentName.split(' - ')[0];
+        const bStudentId = bFirstClass.studentName.split(' - ')[0];
+        return bStudentId.localeCompare(aStudentId);
+      }
+      
+      return 0;
+    }).map(teacher => {
+      // 對每個教師的課堂按學生ID和課程ID排序
+      const sortedClasses = teacher.classes.sort((a, b) => {
+        // 第一優先度：學生ID（降序）
+        const aStudentId = a.studentName.split(' - ')[0];
+        const bStudentId = b.studentName.split(' - ')[0];
+        const studentIdCompare = bStudentId.localeCompare(aStudentId);
+        
+        if (studentIdCompare !== 0) {
+          return studentIdCompare;
+        }
+        
+        // 第二優先度：課程ID（降序）
+        const aSubject = a.subject.replace(/^[中一二三四五六]/, '');
+        const bSubject = b.subject.replace(/^[中一二三四五六]/, '');
+        
+        const aCourse = courses.find(c => c.subject === aSubject);
+        const bCourse = courses.find(c => c.subject === bSubject);
+        
+        if (aCourse && bCourse) {
+          return bCourse.courseId.localeCompare(aCourse.courseId);
+        }
+        
+        // 如果找不到課程，按科目名稱排序（降序）
+        return bSubject.localeCompare(aSubject);
+      });
+      
+      return {
+        ...teacher,
+        classes: sortedClasses
+      };
+    });
+    
+    setTeacherData(sortedTeacherData);
+    setTotalAmount(total);
+  };
+
+  const calculateDailyData = () => {
+    let filteredClasses = classes;
+
+    // 日期範圍篩選
+    if (startDate && endDate) {
+      filteredClasses = filteredClasses.filter(cls => {
+        const classDate = new Date(cls.date);
+        const start = new Date(startDate);
+        const end = new Date(endDate);
+        
+        // 重置時間部分，只比較日期
+        classDate.setHours(0, 0, 0, 0);
+        start.setHours(0, 0, 0, 0);
+        end.setHours(0, 0, 0, 0);
+        
+        return classDate >= start && classDate <= end;
+      });
+    }
+
+    // 按日期分組，使用標準化的日期格式
+    const groupedData = {};
+    let total = 0;
+
+    filteredClasses.forEach(cls => {
+      const course = courses.find(c => c.courseId === cls.courseId);
+      // 嘗試從課程資料中獲取教師ID，如果課堂資料沒有 teacherId
+      const teacherId = cls.teacherId || (course ? course.teacherId : null);
+      const teacher = teachers.find(t => t.teacherId === teacherId);
+      
+      // 標準化日期格式，確保同一天不會被分開
+      const classDate = new Date(cls.date);
+      const normalizedDate = `${classDate.getFullYear()}-${classDate.getMonth() + 1}-${classDate.getDate()}`;
+      
+      if (!groupedData[normalizedDate]) {
+        groupedData[normalizedDate] = {
+          date: normalizedDate,
+          classes: []
+        };
+      }
+      
+      // 使用 studentId 查找學生
+      if (cls.studentId) {
+        const student = students.find(s => s.studentId === cls.studentId);
+      
+        if (student) {
+          groupedData[normalizedDate].classes.push({
+            teacher: teacher ? teacher.name : '未知教師',
+            studentName: `${student.studentId} - ${student.nameZh} (${student.nameEn})`,
+            subject: course ? `${course.grade}${course.subject}` : '未知科目',
+            amount: cls.price
+          });
+          
+          total += cls.price;
+        }
+      }
+    });
+
+    // 按日期排序
+    const sortedData = Object.values(groupedData).sort((a, b) => new Date(a.date) - new Date(b.date));
+    setDailyData(sortedData);
+    setTotalAmount(total);
+  };
+
+  const calculateOverviewData = () => {
+    let filteredClasses = classes;
+
+    // 年份篩選
+    if (selectedYear) {
+      filteredClasses = filteredClasses.filter(cls => {
+        const classDate = new Date(cls.date);
+        const classYear = classDate.getFullYear().toString();
+        return classYear === selectedYear;
+      });
+    }
+
+    // 月份篩選
+    if (selectedOverviewMonths.length > 0) {
+      // 如果選擇了「全部月份」，不進行月份篩選
+      if (!selectedOverviewMonths.includes('all')) {
+        filteredClasses = filteredClasses.filter(cls => {
+          const classDate = new Date(cls.date);
+          const classMonth = (classDate.getMonth() + 1).toString();
+          return selectedOverviewMonths.includes(classMonth);
+        });
+      }
+    }
+
+    // 按教師統計營業額
+    const teacherRevenue = {};
+    const courseRevenue = {};
+    const gradeRevenue = {};
+    const monthlyRevenue = {};
+
+    filteredClasses.forEach(cls => {
+      const course = courses.find(c => c.courseId === cls.courseId);
+      const teacherId = cls.teacherId || (course ? course.teacherId : null);
+      const teacher = teachers.find(t => t.teacherId === teacherId);
+      
+      if (teacher) {
+        if (!teacherRevenue[teacher.teacherId]) {
+          teacherRevenue[teacher.teacherId] = {
+            name: teacher.name,
+            amount: 0
+          };
+        }
+        teacherRevenue[teacher.teacherId].amount += cls.price;
+      }
+
+      if (course) {
+        const courseId = String(course.courseId); // 確保課程ID是字符串
+        if (!courseRevenue[courseId]) {
+          const grade = course.grade || '未知年級';
+          const subject = course.subject || '未知科目';
+          const teacher = teachers.find(t => t.teacherId === course.teacherId);
+          const teacherName = teacher ? teacher.name : '未知教師';
+          const courseName = `${courseId}-${grade}${subject}`;
+          courseRevenue[courseId] = {
+            name: courseName,
+            fullName: `${courseName}（${teacherName}）`,
+            amount: 0
+          };
+        }
+        courseRevenue[courseId].amount += cls.price;
+      } else {
+        // 如果找不到課程，使用課堂ID
+        const fallbackId = String(cls.courseId || '未知課程'); // 確保是字符串
+        if (!courseRevenue[fallbackId]) {
+          courseRevenue[fallbackId] = {
+            name: `課程ID: ${fallbackId}`,
+            fullName: `課程ID: ${fallbackId}（未知教師）`,
+            amount: 0
+          };
+        }
+        courseRevenue[fallbackId].amount += cls.price;
+      }
+
+      if (course && course.grade) {
+        if (!gradeRevenue[course.grade]) {
+          gradeRevenue[course.grade] = {
+            name: course.grade,
+            amount: 0
+          };
+        }
+        gradeRevenue[course.grade].amount += cls.price;
+      } else if (course) {
+        // 如果課程存在但沒有年級信息，歸類為「未知年級」
+        if (!gradeRevenue['未知年級']) {
+          gradeRevenue['未知年級'] = {
+            name: '未知年級',
+            amount: 0
+          };
+        }
+        gradeRevenue['未知年級'].amount += cls.price;
+      }
+
+      // 按月份統計營業額
+      const classDate = new Date(cls.date);
+      const monthKey = `${classDate.getFullYear()}-${String(classDate.getMonth() + 1).padStart(2, '0')}`;
+      const monthLabel = `${classDate.getFullYear()}年${classDate.getMonth() + 1}月`;
+      
+      if (!monthlyRevenue[monthKey]) {
+        monthlyRevenue[monthKey] = {
+          month: monthLabel,
+          amount: 0
+        };
+      }
+      monthlyRevenue[monthKey].amount += cls.price;
+    });
+    
+    // 計算總金額
+    const total = Object.values(teacherRevenue).reduce((sum, item) => sum + item.amount, 0);
+    
+    // 將月度數據按時間排序
+    const sortedMonthlyRevenue = Object.values(monthlyRevenue).sort((a, b) => {
+      const aYear = parseInt(a.month.split('年')[0]);
+      const aMonth = parseInt(a.month.split('年')[1].split('月')[0]);
+      const bYear = parseInt(b.month.split('年')[0]);
+      const bMonth = parseInt(b.month.split('年')[1].split('月')[0]);
+      
+      if (aYear !== bYear) return aYear - bYear;
+      return aMonth - bMonth;
+    });
+    
+    setOverviewData({
+      teacherRevenue: Object.values(teacherRevenue),
+      courseRevenue: Object.values(courseRevenue).sort((a, b) => b.amount - a.amount).slice(0, 8),
+      gradeRevenue: Object.values(gradeRevenue),
+      monthlyRevenue: sortedMonthlyRevenue
+    });
+    
+    setTotalAmount(total);
+  };
+
   useEffect(() => {
     if (activeTab === 'student') {
       calculateStudentData();
@@ -181,7 +579,7 @@ const RevenueStatistics = () => {
     } else if (activeTab === 'overview') {
       calculateOverviewData();
     }
-  }, [activeTab, selectedStudent, selectedMonth, selectedTeacher, selectedTeacherMonth, startDate, endDate, selectedOverviewMonths, selectedYear, classes, students, teachers, courses, calculateStudentData, calculateTeacherData, calculateDailyData, calculateOverviewData]);
+  }, [activeTab, selectedStudent, selectedMonth, selectedTeacher, selectedTeacherMonth, startDate, endDate, selectedOverviewMonths, selectedYear, classes, students, teachers, courses]);
 
   const fetchData = async () => {
     setLoading(true);

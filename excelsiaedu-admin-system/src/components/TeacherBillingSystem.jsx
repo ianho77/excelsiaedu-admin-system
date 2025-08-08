@@ -56,6 +56,73 @@ const TeacherBillingSystem = () => {
     fetchData();
   }, []);
 
+  const calculateBillingData = async () => {
+    const filteredClasses = classes.filter(cls => {
+      const classDate = new Date(cls.date);
+      const classMonth = `${classDate.getFullYear()}-${String(classDate.getMonth() + 1).padStart(2, '0')}`;
+      return classMonth === selectedMonth;
+    });
+
+    // 獲取該月份的教師賬單狀態
+    let billingStatuses = [];
+    try {
+      const statusResponse = await fetch(`http://localhost:4000/api/teacher-billing-status?month=${selectedMonth}`);
+      if (statusResponse.ok) {
+        billingStatuses = await statusResponse.json();
+      }
+    } catch (error) {
+      console.error('獲取教師賬單狀態失敗:', error);
+    }
+
+    const teacherBilling = {};
+    let totalAmount = 0;
+    let paidAmount = 0;
+    let unpaidAmount = 0;
+
+    filteredClasses.forEach(cls => {
+      const course = courses.find(c => c.courseId === cls.courseId);
+      const teacherId = cls.teacherId || (course ? course.teacherId : null);
+      const teacher = teachers.find(t => t.teacherId === teacherId);
+      
+      if (teacher) {
+        if (!teacherBilling[teacher.teacherId]) {
+          // 查找該教師的賬單狀態
+          const status = billingStatuses.find(s => s.teacherId === teacher.teacherId);
+          
+          teacherBilling[teacher.teacherId] = {
+            teacherId: teacher.teacherId,
+            teacherName: teacher.name,
+            totalAmount: 0,
+            isVerified: status ? status.isVerified : false,
+            isPaid: status ? status.isPaid : false,
+            notes: status ? status.notes : '',
+            classes: []
+          };
+        }
+        const price = cls.price || 0;
+        teacherBilling[teacher.teacherId].totalAmount += price;
+        teacherBilling[teacher.teacherId].classes.push(cls);
+        totalAmount += price;
+      }
+    });
+
+    const billingDataArray = Object.values(teacherBilling);
+    
+    // 計算統計信息
+    paidAmount = billingDataArray
+      .filter(item => item.isPaid)
+      .reduce((sum, item) => sum + item.totalAmount, 0);
+    
+    unpaidAmount = totalAmount - paidAmount;
+
+    setBillingData(billingDataArray);
+    setStatistics({
+      totalAmount,
+      paidAmount,
+      unpaidAmount
+    });
+  };
+
   useEffect(() => {
     if (selectedMonth) {
       calculateBillingData();
@@ -63,7 +130,7 @@ const TeacherBillingSystem = () => {
       setBillingData([]);
       setStatistics({ totalAmount: 0, paidAmount: 0, unpaidAmount: 0 });
     }
-  }, [selectedMonth, teachers, classes, courses, students, calculateBillingData]);
+  }, [selectedMonth, teachers, classes, courses, students]);
 
   const fetchData = async () => {
     setLoading(true);
