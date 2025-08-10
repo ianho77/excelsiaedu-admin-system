@@ -3,8 +3,9 @@
   "version": "1.0.0",
   "description": "Root package.json for Vercel deployment",
   "scripts": {
-    "build": "cd excelsiaedu-admin-system && npm install && npm run build",
-    "vercel-build": "cd excelsiaedu-admin-system && npm run build"
+    "build": "npm run build:app",
+    "build:app": "cd excelsiaedu-admin-system && npm install && npm run build",
+    "vercel-build": "npm run build:app"
   },
   "dependencies": {},
   "devDependencies": {}
