@@ -17,18 +17,18 @@
       "use": "@vercel/node"
     }
   ],
-  "routes": [
+  "rewrites": [
     {
-      "src": "/api/test",
-      "dest": "/api/test.js"
+      "source": "/api/test",
+      "destination": "/api/test.js"
     },
     {
-      "src": "/api/(.*)",
-      "dest": "/api/index.js"
+      "source": "/api/(.*)",
+      "destination": "/api/index.js"
     },
     {
-      "src": "/(.*)",
-      "dest": "/excelsiaedu-admin-system/build/index.html"
+      "source": "/(.*)",
+      "destination": "/index.html"
     }
   ]
 }
