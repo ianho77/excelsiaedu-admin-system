@@ -1,6 +1,9 @@
 const config = {
-  // 使用相對路徑，因為前端和後端部署在同一個Vercel項目中
-  API_URL: '/api'
+  // 前端部署在 Vercel，後端部署在 Render
+  // 開發環境使用本地後端，生產環境使用 Render 後端
+  API_URL: process.env.NODE_ENV === 'production' 
+    ? (process.env.REACT_APP_API_URL || 'https://your-backend-service.onrender.com')
+    : 'http://localhost:5000'
 };
 
 export default config;
