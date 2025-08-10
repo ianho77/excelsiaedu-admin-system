@@ -14,6 +14,22 @@ const RevenueStatistics = () => {
   // 添加調試信息
   console.log('RevenueStatistics 組件渲染，當前路徑:', location.pathname);
   
+  // 立即渲染測試內容，確保組件可見
+  const testRender = (
+    <div style={{ 
+      padding: '20px', 
+      backgroundColor: '#ffeb3b', 
+      margin: '20px',
+      border: '3px solid #f57f17',
+      borderRadius: '10px'
+    }}>
+      <h1>🧪 測試渲染 - RevenueStatistics 組件</h1>
+      <p>如果你能看到這個黃色框，說明組件已經正常渲染！</p>
+      <p>當前路徑: {location.pathname}</p>
+      <p>時間: {new Date().toLocaleString()}</p>
+    </div>
+  );
+  
   // 根據URL參數決定默認標籤頁
   const getDefaultTab = useCallback(() => {
     const path = location.pathname;
@@ -70,10 +86,13 @@ const RevenueStatistics = () => {
 
   // 新增 useEffect 來監聽 URL 變化並更新 activeTab
   useEffect(() => {
-    setActiveTab(getDefaultTab());
+    const defaultTab = getDefaultTab();
+    console.log('設置默認標籤頁:', defaultTab);
+    setActiveTab(defaultTab);
   }, [location.pathname, getDefaultTab]);
 
   useEffect(() => {
+    console.log('組件掛載，開始獲取數據');
     fetchData();
   }, []);
 
@@ -604,9 +623,11 @@ const RevenueStatistics = () => {
     return `${date.getFullYear()}/${date.getMonth() + 1}/${date.getDate()}`;
   };
 
+  // 簡化版本 - 先確保基本渲染正常
   if (loading) {
     return (
       <div className="revenue-statistics">
+        {testRender}
         <div className="loading">載入中...</div>
         <div style={{ padding: '20px', textAlign: 'center' }}>
           <p>正在從 {config.API_URL} 獲取數據...</p>
@@ -618,6 +639,7 @@ const RevenueStatistics = () => {
   if (error) {
     return (
       <div className="revenue-statistics">
+        {testRender}
         <div className="error-message" style={{ 
           padding: '20px', 
           textAlign: 'center', 
@@ -654,8 +676,22 @@ const RevenueStatistics = () => {
 
   return (
     <div className="revenue-statistics">
-      <div style={{ padding: '10px', backgroundColor: '#e3f2fd', marginBottom: '20px', borderRadius: '5px' }}>
-        <p><strong>調試信息:</strong> 當前路徑: {location.pathname}, 當前標籤頁: {activeTab}</p>
+      {/* 測試渲染 - 確保組件可見 */}
+      {testRender}
+      
+      <div style={{ 
+        padding: '20px', 
+        backgroundColor: '#e3f2fd', 
+        marginBottom: '20px', 
+        borderRadius: '5px',
+        border: '2px solid #2196f3'
+      }}>
+        <h2>🔧 調試信息</h2>
+        <p><strong>當前路徑:</strong> {location.pathname}</p>
+        <p><strong>當前標籤頁:</strong> {activeTab}</p>
+        <p><strong>載入狀態:</strong> {loading ? '載入中...' : '載入完成'}</p>
+        <p><strong>錯誤狀態:</strong> {error ? error : '無錯誤'}</p>
+        <p><strong>API URL:</strong> {config.API_URL}</p>
         <p><strong>數據狀態:</strong> 學生: {students.length}, 教師: {teachers.length}, 課堂: {classes.length}, 課程: {courses.length}</p>
       </div>
       
