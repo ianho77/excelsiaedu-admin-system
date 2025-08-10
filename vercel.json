@@ -1,34 +1,11 @@
 {
   "version": 2,
-  "builds": [
+  "buildCommand": "cd excelsiaedu-admin-system && npm run build",
+  "outputDirectory": "excelsiaedu-admin-system/build",
+  "rewrites": [
     {
-      "src": "excelsiaedu-admin-system/package.json",
-      "use": "@vercel/static-build",
-      "config": {
-        "distDir": "build"
-      }
-    }
-  ],
-  "routes": [
-    {
-      "src": "/static/(.*)",
-      "dest": "/static/$1"
-    },
-    {
-      "src": "/favicon.ico",
-      "dest": "/favicon.ico"
-    },
-    {
-      "src": "/manifest.json",
-      "dest": "/manifest.json"
-    },
-    {
-      "src": "/logo(.*)",
-      "dest": "/logo$1"
-    },
-    {
-      "src": "/(.*)",
-      "dest": "/index.html"
+      "source": "/(.*)",
+      "destination": "/index.html"
     }
   ]
 }
