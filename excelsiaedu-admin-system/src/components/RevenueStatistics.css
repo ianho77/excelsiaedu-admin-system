@@ -17,6 +17,7 @@
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
   border: 1px solid #e2e8f0;
   flex-wrap: wrap;
+  justify-content: center;
 }
 
 .tabs button {
@@ -33,6 +34,7 @@
   position: relative;
   overflow: hidden;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  text-align: center;
 }
 
 .tabs button::before {
@@ -58,7 +60,7 @@
 }
 
 .tabs button.active {
-  background: linear-gradient(135deg, #0f766e 0%, #0d5a52 100%);
+  background: #0f766e;
   color: white;
   border-color: #0f766e;
   transform: translateY(-2px);
@@ -319,6 +321,7 @@
   grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
   gap: 24px;
   margin: 24px 0;
+  margin-bottom: 32px;
 }
 
 .chart-container {
@@ -345,6 +348,10 @@
   padding: 20px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
   overflow-x: auto;
+  min-height: 350px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .chart-wrapper canvas {

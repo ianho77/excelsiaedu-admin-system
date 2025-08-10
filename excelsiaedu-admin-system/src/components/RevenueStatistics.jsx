@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useLocation } from 'react-router-dom';
 import { Chart as ChartJS, ArcElement, Tooltip, Legend, CategoryScale, LinearScale, BarElement, PointElement, LineElement } from 'chart.js';
-// import { Pie, Bar, Line } from 'react-chartjs-2';
+import { Pie, Bar, Line } from 'react-chartjs-2';
 // import * as XLSX from 'xlsx';
 import './RevenueStatistics.css';
 import config from '../config';
@@ -732,6 +732,210 @@ const RevenueStatistics = () => {
               >
                 {generateMonthOptions()}
               </select>
+            </div>
+          </div>
+          
+          {/* 四個圖表 */}
+          <div className="overview-charts">
+            <div className="chart-container">
+              <h3>教師營收比例</h3>
+              <div className="chart-wrapper">
+                {overviewData.teacherRevenue.length > 0 && (
+                  <Pie
+                    data={{
+                      labels: overviewData.teacherRevenue.map(item => item.name),
+                      datasets: [{
+                        data: overviewData.teacherRevenue.map(item => item.amount),
+                        backgroundColor: [
+                          '#0f766e',
+                          '#14b8a6',
+                          '#06b6d4',
+                          '#3b82f6',
+                          '#8b5cf6',
+                          '#ec4899'
+                        ],
+                        borderWidth: 2,
+                        borderColor: '#ffffff'
+                      }]
+                    }}
+                    options={{
+                      responsive: true,
+                      maintainAspectRatio: false,
+                      plugins: {
+                        legend: {
+                          position: 'bottom',
+                          labels: {
+                            padding: 20,
+                            usePointStyle: true
+                          }
+                        },
+                        tooltip: {
+                          callbacks: {
+                            label: function(context) {
+                              const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                              const percentage = ((context.parsed / total) * 100).toFixed(1);
+                              return `${context.label}: ${formatCurrency(context.parsed)} (${percentage}%)`;
+                            }
+                          }
+                        }
+                      }
+                    }}
+                    height={300}
+                  />
+                )}
+              </div>
+            </div>
+            
+            <div className="chart-container">
+              <h3>課程營收比例</h3>
+              <div className="chart-wrapper">
+                {overviewData.courseRevenue.length > 0 && (
+                  <Pie
+                    data={{
+                      labels: overviewData.courseRevenue.map(item => item.fullName),
+                      datasets: [{
+                        data: overviewData.courseRevenue.map(item => item.amount),
+                        backgroundColor: [
+                          '#059669',
+                          '#10b981',
+                          '#34d399',
+                          '#6ee7b7',
+                          '#a7f3d0',
+                          '#d1fae5'
+                        ],
+                        borderWidth: 2,
+                        borderColor: '#ffffff'
+                      }]
+                    }}
+                    options={{
+                      responsive: true,
+                      maintainAspectRatio: false,
+                      plugins: {
+                        legend: {
+                          position: 'bottom',
+                          labels: {
+                            padding: 20,
+                            usePointStyle: true
+                          }
+                        },
+                        tooltip: {
+                          callbacks: {
+                            label: function(context) {
+                              const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                              const percentage = ((context.parsed / total) * 100).toFixed(1);
+                              return `${context.label}: ${formatCurrency(context.parsed)} (${percentage}%)`;
+                            }
+                          }
+                        }
+                      }
+                    }}
+                    height={300}
+                  />
+                )}
+              </div>
+            </div>
+            
+            <div className="chart-container">
+              <h3>年級營收趨勢</h3>
+              <div className="chart-wrapper">
+                {overviewData.gradeRevenue.length > 0 && (
+                  <Bar
+                    data={{
+                      labels: overviewData.gradeRevenue.map(item => item.name),
+                      datasets: [{
+                        label: '營收金額',
+                        data: overviewData.gradeRevenue.map(item => item.amount),
+                        backgroundColor: '#0f766e',
+                        borderColor: '#0d5a52',
+                        borderWidth: 2,
+                        borderRadius: 8,
+                        borderSkipped: false
+                      }]
+                    }}
+                    options={{
+                      responsive: true,
+                      maintainAspectRatio: false,
+                      plugins: {
+                        legend: {
+                          display: false
+                        },
+                        tooltip: {
+                          callbacks: {
+                            label: function(context) {
+                              return `營收: ${formatCurrency(context.parsed.y)}`;
+                            }
+                          }
+                        }
+                      },
+                      scales: {
+                        y: {
+                          beginAtZero: true,
+                          ticks: {
+                            callback: function(value) {
+                              return formatCurrency(value);
+                            }
+                          }
+                        }
+                      }
+                    }}
+                    height={300}
+                  />
+                )}
+              </div>
+            </div>
+            
+            <div className="chart-container">
+              <h3>月度營收趨勢</h3>
+              <div className="chart-wrapper">
+                {overviewData.monthlyRevenue.length > 0 && (
+                  <Line
+                    data={{
+                      labels: overviewData.monthlyRevenue.map(item => item.month),
+                      datasets: [{
+                        label: '營收金額',
+                        data: overviewData.monthlyRevenue.map(item => item.amount),
+                        borderColor: '#0f766e',
+                        backgroundColor: 'rgba(15, 118, 110, 0.1)',
+                        borderWidth: 3,
+                        pointBackgroundColor: '#0f766e',
+                        pointBorderColor: '#ffffff',
+                        pointBorderWidth: 2,
+                        pointRadius: 6,
+                        pointHoverRadius: 8,
+                        tension: 0.4,
+                        fill: true
+                      }]
+                    }}
+                    options={{
+                      responsive: true,
+                      maintainAspectRatio: false,
+                      plugins: {
+                        legend: {
+                          display: false
+                        },
+                        tooltip: {
+                          callbacks: {
+                            label: function(context) {
+                              return `營收: ${formatCurrency(context.parsed.y)}`;
+                            }
+                          }
+                        }
+                      },
+                      scales: {
+                        y: {
+                          beginAtZero: true,
+                          ticks: {
+                            callback: function(value) {
+                              return formatCurrency(value);
+                            }
+                          }
+                        }
+                      }
+                    }}
+                    height={300}
+                  />
+                )}
+              </div>
             </div>
           </div>
           
