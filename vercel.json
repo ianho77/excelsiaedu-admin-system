@@ -25,10 +25,12 @@
     {
       "source": "/api/(.*)",
       "destination": "/api/index.js"
-    },
+    }
+  ],
+  "routes": [
     {
-      "source": "/(.*)",
-      "destination": "/index.html"
+      "src": "/(.*)",
+      "dest": "/excelsiaedu-admin-system/index.html"
     }
   ]
 }
