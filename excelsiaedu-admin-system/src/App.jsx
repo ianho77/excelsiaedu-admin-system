@@ -10,7 +10,7 @@ import TeacherBillingSystem from './components/TeacherBillingSystem';
 import RevenueStatistics from './components/RevenueStatistics';
 import LoginPage from './components/LoginPage';
 // import MonthlyStatement from './components/MonthlyStatement';
-// import UserManagement from './components/UserManagement';
+import UserManagement from './components/UserManagement';
 import LoginManagement from './components/LoginManagement';
 import './App.css';
 
@@ -72,6 +72,7 @@ function Sidebar({ userType }) {
                   <li><Link to="/manage-students">學生管理</Link></li>
                   <li><Link to="/manage-courses">課程管理</Link></li>
                   <li><Link to="/manage-teachers">教師管理</Link></li>
+                  <li><Link to="/user-management">用戶管理</Link></li>
                 </ul>
               )}
             </div>
@@ -3195,6 +3196,7 @@ function App() {
               <Route path="/manage-students" element={<StudentList />} />
               <Route path="/manage-courses" element={<CourseList />} />
               <Route path="/manage-teachers" element={<TeacherList />} />
+              <Route path="/user-management" element={<UserManagement />} />
               <Route path="/login-management" element={<LoginManagement />} />
               <Route path="/revenue-overview" element={<RevenueStatistics />} />
               <Route path="/revenue-teacher" element={<RevenueStatistics />} />

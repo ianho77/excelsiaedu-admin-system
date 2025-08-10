@@ -12,7 +12,8 @@ const RevenueStatistics = () => {
   const location = useLocation();
   
   // 添加調試信息
-  console.log('RevenueStatistics 組件渲染，當前路徑:', location.pathname);
+  console.log('🚀 RevenueStatistics 組件開始渲染，當前路徑:', location.pathname);
+  console.log('📍 組件渲染時間:', new Date().toISOString());
   
   // 立即渲染測試內容，確保組件可見
   const testRender = (
@@ -21,12 +22,15 @@ const RevenueStatistics = () => {
       backgroundColor: '#ffeb3b', 
       margin: '20px',
       border: '3px solid #f57f17',
-      borderRadius: '10px'
+      borderRadius: '10px',
+      position: 'relative',
+      zIndex: 1000
     }}>
       <h1>🧪 測試渲染 - RevenueStatistics 組件</h1>
       <p>如果你能看到這個黃色框，說明組件已經正常渲染！</p>
       <p>當前路徑: {location.pathname}</p>
       <p>時間: {new Date().toLocaleString()}</p>
+      <p>渲染ID: {Math.random().toString(36).substr(2, 9)}</p>
     </div>
   );
   
@@ -41,7 +45,7 @@ const RevenueStatistics = () => {
     return 'student'; // 默認返回學生明細
   }, [location.pathname]);
   
-  const [activeTab, setActiveTab] = useState(getDefaultTab());
+  const [activeTab, setActiveTab] = useState('student'); // 設置默認值，不依賴函數調用
   const [students, setStudents] = useState([]);
   const [teachers, setTeachers] = useState([]);
   const [classes, setClasses] = useState([]);
@@ -108,6 +112,50 @@ const RevenueStatistics = () => {
       coursesCount: courses.length
     });
   }, [loading, error, activeTab, students.length, teachers.length, classes.length, courses.length]);
+
+  // 添加一個永遠顯示的調試區域
+  const debugInfo = (
+    <div style={{ 
+      position: 'fixed',
+      top: '10px',
+      right: '10px',
+      backgroundColor: '#4caf50',
+      color: 'white',
+      padding: '10px',
+      borderRadius: '5px',
+      zIndex: 9999,
+      fontSize: '12px',
+      maxWidth: '300px',
+      boxShadow: '0 4px 8px rgba(0,0,0,0.3)'
+    }}>
+      <strong>🔍 實時調試信息</strong><br/>
+      路徑: {location.pathname}<br/>
+      標籤頁: {activeTab}<br/>
+      載入: {loading ? '是' : '否'}<br/>
+      錯誤: {error ? '是' : '否'}<br/>
+      學生: {students ? students.length : '未定義'}<br/>
+      教師: {teachers ? teachers.length : '未定義'}<br/>
+      課堂: {classes ? classes.length : '未定義'}<br/>
+      課程: {courses ? courses.length : '未定義'}<br/>
+      時間: {new Date().toLocaleTimeString()}
+    </div>
+  );
+
+  // 創建一個永遠顯示的內容區域，即使API調用失敗也不會消失
+  const safeContent = (
+    <div style={{ 
+      padding: '20px', 
+      backgroundColor: '#fff3cd', 
+      margin: '20px',
+      border: '2px solid #ffc107',
+      borderRadius: '10px'
+    }}>
+      <h2>🛡️ 安全內容區域</h2>
+      <p>這個區域應該永遠可見，即使有錯誤也不會消失！</p>
+      <p>當前時間: {new Date().toLocaleString()}</p>
+      <p>組件狀態: {loading ? '載入中' : error ? '有錯誤' : '正常'}</p>
+    </div>
+  );
 
   const fetchData = async () => {
     console.log('🔄 fetchData 開始執行');
@@ -643,36 +691,47 @@ const RevenueStatistics = () => {
     return `${date.getFullYear()}/${date.getMonth() + 1}/${date.getDate()}`;
   };
 
-  // 簡化版本 - 先確保基本渲染正常
-  if (loading) {
-    return (
-      <div className="revenue-statistics">
-        {testRender}
-        <div className="loading">載入中...</div>
-        <div style={{ padding: '20px', textAlign: 'center' }}>
-          <p>正在從 {config.API_URL} 獲取數據...</p>
-          <p>如果這個頁面消失，說明有問題！</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="revenue-statistics">
-        {testRender}
-        <div className="error-message" style={{ 
+  // 創建一個永遠顯示的基礎內容，確保組件不會消失
+  const baseContent = (
+    <div className="revenue-statistics" style={{ minHeight: '100vh', backgroundColor: '#f5f5f5' }}>
+      {/* 測試渲染 - 確保組件可見 */}
+      {testRender}
+      
+      {/* 實時調試信息 */}
+      {debugInfo}
+      
+      {/* 安全內容區域 - 永遠可見 */}
+      {safeContent}
+      
+      {/* 載入狀態顯示 */}
+      {loading && (
+        <div style={{ 
           padding: '20px', 
-          textAlign: 'center', 
-          color: 'red',
-          backgroundColor: '#fee',
-          border: '1px solid #fcc',
+          backgroundColor: '#e3f2fd', 
+          margin: '20px',
           borderRadius: '8px',
-          margin: '20px'
+          border: '2px solid #2196f3'
         }}>
-          <h3>錯誤</h3>
+          <h3>🔄 正在載入數據...</h3>
+          <p>正在從 {config.API_URL} 獲取數據</p>
+          <p>請稍候，組件不會消失！</p>
+          <p>載入開始時間: {new Date().toLocaleString()}</p>
+        </div>
+      )}
+
+      {/* 錯誤狀態顯示 */}
+      {error && (
+        <div style={{ 
+          padding: '20px', 
+          backgroundColor: '#fee', 
+          margin: '20px',
+          borderRadius: '8px',
+          border: '2px solid #fcc',
+          color: 'red'
+        }}>
+          <h3>❌ 發生錯誤</h3>
           <p>{error}</p>
-          <p><strong>重要：</strong> 組件應該保持可見，如果消失說明有嚴重問題！</p>
+          <p>錯誤時間: {new Date().toLocaleString()}</p>
           <button onClick={fetchData} style={{
             padding: '10px 20px',
             backgroundColor: '#007bff',
@@ -684,42 +743,47 @@ const RevenueStatistics = () => {
             重試
           </button>
         </div>
-      </div>
-    );
-  }
+      )}
 
-  // 添加額外的安全檢查 - 確保組件不會突然消失
-  if (!students || !teachers || !classes || !courses) {
-    return (
-      <div className="revenue-statistics">
-        {testRender}
-        <div style={{ 
-          padding: '20px', 
-          textAlign: 'center',
-          backgroundColor: '#fff3cd',
-          border: '2px solid #ffc107',
-          borderRadius: '8px',
-          margin: '20px'
-        }}>
-          <h3>⚠️ 數據未準備就緒</h3>
-          <p>組件數據尚未完全加載，請稍候...</p>
-          <p>學生: {students ? students.length : '未定義'}</p>
-          <p>教師: {teachers ? teachers.length : '未定義'}</p>
-          <p>課堂: {classes ? classes.length : '未定義'}</p>
-          <p>課程: {courses ? courses.length : '未定義'}</p>
-          <button onClick={fetchData} style={{
-            padding: '10px 20px',
-            backgroundColor: '#28a745',
-            color: 'white',
-            border: 'none',
-            borderRadius: '5px',
-            cursor: 'pointer'
-          }}>
-            重新加載數據
-          </button>
-        </div>
+      {/* 數據狀態顯示 */}
+      <div style={{ 
+        padding: '20px', 
+        backgroundColor: '#e8f5e8', 
+        margin: '20px',
+        borderRadius: '8px',
+        border: '2px solid #4caf50'
+      }}>
+        <h3>📊 數據狀態</h3>
+        <p>學生數量: {students ? students.length : '未定義'}</p>
+        <p>教師數量: {teachers ? teachers.length : '未定義'}</p>
+        <p>課堂數量: {classes ? classes.length : '未定義'}</p>
+        <p>課程數量: {courses ? courses.length : '未定義'}</p>
+        <p>載入狀態: {loading ? '載入中' : '載入完成'}</p>
+        <p>錯誤狀態: {error ? '有錯誤' : '無錯誤'}</p>
+        <p>最後更新: {new Date().toLocaleString()}</p>
       </div>
-    );
+
+      {/* 組件生命週期信息 */}
+      <div style={{ 
+        padding: '20px', 
+        backgroundColor: '#fff3cd', 
+        margin: '20px',
+        borderRadius: '8px',
+        border: '2px solid #ffc107'
+      }}>
+        <h3>🔧 組件調試信息</h3>
+        <p>組件ID: {Math.random().toString(36).substr(2, 9)}</p>
+        <p>渲染次數: {Date.now()}</p>
+        <p>當前路徑: {location.pathname}</p>
+        <p>當前標籤頁: {activeTab}</p>
+        <p>組件狀態: 正常運行</p>
+      </div>
+    </div>
+  );
+
+  // 如果還在載入或有錯誤，只顯示基礎內容
+  if (loading || error || !students || !teachers || !classes || !courses) {
+    return baseContent;
   }
 
   console.log('組件渲染，當前標籤頁:', activeTab);
@@ -729,50 +793,6 @@ const RevenueStatistics = () => {
     classes: classes.length,
     courses: courses.length
   });
-
-  // 添加一個永遠顯示的調試區域
-  const debugInfo = (
-    <div style={{ 
-      position: 'fixed',
-      top: '10px',
-      right: '10px',
-      backgroundColor: '#4caf50',
-      color: 'white',
-      padding: '10px',
-      borderRadius: '5px',
-      zIndex: 9999,
-      fontSize: '12px',
-      maxWidth: '300px',
-      boxShadow: '0 4px 8px rgba(0,0,0,0.3)'
-    }}>
-      <strong>🔍 實時調試信息</strong><br/>
-      路徑: {location.pathname}<br/>
-      標籤頁: {activeTab}<br/>
-      載入: {loading ? '是' : '否'}<br/>
-      錯誤: {error ? '是' : '否'}<br/>
-      學生: {students ? students.length : '未定義'}<br/>
-      教師: {teachers ? teachers.length : '未定義'}<br/>
-      課堂: {classes ? classes.length : '未定義'}<br/>
-      課程: {courses ? courses.length : '未定義'}<br/>
-      時間: {new Date().toLocaleTimeString()}
-    </div>
-  );
-
-  // 創建一個永遠顯示的內容區域，即使API調用失敗也不會消失
-  const safeContent = (
-    <div style={{ 
-      padding: '20px', 
-      backgroundColor: '#fff3cd', 
-      margin: '20px',
-      border: '2px solid #ffc107',
-      borderRadius: '10px'
-    }}>
-      <h2>🛡️ 安全內容區域</h2>
-      <p>這個區域應該永遠可見，即使有錯誤也不會消失！</p>
-      <p>當前時間: {new Date().toLocaleString()}</p>
-      <p>組件狀態: {loading ? '載入中' : error ? '有錯誤' : '正常'}</p>
-    </div>
-  );
 
   return (
     <div className="revenue-statistics">
