@@ -88,7 +88,7 @@ const RevenueStatistics = () => {
     
     let filteredData = classes.filter(cls => {
       if (selectedStudent && cls.studentId !== selectedStudent) return false;
-      if (selectedMonth) {
+    if (selectedMonth) {
         const classDate = new Date(cls.date);
         const classMonth = `${classDate.getFullYear()}-${String(classDate.getMonth() + 1).padStart(2, '0')}`;
         if (classMonth !== selectedMonth) return false;
@@ -102,14 +102,14 @@ const RevenueStatistics = () => {
       const teacher = teachers.find(t => t.teacherId === cls.teacherId);
       
       return {
-        date: cls.date,
+            date: cls.date,
         studentName: student ? (student.nameZh || student.nameEn) : '未知學生',
         courseName: course ? `${course.grade}${course.subject}` : '未知課程',
         teacherName: teacher ? (teacher.nameZh || teacher.nameEn) : '未知教師',
-        amount: cls.price
+            amount: cls.price
       };
     });
-
+    
     setStudentData(data);
     setTotalAmount(data.reduce((sum, item) => sum + item.amount, 0));
   }, [classes, students, courses, teachers, selectedStudent, selectedMonth]);
@@ -119,7 +119,7 @@ const RevenueStatistics = () => {
     
     let filteredData = classes.filter(cls => {
       if (selectedTeacher && cls.teacherId !== selectedTeacher) return false;
-      if (selectedTeacherMonth) {
+    if (selectedTeacherMonth) {
         const classDate = new Date(cls.date);
         const classMonth = `${classDate.getFullYear()}-${String(classDate.getMonth() + 1).padStart(2, '0')}`;
         if (classMonth !== selectedTeacherMonth) return false;
@@ -132,20 +132,20 @@ const RevenueStatistics = () => {
       const course = courses.find(c => c.courseId === cls.courseId);
       
       return {
-        date: cls.date,
+              date: cls.date,
         teacherName: teacher ? (teacher.nameZh || teacher.nameEn) : '未知教師',
         courseName: course ? `${course.grade}${course.subject}` : '未知課程',
-        amount: cls.price
-      };
-    });
-
+              amount: cls.price
+        };
+      });
+    
     setTeacherData(data);
     setTotalAmount(data.reduce((sum, item) => sum + item.amount, 0));
   }, [classes, teachers, courses, selectedTeacher, selectedTeacherMonth]);
 
   const calculateDailyData = useCallback(() => {
     if (!classes.length) return;
-    
+
     let filteredData = classes;
     if (startDate && endDate) {
       filteredData = classes.filter(cls => {
@@ -176,7 +176,7 @@ const RevenueStatistics = () => {
 
   const calculateOverviewData = useCallback(() => {
     if (!classes.length || !courses.length || !teachers.length) return;
-    
+
     let filteredClasses = classes;
     if (selectedYear) {
       filteredClasses = classes.filter(cls => {
@@ -184,7 +184,7 @@ const RevenueStatistics = () => {
         return classDate.getFullYear().toString() === selectedYear;
       });
     }
-    
+
     if (selectedOverviewMonths.length > 0) {
       filteredClasses = filteredClasses.filter(cls => {
         const classDate = new Date(cls.date);
@@ -547,7 +547,7 @@ const RevenueStatistics = () => {
           營運概要
         </button>
       </div>
-
+      
       {/* 學生課堂明細內容 */}
       {activeTab === 'student' && (
         <div className="tab-content">
@@ -782,26 +782,26 @@ const RevenueStatistics = () => {
           </div>
           
           <div className="overview-tabs">
-            <button 
-              className={selectedListTab === 'teacher' ? 'active' : ''} 
+            <button
+              className={selectedListTab === 'teacher' ? 'active' : ''}
               onClick={() => setSelectedListTab('teacher')}
             >
               教師營收
             </button>
-            <button 
-              className={selectedListTab === 'course' ? 'active' : ''} 
+            <button
+              className={selectedListTab === 'course' ? 'active' : ''}
               onClick={() => setSelectedListTab('course')}
             >
               課程營收
             </button>
-            <button 
-              className={selectedListTab === 'grade' ? 'active' : ''} 
+            <button
+              className={selectedListTab === 'grade' ? 'active' : ''}
               onClick={() => setSelectedListTab('grade')}
             >
               年級營收
             </button>
-            <button 
-              className={selectedListTab === 'monthly' ? 'active' : ''} 
+            <button
+              className={selectedListTab === 'monthly' ? 'active' : ''}
               onClick={() => setSelectedListTab('monthly')}
             >
               月度營收

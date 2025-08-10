@@ -3210,8 +3210,38 @@ function App() {
           {/* 默認重定向 */}
           <Route path="/" element={
             <div className="content">
-              <h1>歡迎使用 Excelsia Education 管理系統</h1>
-              <p>請從左側選單選擇功能</p>
+              <div className="welcome-container">
+                <div className="welcome-header">
+                  <h1>歡迎使用 Excelsia Education 管理系統</h1>
+                  <p className="welcome-subtitle">專業的教育管理解決方案</p>
+                </div>
+                
+                <div className="welcome-content">
+                  <div className="welcome-section">
+                    <h3>📚 新增資料</h3>
+                    <p>快速新增課堂、課程、學生和教師資料，支援批量匯入 CSV 檔案</p>
+                  </div>
+                  
+                  <div className="welcome-section">
+                    <h3>🔧 資料管理</h3>
+                    <p>完整的資料管理功能，包含編輯、刪除、篩選和搜尋功能</p>
+                  </div>
+                  
+                  <div className="welcome-section">
+                    <h3>📊 營收統計</h3>
+                    <p>詳細的營收分析報表，包含營運概要、教師明細、學生明細和每日營收</p>
+                  </div>
+                  
+                  <div className="welcome-section">
+                    <h3>💰 賬單系統</h3>
+                    <p>專業的學生和教師賬單管理，支援 PDF 匯出和詳細記錄</p>
+                  </div>
+                </div>
+                
+                <div className="welcome-footer">
+                  <p>請從左側選單選擇您需要的功能</p>
+                </div>
+              </div>
             </div>
           } />
         </Routes>
