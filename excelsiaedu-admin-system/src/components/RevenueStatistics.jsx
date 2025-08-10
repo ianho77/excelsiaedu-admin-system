@@ -110,11 +110,13 @@ const RevenueStatistics = () => {
   }, [loading, error, activeTab, students.length, teachers.length, classes.length, courses.length]);
 
   const fetchData = async () => {
+    console.log('🔄 fetchData 開始執行');
     setLoading(true);
     setError(null); // 重置錯誤狀態
     console.log('開始獲取數據，API URL:', config.API_URL);
     
     try {
+      console.log('📡 發送API請求...');
       const [studentsRes, teachersRes, classesRes, coursesRes] = await Promise.all([
         fetch(`${config.API_URL}/students`),
         fetch(`${config.API_URL}/teachers`),
@@ -122,7 +124,7 @@ const RevenueStatistics = () => {
         fetch(`${config.API_URL}/courses`)
       ]);
 
-      console.log('API響應狀態:', {
+      console.log('📊 API響應狀態:', {
         students: studentsRes.status,
         teachers: teachersRes.status,
         classes: classesRes.status,
@@ -134,26 +136,31 @@ const RevenueStatistics = () => {
         throw new Error(`API響應錯誤: students(${studentsRes.status}), teachers(${teachersRes.status}), classes(${classesRes.status}), courses(${coursesRes.status})`);
       }
 
+      console.log('📥 開始解析JSON數據...');
       const studentsData = await studentsRes.json();
       const teachersData = await teachersRes.json();
       const classesData = await classesRes.json();
       const coursesData = await coursesRes.json();
 
-      console.log('獲取到的數據:', {
+      console.log('✅ 獲取到的數據:', {
         students: studentsData.length,
         teachers: teachersData.length,
         classes: classesData.length,
         courses: coursesData.length
       });
 
+      console.log('🔄 開始更新狀態...');
       setStudents(studentsData);
       setTeachers(teachersData);
       setClasses(classesData);
       setCourses(coursesData);
+      
+      console.log('✅ 狀態更新完成');
     } catch (error) {
-      console.error('獲取數據失敗:', error);
+      console.error('❌ 獲取數據失敗:', error);
       setError(`獲取數據失敗: ${error.message}`);
     } finally {
+      console.log('🏁 fetchData 執行完成，設置 loading 為 false');
       setLoading(false);
     }
   };
@@ -681,6 +688,40 @@ const RevenueStatistics = () => {
     );
   }
 
+  // 添加額外的安全檢查 - 確保組件不會突然消失
+  if (!students || !teachers || !classes || !courses) {
+    return (
+      <div className="revenue-statistics">
+        {testRender}
+        <div style={{ 
+          padding: '20px', 
+          textAlign: 'center',
+          backgroundColor: '#fff3cd',
+          border: '2px solid #ffc107',
+          borderRadius: '8px',
+          margin: '20px'
+        }}>
+          <h3>⚠️ 數據未準備就緒</h3>
+          <p>組件數據尚未完全加載，請稍候...</p>
+          <p>學生: {students ? students.length : '未定義'}</p>
+          <p>教師: {teachers ? teachers.length : '未定義'}</p>
+          <p>課堂: {classes ? classes.length : '未定義'}</p>
+          <p>課程: {courses ? courses.length : '未定義'}</p>
+          <button onClick={fetchData} style={{
+            padding: '10px 20px',
+            backgroundColor: '#28a745',
+            color: 'white',
+            border: 'none',
+            borderRadius: '5px',
+            cursor: 'pointer'
+          }}>
+            重新加載數據
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   console.log('組件渲染，當前標籤頁:', activeTab);
   console.log('數據狀態:', {
     students: students.length,
@@ -701,17 +742,19 @@ const RevenueStatistics = () => {
       borderRadius: '5px',
       zIndex: 9999,
       fontSize: '12px',
-      maxWidth: '300px'
+      maxWidth: '300px',
+      boxShadow: '0 4px 8px rgba(0,0,0,0.3)'
     }}>
       <strong>🔍 實時調試信息</strong><br/>
       路徑: {location.pathname}<br/>
       標籤頁: {activeTab}<br/>
       載入: {loading ? '是' : '否'}<br/>
       錯誤: {error ? '是' : '否'}<br/>
-      學生: {students.length}<br/>
-      教師: {teachers.length}<br/>
-      課堂: {classes.length}<br/>
-      課程: {courses.length}
+      學生: {students ? students.length : '未定義'}<br/>
+      教師: {teachers ? teachers.length : '未定義'}<br/>
+      課堂: {classes ? classes.length : '未定義'}<br/>
+      課程: {courses ? courses.length : '未定義'}<br/>
+      時間: {new Date().toLocaleTimeString()}
     </div>
   );
 
