@@ -3,8 +3,27 @@ const mongoose = require('mongoose');
 const cors = require('cors');
 
 const app = express();
-app.use(cors());
+
+// CORS配置 - 明確允許前端域名
+const corsOptions = {
+  origin: [
+    'https://excelsiaedu-admin-system.vercel.app',
+    'https://excelsiaedu-admin-system-git-main-ianho77.vercel.app',
+    'https://excelsiaedu-admin-system-git-main-ianho77.vercel.app',
+    'http://localhost:3000', // 開發環境
+    'http://localhost:3001'  // 開發環境
+  ],
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+  optionsSuccessStatus: 200
+};
+
+app.use(cors(corsOptions));
 app.use(express.json());
+
+// 添加預檢請求處理
+app.options('*', cors(corsOptions));
 
 // 連接MongoDB Atlas
 const MONGODB_URI = process.env.MONGODB_URI || 'mongodb+srv://ian20051102:LxMgTBnGVt3ygblv@excelsiaedu.xxjs6v7.mongodb.net/?retryWrites=true&w=majority&appName=excelsiaedu';
@@ -100,7 +119,7 @@ const TeacherBillingStatus = mongoose.model('TeacherBillingStatus', TeacherBilli
 // ==================== 用戶認證API ====================
 
 // 用戶登入API
-app.post('/api/auth/login', async (req, res) => {
+app.post('/auth/login', async (req, res) => {
   try {
     const { username, password, userType } = req.body;
     
@@ -136,7 +155,7 @@ app.post('/api/auth/login', async (req, res) => {
 });
 
 // 獲取所有用戶API（管理員用）
-app.get('/api/auth/users', async (req, res) => {
+app.get('/auth/users', async (req, res) => {
   try {
     const users = await User.find({}, { password: 0 }); // 不返回密碼
     res.json(users);
@@ -147,7 +166,7 @@ app.get('/api/auth/users', async (req, res) => {
 });
 
 // 創建新用戶API（管理員用）
-app.post('/api/auth/users', async (req, res) => {
+app.post('/auth/users', async (req, res) => {
   try {
     const { username, password, userType, name } = req.body;
     
@@ -181,7 +200,7 @@ app.post('/api/auth/users', async (req, res) => {
 });
 
 // 更新用戶密碼API
-app.put('/api/auth/users/:username/password', async (req, res) => {
+app.put('/auth/users/:username/password', async (req, res) => {
   try {
     const { username } = req.params;
     const { newPassword } = req.body;
@@ -202,7 +221,7 @@ app.put('/api/auth/users/:username/password', async (req, res) => {
 });
 
 // 刪除用戶API（管理員用）
-app.delete('/api/auth/users/:username', async (req, res) => {
+app.delete('/auth/users/:username', async (req, res) => {
   try {
     const { username } = req.params;
     
@@ -220,12 +239,12 @@ app.delete('/api/auth/users/:username', async (req, res) => {
 
 // ==================== 學生API ====================
 
-app.get('/api/students', async (req, res) => {
+app.get('/students', async (req, res) => {
   const students = await Student.find();
   res.json(students);
 });
 
-app.post('/api/students', async (req, res) => {
+app.post('/students', async (req, res) => {
   const count = await Student.countDocuments();
   const studentId = (count + 1).toString();
   const student = new Student({ studentId, ...req.body });
@@ -233,7 +252,7 @@ app.post('/api/students', async (req, res) => {
   res.json(student);
 });
 
-app.put('/api/students/:id', async (req, res) => {
+app.put('/students/:id', async (req, res) => {
   try {
     const student = await Student.findByIdAndUpdate(req.params.id, req.body, { new: true });
     if (!student) {
@@ -245,7 +264,7 @@ app.put('/api/students/:id', async (req, res) => {
   }
 });
 
-app.delete('/api/students/:id', async (req, res) => {
+app.delete('/students/:id', async (req, res) => {
   try {
     const student = await Student.findByIdAndDelete(req.params.id);
     if (!student) {
@@ -259,12 +278,12 @@ app.delete('/api/students/:id', async (req, res) => {
 
 // ==================== 課程API ====================
 
-app.get('/api/courses', async (req, res) => {
+app.get('/courses', async (req, res) => {
   const courses = await Course.find();
   res.json(courses);
 });
 
-app.post('/api/courses', async (req, res) => {
+app.post('/courses', async (req, res) => {
   const count = await Course.countDocuments();
   const courseId = (count + 1).toString();
   const course = new Course({ courseId, ...req.body });
@@ -272,7 +291,7 @@ app.post('/api/courses', async (req, res) => {
   res.json(course);
 });
 
-app.put('/api/courses/:id', async (req, res) => {
+app.put('/courses/:id', async (req, res) => {
   try {
     const course = await Course.findByIdAndUpdate(req.params.id, req.body, { new: true });
     if (!course) {
@@ -284,7 +303,7 @@ app.put('/api/courses/:id', async (req, res) => {
   }
 });
 
-app.delete('/api/courses/:id', async (req, res) => {
+app.delete('/courses/:id', async (req, res) => {
   try {
     const course = await Course.findByIdAndDelete(req.params.id);
     if (!course) {
@@ -298,12 +317,12 @@ app.delete('/api/courses/:id', async (req, res) => {
 
 // ==================== 課堂API ====================
 
-app.get('/api/classes', async (req, res) => {
+app.get('/classes', async (req, res) => {
   const classes = await Class.find();
   res.json(classes);
 });
 
-app.post('/api/classes', async (req, res) => {
+app.post('/classes', async (req, res) => {
   const count = await Class.countDocuments();
   const classId = (count + 1).toString();
   const newClass = new Class({ classId, ...req.body });
@@ -311,7 +330,7 @@ app.post('/api/classes', async (req, res) => {
   res.json(newClass);
 });
 
-app.put('/api/classes/:id', async (req, res) => {
+app.put('/classes/:id', async (req, res) => {
   try {
     const classData = await Class.findByIdAndUpdate(req.params.id, req.body, { new: true });
     if (!classData) {
@@ -323,7 +342,7 @@ app.put('/api/classes/:id', async (req, res) => {
   }
 });
 
-app.delete('/api/classes/:id', async (req, res) => {
+app.delete('/classes/:id', async (req, res) => {
   try {
     const classData = await Class.findByIdAndDelete(req.params.id);
     if (!classData) {
@@ -337,12 +356,12 @@ app.delete('/api/classes/:id', async (req, res) => {
 
 // ==================== 教師API ====================
 
-app.get('/api/teachers', async (req, res) => {
+app.get('/teachers', async (req, res) => {
   const teachers = await Teacher.find();
   res.json(teachers);
 });
 
-app.post('/api/teachers', async (req, res) => {
+app.post('/teachers', async (req, res) => {
   const count = await Teacher.countDocuments();
   const teacherId = (count + 1).toString();
   const teacher = new Teacher({ teacherId, ...req.body });
@@ -350,7 +369,7 @@ app.post('/api/teachers', async (req, res) => {
   res.json(teacher);
 });
 
-app.put('/api/teachers/:id', async (req, res) => {
+app.put('/teachers/:id', async (req, res) => {
   try {
     const teacher = await Teacher.findByIdAndUpdate(req.params.id, req.body, { new: true });
     if (!teacher) {
@@ -362,7 +381,7 @@ app.put('/api/teachers/:id', async (req, res) => {
   }
 });
 
-app.delete('/api/teachers/:id', async (req, res) => {
+app.delete('/teachers/:id', async (req, res) => {
   try {
     const teacher = await Teacher.findByIdAndDelete(req.params.id);
     if (!teacher) {
@@ -376,7 +395,7 @@ app.delete('/api/teachers/:id', async (req, res) => {
 
 // ==================== 學生賬單狀態API ====================
 
-app.get('/api/student-billing-status', async (req, res) => {
+app.get('/student-billing-status', async (req, res) => {
   try {
     const { studentId, month } = req.query;
     let query = {};
@@ -390,7 +409,7 @@ app.get('/api/student-billing-status', async (req, res) => {
   }
 });
 
-app.post('/api/student-billing-status', async (req, res) => {
+app.post('/student-billing-status', async (req, res) => {
   try {
     const { studentId, month, paymentStatus, paymentMethod, statementStatus, notes } = req.body;
     
@@ -423,7 +442,7 @@ app.post('/api/student-billing-status', async (req, res) => {
   }
 });
 
-app.put('/api/student-billing-status/:id', async (req, res) => {
+app.put('/student-billing-status/:id', async (req, res) => {
   try {
     const status = await StudentBillingStatus.findByIdAndUpdate(
       req.params.id,
@@ -441,7 +460,7 @@ app.put('/api/student-billing-status/:id', async (req, res) => {
 
 // ==================== 教師賬單狀態API ====================
 
-app.get('/api/teacher-billing-status', async (req, res) => {
+app.get('/teacher-billing-status', async (req, res) => {
   try {
     const { teacherId, month } = req.query;
     let query = {};
@@ -455,7 +474,7 @@ app.get('/api/teacher-billing-status', async (req, res) => {
   }
 });
 
-app.post('/api/teacher-billing-status', async (req, res) => {
+app.post('/teacher-billing-status', async (req, res) => {
   try {
     const { teacherId, month, isVerified, isPaid, notes } = req.body;
     
@@ -487,16 +506,13 @@ app.post('/api/teacher-billing-status', async (req, res) => {
   }
 });
 
-app.put('/api/teacher-billing-status/:id', async (req, res) => {
+app.put('/teacher-billing-status/:id', async (req, res) => {
   try {
     const status = await TeacherBillingStatus.findByIdAndUpdate(
       req.params.id,
       { ...req.body, updatedAt: Date.now() },
       { new: true }
     );
-    if (!status) {
-      return res.status(404).json({ message: '記錄不存在' });
-    }
     res.json(status);
   } catch (error) {
     res.status(500).json({ message: '更新失敗', error: error.message });
