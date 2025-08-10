@@ -1,20 +1,20 @@
 {
   "version": 2,
-  "buildCommand": "cd excelsiaedu-admin-system && npm run build",
+  "buildCommand": "npm run vercel-build",
   "outputDirectory": "excelsiaedu-admin-system/build",
   "functions": {
     "api/**/*.js": {
       "maxDuration": 30
     }
   },
-  "routes": [
+  "rewrites": [
     {
-      "src": "/api/(.*)",
-      "dest": "/api/index.js"
+      "source": "/api/(.*)",
+      "destination": "/api/index.js"
     },
     {
-      "src": "/(.*)",
-      "dest": "/index.html"
+      "source": "/(.*)",
+      "destination": "/index.html"
     }
   ],
   "headers": [

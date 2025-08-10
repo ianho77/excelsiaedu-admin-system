@@ -12,5 +12,8 @@
     "mongoose": "^7.5.0",
     "cors": "^2.8.5"
   },
-  "devDependencies": {}
+  "devDependencies": {},
+  "engines": {
+    "node": ">=18.0.0"
+  }
 }
