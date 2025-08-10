@@ -1,0 +1,5 @@
+[33ma77b633[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m)[m 优化 Vercel 配置，修复 SPA 路由问题
+[33mbdfb574[m 移除 package.json 中的 homepage 字段，优化 Vercel 部署配置
+[33mb198d74[m Simplify Vercel configuration and add test API endpoint
+[33m7851ce9[m Fix Vercel deployment: add API package.json and fix build configuration
+[33med13c54[m Fix API configuration: update API_URL to relative path and fix Vercel routing
