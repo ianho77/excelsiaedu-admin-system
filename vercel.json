@@ -1,11 +1,5 @@
 {
   "version": 2,
-  "builds": [
-    {
-      "src": "excelsiaedu-admin-system/package.json",
-      "use": "@vercel/static-build"
-    }
-  ],
   "rewrites": [
     {
       "source": "/(.*)",
