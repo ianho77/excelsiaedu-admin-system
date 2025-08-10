@@ -2,6 +2,7 @@
   "name": "excelsiaedu-admin-system",
   "version": "0.1.0",
   "private": true,
+  "homepage": ".",
   "dependencies": {
     "chart.js": "^4.5.0",
     "cors": "^2.8.5",

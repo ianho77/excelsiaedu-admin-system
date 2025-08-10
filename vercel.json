@@ -3,10 +3,7 @@
   "builds": [
     {
       "src": "excelsiaedu-admin-system/package.json",
-      "use": "@vercel/static-build",
-      "config": {
-        "distDir": "excelsiaedu-admin-system/build"
-      }
+      "use": "@vercel/static-build"
     }
   ],
   "rewrites": [
