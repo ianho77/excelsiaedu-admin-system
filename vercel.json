@@ -15,5 +15,11 @@
       "dest": "/$1"
     }
   ],
+  "rewrites": [
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
+    }
+  ],
   "outputDirectory": "excelsiaedu-admin-system/build"
 }
