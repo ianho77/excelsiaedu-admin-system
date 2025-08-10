@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import html2pdf from 'html2pdf.js';
 import JSZip from 'jszip';
 import './BillingSystem.css';
@@ -135,7 +135,7 @@ const BillingSystem = () => {
     localStorage.setItem('studentSelectedMonth', month);
   };
 
-  const calculateBillingData = async () => {
+  const calculateBillingData = useCallback(async () => {
     const filteredClasses = classes.filter(cls => {
       const classDate = new Date(cls.date);
       const classMonth = `${classDate.getFullYear()}-${String(classDate.getMonth() + 1).padStart(2, '0')}`;
@@ -196,7 +196,7 @@ const BillingSystem = () => {
       paidAmount,
       unpaidAmount
     });
-  };
+  }, [selectedMonth, students, classes]);
 
   // 獲取學生和課堂數據
   useEffect(() => {
@@ -220,7 +220,7 @@ const BillingSystem = () => {
       setBillingData([]);
       setStatistics({ totalAmount: 0, paidAmount: 0, unpaidAmount: 0 });
     }
-  }, [selectedMonth, students, classes, courses]);
+  }, [selectedMonth, students, classes, courses, calculateBillingData]);
 
   const fetchStudents = async () => {
     try {

@@ -1,6 +1,7 @@
 import React from 'react';
 import { Routes, Route, Link, useLocation } from 'react-router-dom';
 import Papa from 'papaparse';
+import config from './config';
 import ConfirmModal from './components/ConfirmModal';
 import EditModal from './components/EditModal';
 import ConfirmDeleteModal from './components/ConfirmDeleteModal';

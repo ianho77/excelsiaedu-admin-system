@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useLocation } from 'react-router-dom';
 import { Chart as ChartJS, ArcElement, Tooltip, Legend, CategoryScale, LinearScale, BarElement, PointElement, LineElement } from 'chart.js';
 import { Pie, Bar, Line } from 'react-chartjs-2';
@@ -12,14 +12,14 @@ const RevenueStatistics = () => {
   const location = useLocation();
   
   // 根據URL參數決定默認標籤頁
-  const getDefaultTab = () => {
+  const getDefaultTab = useCallback(() => {
     const path = location.pathname;
     if (path.includes('/revenue-teacher')) return 'teacher';
     if (path.includes('/revenue-daily')) return 'daily';
     if (path.includes('/revenue-overview')) return 'overview';
     if (path.includes('/revenue-student')) return 'student';
     return 'student'; // 默認返回學生明細
-  };
+  }, [location.pathname]);
   
   const [activeTab, setActiveTab] = useState(getDefaultTab());
   const [students, setStudents] = useState([]);
@@ -221,7 +221,7 @@ const RevenueStatistics = () => {
   }, []);
 
   // 計算學生數據
-  const calculateStudentData = () => {
+  const calculateStudentData = useCallback(() => {
     let filteredClasses = classes;
 
     // 學生篩選
@@ -299,10 +299,10 @@ const RevenueStatistics = () => {
     
     setStudentData(sortedStudentData);
     setTotalAmount(total);
-  };
+  }, [classes, selectedStudent, selectedMonth, courses, teachers, students]);
 
   // 計算教師數據
-  const calculateTeacherData = () => {
+  const calculateTeacherData = useCallback(() => {
     let filteredClasses = classes;
 
     if (selectedTeacher) {
@@ -375,10 +375,10 @@ const RevenueStatistics = () => {
     
     setTeacherData(sortedTeacherData);
     setTotalAmount(total);
-  };
+  }, [classes, selectedTeacher, selectedTeacherMonth, courses, teachers, students]);
 
   // 計算每日數據
-  const calculateDailyData = () => {
+  const calculateDailyData = useCallback(() => {
     let filteredClasses = classes;
 
     if (startDate && endDate) {
@@ -431,10 +431,10 @@ const RevenueStatistics = () => {
     const sortedData = Object.values(groupedData).sort((a, b) => new Date(a.date) - new Date(b.date));
     setDailyData(sortedData);
     setTotalAmount(total);
-  };
+  }, [classes, startDate, endDate, courses, teachers, students]);
 
   // 計算概覽數據
-  const calculateOverviewData = () => {
+  const calculateOverviewData = useCallback(() => {
     let filteredClasses = classes;
 
     if (selectedYear) {
@@ -534,7 +534,7 @@ const RevenueStatistics = () => {
     });
     
     setTotalAmount(total);
-  };
+  }, [classes, selectedYear, selectedOverviewMonths, courses, teachers]);
 
   useEffect(() => {
     if (activeTab === 'student') {
@@ -570,3 +570,399 @@ const RevenueStatistics = () => {
     const date = new Date(dateStr);
     return `${date.getFullYear()}/${date.getMonth() + 1}/${date.getDate()}`;
   };
+
+  if (loading) {
+    return <div className="loading">載入中...</div>;
+  }
+
+  return (
+    <div className="revenue-statistics">
+      <div className="tabs">
+        <button 
+          className={activeTab === 'student' ? 'active' : ''} 
+          onClick={() => setActiveTab('student')}
+        >
+          學生課堂明細
+        </button>
+        <button 
+          className={activeTab === 'teacher' ? 'active' : ''} 
+          onClick={() => setActiveTab('teacher')}
+        >
+          教師課堂明細
+        </button>
+        <button 
+          className={activeTab === 'daily' ? 'active' : ''} 
+          onClick={() => setActiveTab('daily')}
+        >
+          每日營收
+        </button>
+        <button 
+          className={activeTab === 'overview' ? 'active' : ''} 
+          onClick={() => setActiveTab('overview')}
+        >
+          營運概要
+        </button>
+      </div>
+
+      {activeTab === 'student' && (
+        <div className="tab-content">
+          <h2>學生課堂明細</h2>
+          <div className="filters">
+            <div className="filter-group">
+              <label>選擇學生：</label>
+              <div className="search-container">
+                <input
+                  type="text"
+                  placeholder="搜尋學生..."
+                  value={studentSearch}
+                  onChange={(e) => setStudentSearch(e.target.value)}
+                  onFocus={() => setShowStudentDropdown(true)}
+                />
+                {showStudentDropdown && (
+                  <div className="dropdown">
+                    {getFilteredStudents().map(student => (
+                      <div
+                        key={student.studentId}
+                        className="dropdown-item"
+                        onClick={() => {
+                          setSelectedStudent(student.studentId);
+                          setStudentSearch(student.nameZh || student.nameEn);
+                          setShowStudentDropdown(false);
+                        }}
+                      >
+                        {student.nameZh || student.nameEn}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+            <div className="filter-group">
+              <label>選擇月份：</label>
+              <select
+                value={selectedMonth}
+                onChange={(e) => setSelectedMonth(e.target.value)}
+              >
+                <option value="">全部月份</option>
+                {generateMonthOptionsWithAll()}
+              </select>
+            </div>
+          </div>
+          
+          {studentData.length > 0 && (
+            <div className="data-summary">
+              <h3>總計：{formatCurrency(totalAmount)}</h3>
+              <div className="data-table">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>日期</th>
+                      <th>學生</th>
+                      <th>課程</th>
+                      <th>教師</th>
+                      <th>金額</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {studentData.map((item, index) => (
+                      <tr key={index}>
+                        <td>{formatDate(item.date)}</td>
+                        <td>{item.studentName}</td>
+                        <td>{item.courseName}</td>
+                        <td>{item.teacherName}</td>
+                        <td>{formatCurrency(item.amount)}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {activeTab === 'teacher' && (
+        <div className="tab-content">
+          <h2>教師課堂明細</h2>
+          <div className="filters">
+            <div className="filter-group">
+              <label>選擇教師：</label>
+              <div className="search-container">
+                <input
+                  type="text"
+                  placeholder="搜尋教師..."
+                  value={teacherSearch}
+                  onChange={(e) => setTeacherSearch(e.target.value)}
+                  onFocus={() => setShowTeacherDropdown(true)}
+                />
+                {showTeacherDropdown && (
+                  <div className="dropdown">
+                    {getFilteredTeachers().map(teacher => (
+                      <div
+                        key={teacher.teacherId}
+                        className="dropdown-item"
+                        onClick={() => {
+                          setSelectedTeacher(teacher.teacherId);
+                          setTeacherSearch(teacher.name);
+                          setShowTeacherDropdown(false);
+                        }}
+                      >
+                        {teacher.name}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+            <div className="filter-group">
+              <label>選擇月份：</label>
+              <select
+                value={selectedTeacherMonth}
+                onChange={(e) => setSelectedTeacherMonth(e.target.value)}
+              >
+                <option value="">全部月份</option>
+                {generateMonthOptions()}
+              </select>
+            </div>
+          </div>
+          
+          {teacherData.length > 0 && (
+            <div className="data-summary">
+              <h3>總計：{formatCurrency(totalAmount)}</h3>
+              <div className="data-table">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>日期</th>
+                      <th>教師</th>
+                      <th>課程</th>
+                      <th>學生</th>
+                      <th>金額</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {teacherData.map((item, index) => (
+                      <tr key={index}>
+                        <td>{formatDate(item.date)}</td>
+                        <td>{item.teacherName}</td>
+                        <td>{item.courseName}</td>
+                        <td>{item.studentName}</td>
+                        <td>{formatCurrency(item.amount)}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {activeTab === 'daily' && (
+        <div className="tab-content">
+          <h2>每日營收</h2>
+          <div className="filters">
+            <div className="filter-group">
+              <label>開始日期：</label>
+              <input
+                type="date"
+                value={startDate}
+                onChange={(e) => setStartDate(e.target.value)}
+              />
+            </div>
+            <div className="filter-group">
+              <label>結束日期：</label>
+              <input
+                type="date"
+                value={endDate}
+                onChange={(e) => setEndDate(e.target.value)}
+              />
+            </div>
+          </div>
+          
+          {dailyData.length > 0 && (
+            <div className="data-summary">
+              <h3>總計：{formatCurrency(totalAmount)}</h3>
+              <div className="data-table">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>日期</th>
+                      <th>課堂數量</th>
+                      <th>總金額</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {dailyData.map((item, index) => (
+                      <tr key={index}>
+                        <td>{formatDate(item.date)}</td>
+                        <td>{item.classCount}</td>
+                        <td>{formatCurrency(item.amount)}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {activeTab === 'overview' && (
+        <div className="tab-content">
+          <h2>營運概要</h2>
+          <div className="filters">
+            <div className="filter-group">
+              <label>選擇年份：</label>
+              <select
+                value={selectedYear}
+                onChange={(e) => setSelectedYear(e.target.value)}
+              >
+                <option value="">全部年份</option>
+                {generateYearOptions()}
+              </select>
+            </div>
+            <div className="filter-group">
+              <label>選擇月份：</label>
+              <select
+                multiple
+                value={selectedOverviewMonths}
+                onChange={(e) => {
+                  const values = Array.from(e.target.selectedOptions, option => option.value);
+                  setSelectedOverviewMonths(values);
+                }}
+              >
+                {generateMonthOptions()}
+              </select>
+            </div>
+          </div>
+          
+          <div className="overview-tabs">
+            <button
+              className={selectedListTab === 'teacher' ? 'active' : ''}
+              onClick={() => setSelectedListTab('teacher')}
+            >
+              教師營收
+            </button>
+            <button
+              className={selectedListTab === 'course' ? 'active' : ''}
+              onClick={() => setSelectedListTab('course')}
+            >
+              課程營收
+            </button>
+            <button
+              className={selectedListTab === 'grade' ? 'active' : ''}
+              onClick={() => setSelectedListTab('grade')}
+            >
+              年級營收
+            </button>
+            <button
+              className={selectedListTab === 'monthly' ? 'active' : ''}
+              onClick={() => setSelectedListTab('monthly')}
+            >
+              月度營收
+            </button>
+          </div>
+          
+          {selectedListTab === 'teacher' && overviewData.teacherRevenue.length > 0 && (
+            <div className="data-summary">
+              <h3>教師營收統計</h3>
+              <div className="data-table">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>教師</th>
+                      <th>營收金額</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {overviewData.teacherRevenue.map((item, index) => (
+                      <tr key={index}>
+                        <td>{item.name}</td>
+                        <td>{formatCurrency(item.amount)}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+          
+          {selectedListTab === 'course' && overviewData.courseRevenue.length > 0 && (
+            <div className="data-summary">
+              <h3>課程營收統計</h3>
+              <div className="data-table">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>課程</th>
+                      <th>營收金額</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {overviewData.courseRevenue.map((item, index) => (
+                      <tr key={index}>
+                        <td>{item.fullName}</td>
+                        <td>{formatCurrency(item.amount)}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+          
+          {selectedListTab === 'grade' && overviewData.gradeRevenue.length > 0 && (
+            <div className="data-summary">
+              <h3>年級營收統計</h3>
+              <div className="data-table">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>年級</th>
+                      <th>營收金額</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {overviewData.gradeRevenue.map((item, index) => (
+                      <tr key={index}>
+                        <td>{item.name}</td>
+                        <td>{formatCurrency(item.amount)}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+          
+          {selectedListTab === 'monthly' && overviewData.monthlyRevenue.length > 0 && (
+            <div className="data-summary">
+              <h3>月度營收統計</h3>
+              <div className="data-table">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>月份</th>
+                      <th>營收金額</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {overviewData.monthlyRevenue.map((item, index) => (
+                      <tr key={index}>
+                        <td>{item.month}</td>
+                        <td>{formatCurrency(item.amount)}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default RevenueStatistics;
