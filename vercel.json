@@ -5,14 +5,15 @@
       "src": "excelsiaedu-admin-system/package.json",
       "use": "@vercel/static-build",
       "config": {
-        "distDir": "excelsiaedu-admin-system/build"
+        "distDir": "build"
       }
     }
   ],
   "routes": [
     {
       "src": "/(.*)",
-      "dest": "/excelsiaedu-admin-system/build/$1"
+      "dest": "/$1"
     }
-  ]
+  ],
+  "outputDirectory": "excelsiaedu-admin-system/build"
 }
