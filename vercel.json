@@ -2,10 +2,10 @@
   "version": 2,
   "builds": [
     {
-      "src": "package.json",
+      "src": "excelsiaedu-admin-system/package.json",
       "use": "@vercel/static-build",
       "config": {
-        "distDir": "excelsiaedu-admin-system/build"
+        "distDir": "build"
       }
     },
     {
@@ -28,7 +28,7 @@
     },
     {
       "source": "/(.*)",
-      "destination": "/index.html"
+      "destination": "/excelsiaedu-admin-system/index.html"
     }
   ],
   "functions": {

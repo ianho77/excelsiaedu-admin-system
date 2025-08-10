@@ -5,6 +5,8 @@ node_modules/
 # Production builds
 build/
 dist/
+# 允許 React 應用的構建文件
+!excelsiaedu-admin-system/build/
 
 # Environment variables
 .env
@@ -25,7 +27,7 @@ yarn-error.log*
 *.swo
 
 # OS
-.DS_Store
+.DDS_Store
 Thumbs.db
 
 # Temporary files
