@@ -11,16 +11,11 @@ ChartJS.register(ArcElement, Tooltip, Legend, CategoryScale, LinearScale, BarEle
 const RevenueStatistics = () => {
   const location = useLocation();
   
-  // 添加調試信息
-  console.log('🚀 RevenueStatistics 組件開始渲染');
-  console.log('🚀 當前路徑 (pathname):', location.pathname);
-  console.log('🚀 當前hash:', location.hash);
-  console.log('📍 組件渲染時間:', new Date().toISOString());
+  // 根據URL參數決定默認標籤頁
   
-  // 根據URL參數決定默認標籤頁 - 修復HashRouter路徑問題
+  // 根據URL參數決定默認標籤頁
   const getDefaultTab = useCallback(() => {
     const hash = location.hash;
-    console.log('getDefaultTab 被調用，hash:', hash);
     if (hash.includes('/revenue-teacher')) return 'teacher';
     if (hash.includes('/revenue-daily')) return 'daily';
     if (hash.includes('/revenue-overview')) return 'overview';
@@ -71,10 +66,9 @@ const RevenueStatistics = () => {
   const [dailyData, setDailyData] = useState([]);
   const [totalAmount, setTotalAmount] = useState(0);
 
-  // 新增 useEffect 來監聽 URL 變化並更新 activeTab
+  // 監聽 URL 變化並更新 activeTab
   useEffect(() => {
     const defaultTab = getDefaultTab();
-    console.log('設置默認標籤頁:', defaultTab);
     setActiveTab(defaultTab);
   }, [getDefaultTab]);
 
@@ -300,13 +294,10 @@ const RevenueStatistics = () => {
   };
 
   const fetchData = async () => {
-    console.log('🔄 fetchData 開始執行');
     setLoading(true);
-    setError(null); // 重置錯誤狀態
-    console.log('開始獲取數據，API URL:', config.API_URL);
+    setError(null);
     
     try {
-      console.log('📡 發送API請求...');
       const [studentsRes, teachersRes, classesRes, coursesRes] = await Promise.all([
         fetch(`${config.API_URL}/students`),
         fetch(`${config.API_URL}/teachers`),
@@ -314,43 +305,24 @@ const RevenueStatistics = () => {
         fetch(`${config.API_URL}/courses`)
       ]);
 
-      console.log('📊 API響應狀態:', {
-        students: studentsRes.status,
-        teachers: teachersRes.status,
-        classes: classesRes.status,
-        courses: coursesRes.status
-      });
-
       // 檢查響應狀態
       if (!studentsRes.ok || !teachersRes.ok || !classesRes.ok || !coursesRes.ok) {
         throw new Error(`API響應錯誤: students(${studentsRes.status}), teachers(${teachersRes.status}), classes(${classesRes.status}), courses(${coursesRes.status})`);
       }
 
-      console.log('📥 開始解析JSON數據...');
       const studentsData = await studentsRes.json();
       const teachersData = await teachersRes.json();
       const classesData = await classesRes.json();
       const coursesData = await coursesRes.json();
 
-      console.log('✅ 獲取到的數據:', {
-        students: studentsData.length,
-        teachers: teachersData.length,
-        classes: classesData.length,
-        courses: coursesData.length
-      });
-
-      console.log('🔄 開始更新狀態...');
       setStudents(studentsData);
       setTeachers(teachersData);
       setClasses(classesData);
       setCourses(coursesData);
-      
-      console.log('✅ 狀態更新完成');
     } catch (error) {
-      console.error('❌ 獲取數據失敗:', error);
+      console.error('獲取數據失敗:', error);
       setError(`獲取數據失敗: ${error.message}`);
     } finally {
-      console.log('🏁 fetchData 執行完成，設置 loading 為 false');
       setLoading(false);
     }
   };
@@ -462,24 +434,6 @@ const RevenueStatistics = () => {
   // 簡化的組件渲染
   return (
     <div className="revenue-statistics">
-      {/* 調試信息區域 */}
-      <div style={{ 
-        padding: '20px', 
-        backgroundColor: '#e3f2fd', 
-        marginBottom: '20px', 
-        borderRadius: '5px',
-        border: '2px solid #2196f3'
-      }}>
-        <h2>🔧 調試信息</h2>
-        <p><strong>當前路徑 (pathname):</strong> {location.pathname}</p>
-        <p><strong>當前Hash:</strong> {location.hash}</p>
-        <p><strong>當前標籤頁:</strong> {activeTab}</p>
-        <p><strong>載入狀態:</strong> {loading ? '載入中...' : '載入完成'}</p>
-        <p><strong>錯誤狀態:</strong> {error ? error : '無錯誤'}</p>
-        <p><strong>API URL:</strong> {config.API_URL}</p>
-        <p><strong>數據狀態:</strong> 學生: {students ? students.length : '未定義'}, 教師: {teachers ? teachers.length : '未定義'}, 課堂: {classes ? classes.length : '未定義'}, 課程: {courses ? courses.length : '未定義'}</p>
-      </div>
-      
       {/* 載入狀態顯示 */}
       {loading && (
         <div style={{ 
