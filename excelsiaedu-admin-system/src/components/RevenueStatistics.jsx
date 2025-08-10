@@ -89,12 +89,25 @@ const RevenueStatistics = () => {
     const defaultTab = getDefaultTab();
     console.log('設置默認標籤頁:', defaultTab);
     setActiveTab(defaultTab);
-  }, [location.pathname, getDefaultTab]);
+  }, [location.pathname]); // 移除 getDefaultTab 依賴項
 
   useEffect(() => {
     console.log('組件掛載，開始獲取數據');
     fetchData();
   }, []);
+
+  // 添加一個useEffect來監控組件狀態變化
+  useEffect(() => {
+    console.log('組件狀態變化:', {
+      loading,
+      error,
+      activeTab,
+      studentsCount: students.length,
+      teachersCount: teachers.length,
+      classesCount: classes.length,
+      coursesCount: courses.length
+    });
+  }, [loading, error, activeTab, students.length, teachers.length, classes.length, courses.length]);
 
   const fetchData = async () => {
     setLoading(true);
@@ -631,6 +644,7 @@ const RevenueStatistics = () => {
         <div className="loading">載入中...</div>
         <div style={{ padding: '20px', textAlign: 'center' }}>
           <p>正在從 {config.API_URL} 獲取數據...</p>
+          <p>如果這個頁面消失，說明有問題！</p>
         </div>
       </div>
     );
@@ -651,6 +665,7 @@ const RevenueStatistics = () => {
         }}>
           <h3>錯誤</h3>
           <p>{error}</p>
+          <p><strong>重要：</strong> 組件應該保持可見，如果消失說明有嚴重問題！</p>
           <button onClick={fetchData} style={{
             padding: '10px 20px',
             backgroundColor: '#007bff',
@@ -674,10 +689,58 @@ const RevenueStatistics = () => {
     courses: courses.length
   });
 
+  // 添加一個永遠顯示的調試區域
+  const debugInfo = (
+    <div style={{ 
+      position: 'fixed',
+      top: '10px',
+      right: '10px',
+      backgroundColor: '#4caf50',
+      color: 'white',
+      padding: '10px',
+      borderRadius: '5px',
+      zIndex: 9999,
+      fontSize: '12px',
+      maxWidth: '300px'
+    }}>
+      <strong>🔍 實時調試信息</strong><br/>
+      路徑: {location.pathname}<br/>
+      標籤頁: {activeTab}<br/>
+      載入: {loading ? '是' : '否'}<br/>
+      錯誤: {error ? '是' : '否'}<br/>
+      學生: {students.length}<br/>
+      教師: {teachers.length}<br/>
+      課堂: {classes.length}<br/>
+      課程: {courses.length}
+    </div>
+  );
+
+  // 創建一個永遠顯示的內容區域，即使API調用失敗也不會消失
+  const safeContent = (
+    <div style={{ 
+      padding: '20px', 
+      backgroundColor: '#fff3cd', 
+      margin: '20px',
+      border: '2px solid #ffc107',
+      borderRadius: '10px'
+    }}>
+      <h2>🛡️ 安全內容區域</h2>
+      <p>這個區域應該永遠可見，即使有錯誤也不會消失！</p>
+      <p>當前時間: {new Date().toLocaleString()}</p>
+      <p>組件狀態: {loading ? '載入中' : error ? '有錯誤' : '正常'}</p>
+    </div>
+  );
+
   return (
     <div className="revenue-statistics">
       {/* 測試渲染 - 確保組件可見 */}
       {testRender}
+      
+      {/* 實時調試信息 */}
+      {debugInfo}
+      
+      {/* 安全內容區域 - 永遠可見 */}
+      {safeContent}
       
       <div style={{ 
         padding: '20px', 
@@ -693,6 +756,7 @@ const RevenueStatistics = () => {
         <p><strong>錯誤狀態:</strong> {error ? error : '無錯誤'}</p>
         <p><strong>API URL:</strong> {config.API_URL}</p>
         <p><strong>數據狀態:</strong> 學生: {students.length}, 教師: {teachers.length}, 課堂: {classes.length}, 課程: {courses.length}</p>
+        <p><strong>重要提示:</strong> 如果這個區域消失，請檢查控制台錯誤！</p>
       </div>
       
       <div className="tabs">
