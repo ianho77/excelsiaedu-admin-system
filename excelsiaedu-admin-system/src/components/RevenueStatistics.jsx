@@ -12,40 +12,23 @@ const RevenueStatistics = () => {
   const location = useLocation();
   
   // 添加調試信息
-  console.log('🚀 RevenueStatistics 組件開始渲染，當前路徑:', location.pathname);
+  console.log('🚀 RevenueStatistics 組件開始渲染');
+  console.log('🚀 當前路徑 (pathname):', location.pathname);
+  console.log('🚀 當前hash:', location.hash);
   console.log('📍 組件渲染時間:', new Date().toISOString());
   
-  // 立即渲染測試內容，確保組件可見
-  const testRender = (
-    <div style={{ 
-      padding: '20px', 
-      backgroundColor: '#ffeb3b', 
-      margin: '20px',
-      border: '3px solid #f57f17',
-      borderRadius: '10px',
-      position: 'relative',
-      zIndex: 1000
-    }}>
-      <h1>🧪 測試渲染 - RevenueStatistics 組件</h1>
-      <p>如果你能看到這個黃色框，說明組件已經正常渲染！</p>
-      <p>當前路徑: {location.pathname}</p>
-      <p>時間: {new Date().toLocaleString()}</p>
-      <p>渲染ID: {Math.random().toString(36).substr(2, 9)}</p>
-    </div>
-  );
-  
-  // 根據URL參數決定默認標籤頁
+  // 根據URL參數決定默認標籤頁 - 修復HashRouter路徑問題
   const getDefaultTab = useCallback(() => {
-    const path = location.pathname;
-    console.log('getDefaultTab 被調用，路徑:', path);
-    if (path.includes('/revenue-teacher')) return 'teacher';
-    if (path.includes('/revenue-daily')) return 'daily';
-    if (path.includes('/revenue-overview')) return 'overview';
-    if (path.includes('/revenue-student')) return 'student';
-    return 'student'; // 默認返回學生明細
-  }, [location.pathname]);
+    const hash = location.hash;
+    console.log('getDefaultTab 被調用，hash:', hash);
+    if (hash.includes('/revenue-teacher')) return 'teacher';
+    if (hash.includes('/revenue-daily')) return 'daily';
+    if (hash.includes('/revenue-overview')) return 'overview';
+    if (hash.includes('/revenue-student')) return 'student';
+    return 'overview'; // 默認返回營運概要
+  }, [location.hash]);
   
-  const [activeTab, setActiveTab] = useState('student'); // 設置默認值，不依賴函數調用
+  const [activeTab, setActiveTab] = useState('overview'); // 設置默認值
   const [students, setStudents] = useState([]);
   const [teachers, setTeachers] = useState([]);
   const [classes, setClasses] = useState([]);
@@ -93,478 +76,119 @@ const RevenueStatistics = () => {
     const defaultTab = getDefaultTab();
     console.log('設置默認標籤頁:', defaultTab);
     setActiveTab(defaultTab);
-  }, [location.pathname, getDefaultTab]);
+  }, [getDefaultTab]);
 
   useEffect(() => {
-    console.log('組件掛載，開始獲取數據');
     fetchData();
-  }, []);
+  }, []); // 只在組件掛載時執行一次
 
-  // 添加一個useEffect來監控組件狀態變化
-  useEffect(() => {
-    console.log('組件狀態變化:', {
-      loading,
-      error,
-      activeTab,
-      studentsCount: students.length,
-      teachersCount: teachers.length,
-      classesCount: classes.length,
-      coursesCount: courses.length
-    });
-  }, [loading, error, activeTab, students.length, teachers.length, classes.length, courses.length]);
-
-  // 添加一個永遠顯示的調試區域
-  const debugInfo = (
-    <div style={{ 
-      position: 'fixed',
-      top: '10px',
-      right: '10px',
-      backgroundColor: '#4caf50',
-      color: 'white',
-      padding: '10px',
-      borderRadius: '5px',
-      zIndex: 9999,
-      fontSize: '12px',
-      maxWidth: '300px',
-      boxShadow: '0 4px 8px rgba(0,0,0,0.3)'
-    }}>
-      <strong>🔍 實時調試信息</strong><br/>
-      路徑: {location.pathname}<br/>
-      標籤頁: {activeTab}<br/>
-      載入: {loading ? '是' : '否'}<br/>
-      錯誤: {error ? '是' : '否'}<br/>
-      學生: {students ? students.length : '未定義'}<br/>
-      教師: {teachers ? teachers.length : '未定義'}<br/>
-      課堂: {classes ? classes.length : '未定義'}<br/>
-      課程: {courses ? courses.length : '未定義'}<br/>
-      時間: {new Date().toLocaleTimeString()}
-    </div>
-  );
-
-  // 創建一個永遠顯示的內容區域，即使API調用失敗也不會消失
-  const safeContent = (
-    <div style={{ 
-      padding: '20px', 
-      backgroundColor: '#fff3cd', 
-      margin: '20px',
-      border: '2px solid #ffc107',
-      borderRadius: '10px'
-    }}>
-      <h2>🛡️ 安全內容區域</h2>
-      <p>這個區域應該永遠可見，即使有錯誤也不會消失！</p>
-      <p>當前時間: {new Date().toLocaleString()}</p>
-      <p>組件狀態: {loading ? '載入中' : error ? '有錯誤' : '正常'}</p>
-    </div>
-  );
-
-  const fetchData = async () => {
-    console.log('🔄 fetchData 開始執行');
-    setLoading(true);
-    setError(null); // 重置錯誤狀態
-    console.log('開始獲取數據，API URL:', config.API_URL);
-    
-    try {
-      console.log('📡 發送API請求...');
-      const [studentsRes, teachersRes, classesRes, coursesRes] = await Promise.all([
-        fetch(`${config.API_URL}/students`),
-        fetch(`${config.API_URL}/teachers`),
-        fetch(`${config.API_URL}/classes`),
-        fetch(`${config.API_URL}/courses`)
-      ]);
-
-      console.log('📊 API響應狀態:', {
-        students: studentsRes.status,
-        teachers: teachersRes.status,
-        classes: classesRes.status,
-        courses: coursesRes.status
-      });
-
-      // 檢查響應狀態
-      if (!studentsRes.ok || !teachersRes.ok || !classesRes.ok || !coursesRes.ok) {
-        throw new Error(`API響應錯誤: students(${studentsRes.status}), teachers(${teachersRes.status}), classes(${classesRes.status}), courses(${coursesRes.status})`);
-      }
-
-      console.log('📥 開始解析JSON數據...');
-      const studentsData = await studentsRes.json();
-      const teachersData = await teachersRes.json();
-      const classesData = await classesRes.json();
-      const coursesData = await coursesRes.json();
-
-      console.log('✅ 獲取到的數據:', {
-        students: studentsData.length,
-        teachers: teachersData.length,
-        classes: classesData.length,
-        courses: coursesData.length
-      });
-
-      console.log('🔄 開始更新狀態...');
-      setStudents(studentsData);
-      setTeachers(teachersData);
-      setClasses(classesData);
-      setCourses(coursesData);
-      
-      console.log('✅ 狀態更新完成');
-    } catch (error) {
-      console.error('❌ 獲取數據失敗:', error);
-      setError(`獲取數據失敗: ${error.message}`);
-    } finally {
-      console.log('🏁 fetchData 執行完成，設置 loading 為 false');
-      setLoading(false);
-    }
-  };
-
-  // 生成月份選項（12個月+全部月份）
-  const generateMonthOptionsWithAll = () => {
-    const months = [
-      { value: 'all', label: '全部月份' }
-    ];
-    
-    // 根據選擇的年份生成月份選項
-    const currentYear = new Date().getFullYear();
-    const year = selectedYear || currentYear;
-    
-    for (let i = 1; i <= 12; i++) {
-      const month = new Date(year, i - 1);
-      months.push({
-        value: i.toString(),
-        label: `${month.getMonth() + 1}月`
-      });
-    }
-    
-    return months;
-  };
-
-  // 生成年份選項
-  const generateYearOptions = () => {
-    const years = [];
-    const currentYear = new Date().getFullYear();
-    
-    for (let i = 0; i < 3; i++) {
-      const year = currentYear - i;
-      years.push({ value: year.toString(), label: `${year}年` });
-    }
-    
-    return years;
-  };
-
-  // 生成月份選項（用於其他標籤頁）
-  const generateMonthOptions = () => {
-    const months = [];
-    const currentDate = new Date();
-    
-    for (let i = 0; i < 12; i++) {
-      const date = new Date(currentDate.getFullYear(), currentDate.getMonth() - i, 1);
-      const monthStr = `${date.getFullYear()}-${date.getMonth() + 1}`;
-      const monthLabel = `${date.getFullYear()}年${date.getMonth() + 1}月`;
-      months.push({ value: monthStr, label: monthLabel });
-    }
-    
-    return months;
-  };
-
-  // 處理月份選擇
-  // const handleMonthSelection = (monthValue) => {
-  //   if (monthValue === 'all') {
-  //     // 如果選擇「全部月份」
-  //     const allMonths = generateMonthOptionsWithAll()
-  //       .filter(month => month.value !== 'all')
-  //       .map(month => month.value);
-      
-  //     // 檢查是否所有月份都已選中
-  //     const isAllSelected = allMonths.every(month => selectedOverviewMonths.includes(month));
-      
-  //     if (isAllSelected) {
-  //       // 如果所有月份都已選中，則取消選中所有月份
-  //       setSelectedOverviewMonths([]);
-  //     } else {
-  //       // 否則選中所有月份
-  //       setSelectedOverviewMonths(allMonths);
-  //     }
-  //   } else {
-  //     // 如果選擇個別月份
-  //     setSelectedOverviewMonths(prev => {
-  //       if (prev.includes(monthValue)) {
-  //           // 如果已經選中，則取消選中
-  //           return prev.filter(m => m !== monthValue);
-  //         } else {
-  //           // 如果未選中，則添加到選中列表
-  //           return [...prev, monthValue];
-  //         }
-  //       });
-  //     }
-  //   }
-  // };
-
-  // 過濾學生選項
-  const getFilteredStudents = () => {
-    if (!studentSearch) return students;
-    const filtered = students.filter(student => {
-      const studentId = student.studentId || student.id || '';
-      const nameZh = student.nameZh || '';
-      const nameEn = student.nameEn || '';
-      return String(studentId).includes(studentSearch) || 
-             nameZh.toLowerCase().includes(studentSearch.toLowerCase()) ||
-             nameEn.toLowerCase().includes(studentSearch.toLowerCase());
-    });
-    return filtered;
-  };
-
-  // 過濾教師選項
-  const getFilteredTeachers = () => {
-    if (!teacherSearch) return teachers;
-    const filtered = teachers.filter(teacher => {
-      const teacherId = teacher.teacherId || teacher.id || '';
-      const name = teacher.name || '';
-      return String(teacherId).includes(teacherSearch) || 
-             name.toLowerCase().includes(teacherSearch.toLowerCase());
-    });
-    return filtered;
-  };
-
-  // 點擊外部關閉下拉選單
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (!event.target.closest('.search-dropdown')) {
-        setShowStudentDropdown(false);
-        setShowTeacherDropdown(false);
-      }
-    };
-
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
-  }, []);
-
-  // 計算學生數據
+  // 修復 useEffect 依賴問題 - 使用 useCallback 包裝函數
   const calculateStudentData = useCallback(() => {
-    let filteredClasses = classes;
-
-    // 學生篩選
-    if (selectedStudent) {
-      filteredClasses = filteredClasses.filter(cls => {
-        const matches = String(cls.studentId) === String(selectedStudent);
-        return matches;
-      });
-    }
-
-    // 月份篩選
-    if (selectedMonth) {
-      filteredClasses = filteredClasses.filter(cls => {
+    if (!classes.length || !students.length || !courses.length || !teachers.length) return;
+    
+    let filteredData = classes.filter(cls => {
+      if (selectedStudent && cls.studentId !== selectedStudent) return false;
+      if (selectedMonth) {
         const classDate = new Date(cls.date);
-        const classMonth = `${classDate.getFullYear()}-${classDate.getMonth() + 1}`;
-        return classMonth === selectedMonth;
-      });
-    }
-
-    // 按學生分組
-    const groupedData = {};
-    let total = 0;
-
-    filteredClasses.forEach(cls => {
-      const course = courses.find(c => c.courseId === cls.courseId);
-      const teacherId = cls.teacherId || (course ? course.teacherId : null);
-      const teacher = teachers.find(t => t.teacherId === teacherId);
-      
-      if (cls.studentId) {
-        const student = students.find(s => s.studentId === cls.studentId);
-        if (student) {
-          if (!groupedData[student.studentId]) {
-            groupedData[student.studentId] = {
-              studentId: student.studentId,
-              studentName: `${student.nameZh} (${student.nameEn})`,
-              classes: []
-            };
-          }
-          
-          groupedData[student.studentId].classes.push({
-            date: cls.date,
-            subject: course ? `${course.grade}${course.subject}` : '未知科目',
-            teacher: teacher ? teacher.name : '未知教師',
-            amount: cls.price
-          });
-          
-          total += cls.price;
-        }
+        const classMonth = `${classDate.getFullYear()}-${String(classDate.getMonth() + 1).padStart(2, '0')}`;
+        if (classMonth !== selectedMonth) return false;
       }
+      return true;
     });
 
-    const sortedStudentData = Object.values(groupedData).map(student => {
-      const sortedClasses = student.classes.sort((a, b) => {
-        const teacherCompare = b.teacher.localeCompare(a.teacher);
-        if (teacherCompare !== 0) return teacherCompare;
-        
-        const aSubject = a.subject.replace(/^[中一二三四五六]/, '');
-        const bSubject = b.subject.replace(/^[中一二三四五六]/, '');
-        
-        const aCourse = courses.find(c => c.subject === aSubject);
-        const bCourse = courses.find(c => c.subject === bSubject);
-        
-        if (aCourse && bCourse) {
-          return bCourse.courseId.localeCompare(aCourse.courseId);
-        }
-        
-        return bSubject.localeCompare(aSubject);
-      });
+    const data = filteredData.map(cls => {
+      const student = students.find(s => s.studentId === cls.studentId);
+      const course = courses.find(c => c.courseId === cls.courseId);
+      const teacher = teachers.find(t => t.teacherId === cls.teacherId);
       
       return {
-        ...student,
-        classes: sortedClasses
+        date: cls.date,
+        studentName: student ? (student.nameZh || student.nameEn) : '未知學生',
+        courseName: course ? `${course.grade}${course.subject}` : '未知課程',
+        teacherName: teacher ? (teacher.nameZh || teacher.nameEn) : '未知教師',
+        amount: cls.price
       };
     });
-    
-    setStudentData(sortedStudentData);
-    setTotalAmount(total);
-  }, [classes, selectedStudent, selectedMonth, courses, teachers, students]);
 
-  // 計算教師數據
+    setStudentData(data);
+    setTotalAmount(data.reduce((sum, item) => sum + item.amount, 0));
+  }, [classes, students, courses, teachers, selectedStudent, selectedMonth]);
+
   const calculateTeacherData = useCallback(() => {
-    let filteredClasses = classes;
-
-    if (selectedTeacher) {
-      filteredClasses = filteredClasses.filter(cls => {
-        const course = courses.find(c => c.courseId === cls.courseId);
-        const teacherId = cls.teacherId || (course ? course.teacherId : null);
-        return String(teacherId) === String(selectedTeacher);
-      });
-    }
-
-    if (selectedTeacherMonth) {
-      filteredClasses = filteredClasses.filter(cls => {
+    if (!classes.length || !teachers.length || !courses.length) return;
+    
+    let filteredData = classes.filter(cls => {
+      if (selectedTeacher && cls.teacherId !== selectedTeacher) return false;
+      if (selectedTeacherMonth) {
         const classDate = new Date(cls.date);
-        const classMonth = `${classDate.getFullYear()}-${classDate.getMonth() + 1}`;
-        return classMonth === selectedTeacherMonth;
-      });
-    }
-
-    const groupedData = {};
-    let total = 0;
-
-    filteredClasses.forEach(cls => {
-      const course = courses.find(c => c.courseId === cls.courseId);
-      const teacherId = cls.teacherId || (course ? course.teacherId : null);
-      const teacher = teachers.find(t => t.teacherId === teacherId);
-      
-      if (teacher) {
-        if (!groupedData[teacher.teacherId]) {
-          groupedData[teacher.teacherId] = {
-            teacherId: teacher.teacherId,
-            teacherName: teacher.name,
-            classes: []
-          };
-        }
-        
-        if (cls.studentId) {
-          const student = students.find(s => s.studentId === cls.studentId);
-          if (student) {
-            groupedData[teacher.teacherId].classes.push({
-              studentName: `${student.studentId} - ${student.nameZh} (${student.nameEn})`,
-              subject: course ? `${course.grade}${course.subject}` : '未知科目',
-              date: cls.date,
-              amount: cls.price
-            });
-            
-            total += cls.price;
-          }
-        }
+        const classMonth = `${classDate.getFullYear()}-${String(classDate.getMonth() + 1).padStart(2, '0')}`;
+        if (classMonth !== selectedTeacherMonth) return false;
       }
+      return true;
     });
 
-    const sortedTeacherData = Object.values(groupedData)
-      .sort((a, b) => {
-        const teacherIdA = parseInt(a.teacherId) || 0;
-        const teacherIdB = parseInt(b.teacherId) || 0;
-        return teacherIdA - teacherIdB;
-      })
-      .map(teacher => {
-        const sortedClasses = teacher.classes.sort((a, b) => {
-          const aStudentId = a.studentName.split(' - ')[0];
-          const bStudentId = b.studentName.split(' - ')[0];
-          return bStudentId.localeCompare(aStudentId);
-        });
-        
-        return {
-          ...teacher,
-          classes: sortedClasses
-        };
-      });
-    
-    setTeacherData(sortedTeacherData);
-    setTotalAmount(total);
-  }, [classes, selectedTeacher, selectedTeacherMonth, courses, teachers, students]);
+    const data = filteredData.map(cls => {
+      const teacher = teachers.find(t => t.teacherId === cls.teacherId);
+      const course = courses.find(c => c.courseId === cls.courseId);
+      
+      return {
+        date: cls.date,
+        teacherName: teacher ? (teacher.nameZh || teacher.nameEn) : '未知教師',
+        courseName: course ? `${course.grade}${course.subject}` : '未知課程',
+        amount: cls.price
+      };
+    });
 
-  // 計算每日數據
+    setTeacherData(data);
+    setTotalAmount(data.reduce((sum, item) => sum + item.amount, 0));
+  }, [classes, teachers, courses, selectedTeacher, selectedTeacherMonth]);
+
   const calculateDailyData = useCallback(() => {
-    let filteredClasses = classes;
-
+    if (!classes.length) return;
+    
+    let filteredData = classes;
     if (startDate && endDate) {
-      filteredClasses = filteredClasses.filter(cls => {
+      filteredData = classes.filter(cls => {
         const classDate = new Date(cls.date);
         const start = new Date(startDate);
         const end = new Date(endDate);
-        
-        classDate.setHours(0, 0, 0, 0);
-        start.setHours(0, 0, 0, 0);
-        end.setHours(0, 0, 0, 0);
-        
         return classDate >= start && classDate <= end;
       });
     }
 
-    const groupedData = {};
-    let total = 0;
-
-    filteredClasses.forEach(cls => {
-      const course = courses.find(c => c.courseId === cls.courseId);
-      const teacherId = cls.teacherId || (course ? course.teacherId : null);
-      const teacher = teachers.find(t => t.teacherId === teacherId);
-      
-      const classDate = new Date(cls.date);
-      const normalizedDate = `${classDate.getFullYear()}-${classDate.getMonth() + 1}-${classDate.getDate()}`;
-      
-      if (!groupedData[normalizedDate]) {
-        groupedData[normalizedDate] = {
-          date: normalizedDate,
-          classes: []
-        };
+    const dailyRevenue = {};
+    filteredData.forEach(cls => {
+      const date = cls.date.split('T')[0];
+      if (!dailyRevenue[date]) {
+        dailyRevenue[date] = 0;
       }
-      
-      if (cls.studentId) {
-        const student = students.find(s => s.studentId === cls.studentId);
-        if (student) {
-          groupedData[normalizedDate].classes.push({
-            teacher: teacher ? teacher.name : '未知教師',
-            studentName: `${student.studentId} - ${student.nameZh} (${student.nameEn})`,
-            subject: course ? `${course.grade}${course.subject}` : '未知科目',
-            amount: cls.price
-          });
-          
-          total += cls.price;
-        }
-      }
+      dailyRevenue[date] += cls.price;
     });
 
-    const sortedData = Object.values(groupedData).sort((a, b) => new Date(a.date) - new Date(b.date));
-    setDailyData(sortedData);
-    setTotalAmount(total);
-  }, [classes, startDate, endDate, courses, teachers, students]);
+    const data = Object.entries(dailyRevenue).map(([date, amount]) => ({
+      date,
+      amount
+    })).sort((a, b) => new Date(a.date) - new Date(b.date));
 
-  // 計算概覽數據
+    setDailyData(data);
+    setTotalAmount(data.reduce((sum, item) => sum + item.amount, 0));
+  }, [classes, startDate, endDate]);
+
   const calculateOverviewData = useCallback(() => {
+    if (!classes.length || !courses.length || !teachers.length) return;
+    
     let filteredClasses = classes;
-
     if (selectedYear) {
-      filteredClasses = filteredClasses.filter(cls => {
+      filteredClasses = classes.filter(cls => {
         const classDate = new Date(cls.date);
-        const classYear = classDate.getFullYear().toString();
-        return classYear === selectedYear;
+        return classDate.getFullYear().toString() === selectedYear;
       });
     }
-
-    if (selectedOverviewMonths.length > 0 && !selectedOverviewMonths.includes('all')) {
+    
+    if (selectedOverviewMonths.length > 0) {
       filteredClasses = filteredClasses.filter(cls => {
         const classDate = new Date(cls.date);
-        const classMonth = (classDate.getMonth() + 1).toString();
+        const classMonth = `${classDate.getFullYear()}-${String(classDate.getMonth() + 1).padStart(2, '0')}`;
         return selectedOverviewMonths.includes(classMonth);
       });
     }
@@ -575,14 +199,13 @@ const RevenueStatistics = () => {
     const monthlyRevenue = {};
 
     filteredClasses.forEach(cls => {
+      const teacher = teachers.find(t => t.teacherId === cls.teacherId);
       const course = courses.find(c => c.courseId === cls.courseId);
-      const teacherId = cls.teacherId || (course ? course.teacherId : null);
-      const teacher = teachers.find(t => t.teacherId === teacherId);
       
       if (teacher) {
         if (!teacherRevenue[teacher.teacherId]) {
           teacherRevenue[teacher.teacherId] = {
-            name: teacher.name,
+            name: teacher.nameZh || teacher.nameEn,
             amount: 0
           };
         }
@@ -590,20 +213,17 @@ const RevenueStatistics = () => {
       }
 
       if (course) {
-        const courseId = String(course.courseId);
-        if (!courseRevenue[courseId]) {
-          const grade = course.grade || '未知年級';
-          const subject = course.subject || '未知科目';
-          const teacher = teachers.find(t => t.teacherId === course.teacherId);
-          const teacherName = teacher ? teacher.name : '未知教師';
-          const courseName = `${courseId}-${grade}${subject}`;
-          courseRevenue[courseId] = {
+        if (!courseRevenue[course.courseId]) {
+          const teacher = teachers.find(t => t.teacherId === cls.teacherId);
+          const teacherName = teacher ? (teacher.nameZh || teacher.nameEn) : '未知教師';
+          const courseName = `${course.courseId}-${course.grade}${course.subject}`;
+          courseRevenue[course.courseId] = {
             name: courseName,
             fullName: `${courseName}（${teacherName}）`,
             amount: 0
           };
         }
-        courseRevenue[courseId].amount += cls.price;
+        courseRevenue[course.courseId].amount += cls.price;
       }
 
       if (course && course.grade) {
@@ -664,22 +284,10 @@ const RevenueStatistics = () => {
     }
   }, [
     activeTab,
-    selectedStudent,
-    selectedMonth,
-    selectedTeacher,
-    selectedTeacherMonth,
-    startDate,
-    endDate,
-    selectedOverviewMonths,
-    selectedYear,
-    classes,
-    students,
-    teachers,
-    courses,
-    calculateDailyData,
-    calculateOverviewData,
     calculateStudentData,
-    calculateTeacherData
+    calculateTeacherData,
+    calculateDailyData,
+    calculateOverviewData
   ]);
 
   const formatCurrency = (amount) => {
@@ -691,17 +299,186 @@ const RevenueStatistics = () => {
     return `${date.getFullYear()}/${date.getMonth() + 1}/${date.getDate()}`;
   };
 
-  // 創建一個永遠顯示的基礎內容，確保組件不會消失
-  const baseContent = (
-    <div className="revenue-statistics" style={{ minHeight: '100vh', backgroundColor: '#f5f5f5' }}>
-      {/* 測試渲染 - 確保組件可見 */}
-      {testRender}
+  const fetchData = async () => {
+    console.log('🔄 fetchData 開始執行');
+    setLoading(true);
+    setError(null); // 重置錯誤狀態
+    console.log('開始獲取數據，API URL:', config.API_URL);
+    
+    try {
+      console.log('📡 發送API請求...');
+      const [studentsRes, teachersRes, classesRes, coursesRes] = await Promise.all([
+        fetch(`${config.API_URL}/students`),
+        fetch(`${config.API_URL}/teachers`),
+        fetch(`${config.API_URL}/classes`),
+        fetch(`${config.API_URL}/courses`)
+      ]);
+
+      console.log('📊 API響應狀態:', {
+        students: studentsRes.status,
+        teachers: teachersRes.status,
+        classes: classesRes.status,
+        courses: coursesRes.status
+      });
+
+      // 檢查響應狀態
+      if (!studentsRes.ok || !teachersRes.ok || !classesRes.ok || !coursesRes.ok) {
+        throw new Error(`API響應錯誤: students(${studentsRes.status}), teachers(${teachersRes.status}), classes(${classesRes.status}), courses(${coursesRes.status})`);
+      }
+
+      console.log('📥 開始解析JSON數據...');
+      const studentsData = await studentsRes.json();
+      const teachersData = await teachersRes.json();
+      const classesData = await classesRes.json();
+      const coursesData = await coursesRes.json();
+
+      console.log('✅ 獲取到的數據:', {
+        students: studentsData.length,
+        teachers: teachersData.length,
+        classes: classesData.length,
+        courses: coursesData.length
+      });
+
+      console.log('🔄 開始更新狀態...');
+      setStudents(studentsData);
+      setTeachers(teachersData);
+      setClasses(classesData);
+      setCourses(coursesData);
       
-      {/* 實時調試信息 */}
-      {debugInfo}
-      
-      {/* 安全內容區域 - 永遠可見 */}
-      {safeContent}
+      console.log('✅ 狀態更新完成');
+    } catch (error) {
+      console.error('❌ 獲取數據失敗:', error);
+      setError(`獲取數據失敗: ${error.message}`);
+    } finally {
+      console.log('🏁 fetchData 執行完成，設置 loading 為 false');
+      setLoading(false);
+    }
+  };
+
+  // 生成月份選項（包含"全部月份"選項）
+  const generateMonthOptionsWithAll = () => {
+    const months = new Set();
+    classes.forEach(cls => {
+      const date = new Date(cls.date);
+      const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+      const monthLabel = `${date.getFullYear()}年${date.getMonth() + 1}月`;
+      months.add({ key: monthKey, label: monthLabel });
+    });
+    
+    return Array.from(months)
+      .sort((a, b) => {
+        const aYear = parseInt(a.key.split('-')[0]);
+        const aMonth = parseInt(a.key.split('-')[1]);
+        const bYear = parseInt(b.key.split('-')[0]);
+        const bMonth = parseInt(b.key.split('-')[1]);
+        
+        if (aYear !== bYear) return aYear - bYear;
+        return aMonth - bMonth;
+      })
+      .map(month => (
+        <option key={month.key} value={month.key}>
+          {month.label}
+        </option>
+      ));
+  };
+
+  // 生成年份選項
+  const generateYearOptions = () => {
+    const years = new Set();
+    classes.forEach(cls => {
+      const date = new Date(cls.date);
+      years.add(date.getFullYear());
+    });
+    
+    return Array.from(years)
+      .sort((a, b) => a - b)
+      .map(year => (
+        <option key={year} value={year.toString()}>
+          {year}年
+        </option>
+      ));
+  };
+
+  // 生成月份選項（用於教師明細）
+  const generateMonthOptions = () => {
+    const months = new Set();
+    classes.forEach(cls => {
+      const date = new Date(cls.date);
+      const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+      const monthLabel = `${date.getFullYear()}年${date.getMonth() + 1}月`;
+      months.add({ key: monthKey, label: monthLabel });
+    });
+    
+    return Array.from(months)
+      .sort((a, b) => {
+        const aYear = parseInt(a.key.split('-')[0]);
+        const aMonth = parseInt(a.key.split('-')[1]);
+        const bYear = parseInt(b.key.split('-')[0]);
+        const bMonth = parseInt(b.key.split('-')[1]);
+        
+        if (aYear !== bYear) return aYear - bYear;
+        return aMonth - bMonth;
+      })
+      .map(month => (
+        <option key={month.key} value={month.key}>
+          {month.label}
+        </option>
+      ));
+  };
+
+  // 獲取篩選後的學生列表
+  const getFilteredStudents = () => {
+    if (!studentSearch) return students;
+    return students.filter(student => {
+      const name = (student.nameZh || student.nameEn || '').toLowerCase();
+      return name.includes(studentSearch.toLowerCase());
+    });
+  };
+
+  // 獲取篩選後的教師列表
+  const getFilteredTeachers = () => {
+    if (!teacherSearch) return teachers;
+    return teachers.filter(teacher => {
+      const name = (teacher.nameZh || teacher.nameEn || '').toLowerCase();
+      return name.includes(teacherSearch.toLowerCase());
+    });
+  };
+
+  // 點擊外部關閉下拉選單
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (!event.target.closest('.search-container')) {
+        setShowStudentDropdown(false);
+        setShowTeacherDropdown(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
+
+  // 簡化的組件渲染
+  return (
+    <div className="revenue-statistics">
+      {/* 調試信息區域 */}
+      <div style={{ 
+        padding: '20px', 
+        backgroundColor: '#e3f2fd', 
+        marginBottom: '20px', 
+        borderRadius: '5px',
+        border: '2px solid #2196f3'
+      }}>
+        <h2>🔧 調試信息</h2>
+        <p><strong>當前路徑 (pathname):</strong> {location.pathname}</p>
+        <p><strong>當前Hash:</strong> {location.hash}</p>
+        <p><strong>當前標籤頁:</strong> {activeTab}</p>
+        <p><strong>載入狀態:</strong> {loading ? '載入中...' : '載入完成'}</p>
+        <p><strong>錯誤狀態:</strong> {error ? error : '無錯誤'}</p>
+        <p><strong>API URL:</strong> {config.API_URL}</p>
+        <p><strong>數據狀態:</strong> 學生: {students ? students.length : '未定義'}, 教師: {teachers ? teachers.length : '未定義'}, 課堂: {classes ? classes.length : '未定義'}, 課程: {courses ? courses.length : '未定義'}</p>
+      </div>
       
       {/* 載入狀態顯示 */}
       {loading && (
@@ -714,8 +491,7 @@ const RevenueStatistics = () => {
         }}>
           <h3>🔄 正在載入數據...</h3>
           <p>正在從 {config.API_URL} 獲取數據</p>
-          <p>請稍候，組件不會消失！</p>
-          <p>載入開始時間: {new Date().toLocaleString()}</p>
+          <p>請稍候...</p>
         </div>
       )}
 
@@ -731,7 +507,6 @@ const RevenueStatistics = () => {
         }}>
           <h3>❌ 發生錯誤</h3>
           <p>{error}</p>
-          <p>錯誤時間: {new Date().toLocaleString()}</p>
           <button onClick={fetchData} style={{
             padding: '10px 20px',
             backgroundColor: '#007bff',
@@ -745,62 +520,7 @@ const RevenueStatistics = () => {
         </div>
       )}
 
-      {/* 數據狀態顯示 */}
-      <div style={{ 
-        padding: '20px', 
-        backgroundColor: '#e8f5e8', 
-        margin: '20px',
-        borderRadius: '8px',
-        border: '2px solid #4caf50'
-      }}>
-        <h3>📊 數據狀態</h3>
-        <p>學生數量: {students ? students.length : '未定義'}</p>
-        <p>教師數量: {teachers ? teachers.length : '未定義'}</p>
-        <p>課堂數量: {classes ? classes.length : '未定義'}</p>
-        <p>課程數量: {courses ? courses.length : '未定義'}</p>
-        <p>載入狀態: {loading ? '載入中' : '載入完成'}</p>
-        <p>錯誤狀態: {error ? '有錯誤' : '無錯誤'}</p>
-        <p>最後更新: {new Date().toLocaleString()}</p>
-      </div>
-
-      {/* 組件生命週期信息 */}
-      <div style={{ 
-        padding: '20px', 
-        backgroundColor: '#fff3cd', 
-        margin: '20px',
-        borderRadius: '8px',
-        border: '2px solid #ffc107'
-      }}>
-        <h3>🔧 組件調試信息</h3>
-        <p>組件ID: {Math.random().toString(36).substr(2, 9)}</p>
-        <p>渲染次數: {Date.now()}</p>
-        <p>當前路徑: {location.pathname}</p>
-        <p>當前標籤頁: {activeTab}</p>
-        <p>組件狀態: 正常運行</p>
-      </div>
-    </div>
-  );
-
-  // 永遠顯示基礎內容，確保組件不會消失
-  const mainContent = (
-    <div className="revenue-statistics">
-      <div style={{ 
-        padding: '20px', 
-        backgroundColor: '#e3f2fd', 
-        marginBottom: '20px', 
-        borderRadius: '5px',
-        border: '2px solid #2196f3'
-      }}>
-        <h2>🔧 調試信息</h2>
-        <p><strong>當前路徑:</strong> {location.pathname}</p>
-        <p><strong>當前標籤頁:</strong> {activeTab}</p>
-        <p><strong>載入狀態:</strong> {loading ? '載入中...' : '載入完成'}</p>
-        <p><strong>錯誤狀態:</strong> {error ? error : '無錯誤'}</p>
-        <p><strong>API URL:</strong> {config.API_URL}</p>
-        <p><strong>數據狀態:</strong> 學生: {students ? students.length : '未定義'}, 教師: {teachers ? teachers.length : '未定義'}, 課堂: {classes ? classes.length : '未定義'}, 課程: {courses ? courses.length : '未定義'}</p>
-        <p><strong>重要提示:</strong> 如果這個區域消失，請檢查控制台錯誤！</p>
-      </div>
-      
+      {/* 標籤頁 */}
       <div className="tabs">
         <button 
           className={activeTab === 'student' ? 'active' : ''} 
@@ -827,9 +547,8 @@ const RevenueStatistics = () => {
           營運概要
         </button>
       </div>
-      
 
-
+      {/* 學生課堂明細內容 */}
       {activeTab === 'student' && (
         <div className="tab-content">
           <h2>學生課堂明細</h2>
@@ -907,6 +626,7 @@ const RevenueStatistics = () => {
         </div>
       )}
 
+      {/* 教師課堂明細內容 */}
       {activeTab === 'teacher' && (
         <div className="tab-content">
           <h2>教師課堂明細</h2>
@@ -929,11 +649,11 @@ const RevenueStatistics = () => {
                         className="dropdown-item"
                         onClick={() => {
                           setSelectedTeacher(teacher.teacherId);
-                          setTeacherSearch(teacher.name);
+                          setTeacherSearch(teacher.nameZh || teacher.nameEn);
                           setShowTeacherDropdown(false);
                         }}
                       >
-                        {teacher.name}
+                        {teacher.nameZh || teacher.nameEn}
                       </div>
                     ))}
                   </div>
@@ -962,7 +682,6 @@ const RevenueStatistics = () => {
                       <th>日期</th>
                       <th>教師</th>
                       <th>課程</th>
-                      <th>學生</th>
                       <th>金額</th>
                     </tr>
                   </thead>
@@ -972,7 +691,6 @@ const RevenueStatistics = () => {
                         <td>{formatDate(item.date)}</td>
                         <td>{item.teacherName}</td>
                         <td>{item.courseName}</td>
-                        <td>{item.studentName}</td>
                         <td>{formatCurrency(item.amount)}</td>
                       </tr>
                     ))}
@@ -984,6 +702,7 @@ const RevenueStatistics = () => {
         </div>
       )}
 
+      {/* 每日營收內容 */}
       {activeTab === 'daily' && (
         <div className="tab-content">
           <h2>每日營收</h2>
@@ -1014,15 +733,13 @@ const RevenueStatistics = () => {
                   <thead>
                     <tr>
                       <th>日期</th>
-                      <th>課堂數量</th>
-                      <th>總金額</th>
+                      <th>營收金額</th>
                     </tr>
                   </thead>
                   <tbody>
                     {dailyData.map((item, index) => (
                       <tr key={index}>
                         <td>{formatDate(item.date)}</td>
-                        <td>{item.classCount}</td>
                         <td>{formatCurrency(item.amount)}</td>
                       </tr>
                     ))}
@@ -1034,6 +751,7 @@ const RevenueStatistics = () => {
         </div>
       )}
 
+      {/* 營運概要內容 */}
       {activeTab === 'overview' && (
         <div className="tab-content">
           <h2>營運概要</h2>
@@ -1054,8 +772,8 @@ const RevenueStatistics = () => {
                 multiple
                 value={selectedOverviewMonths}
                 onChange={(e) => {
-                  const values = Array.from(e.target.selectedOptions, option => option.value);
-                  setSelectedOverviewMonths(values);
+                  const selectedOptions = Array.from(e.target.selectedOptions, option => option.value);
+                  setSelectedOverviewMonths(selectedOptions);
                 }}
               >
                 {generateMonthOptions()}
@@ -1064,26 +782,26 @@ const RevenueStatistics = () => {
           </div>
           
           <div className="overview-tabs">
-            <button
-              className={selectedListTab === 'teacher' ? 'active' : ''}
+            <button 
+              className={selectedListTab === 'teacher' ? 'active' : ''} 
               onClick={() => setSelectedListTab('teacher')}
             >
               教師營收
             </button>
-            <button
-              className={selectedListTab === 'course' ? 'active' : ''}
+            <button 
+              className={selectedListTab === 'course' ? 'active' : ''} 
               onClick={() => setSelectedListTab('course')}
             >
               課程營收
             </button>
-            <button
-              className={selectedListTab === 'grade' ? 'active' : ''}
+            <button 
+              className={selectedListTab === 'grade' ? 'active' : ''} 
               onClick={() => setSelectedListTab('grade')}
             >
               年級營收
             </button>
-            <button
-              className={selectedListTab === 'monthly' ? 'active' : ''}
+            <button 
+              className={selectedListTab === 'monthly' ? 'active' : ''} 
               onClick={() => setSelectedListTab('monthly')}
             >
               月度營收
@@ -1187,14 +905,6 @@ const RevenueStatistics = () => {
           )}
         </div>
       )}
-    </div>
-  );
-
-  // 返回組合的內容，確保黃色框永遠可見
-  return (
-    <div>
-      {baseContent}
-      {mainContent}
     </div>
   );
 };
