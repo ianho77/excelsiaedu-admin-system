@@ -1,6 +1,11 @@
 {
-  "dependencies": {
-    "jszip": "^3.10.1",
-    "papaparse": "^5.5.3"
-  }
+  "name": "excelsiaedu-admin-system-root",
+  "version": "1.0.0",
+  "description": "Root package.json for Vercel deployment",
+  "scripts": {
+    "build": "cd excelsiaedu-admin-system && npm install && npm run build",
+    "vercel-build": "cd excelsiaedu-admin-system && npm run build"
+  },
+  "dependencies": {},
+  "devDependencies": {}
 }
