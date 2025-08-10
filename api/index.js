@@ -4,9 +4,27 @@ const cors = require('cors');
 
 const app = express();
 
+// CORS配置 - 明確允許前端域名
+const corsOptions = {
+  origin: [
+    'https://excelsiaedu-admin-system.vercel.app',
+    'https://excelsiaedu-admin-system-git-main-ianho77.vercel.app',
+    'https://excelsiaedu-admin-system-git-main-ianho77.vercel.app',
+    'http://localhost:3000', // 開發環境
+    'http://localhost:3001'  // 開發環境
+  ],
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+  optionsSuccessStatus: 200
+};
+
 // 中间件
-app.use(cors());
+app.use(cors(corsOptions));
 app.use(express.json());
+
+// 添加預檢請求處理
+app.options('*', cors(corsOptions));
 
 // 连接MongoDB Atlas
 const MONGODB_URI = process.env.MONGODB_URI || 'mongodb+srv://ian20051102:LxMgTBnGVt3ygblv@excelsiaedu.xxjs6v7.mongodb.net/?retryWrites=true&w=majority&appName=excelsiaedu';
@@ -245,6 +263,30 @@ app.post('/teacher-billing-status', async (req, res) => {
 // 健康检查
 app.get('/health', (req, res) => {
   res.json({ status: 'OK', timestamp: new Date().toISOString() });
+});
+
+// 調試中間件 - 記錄所有請求
+app.use((req, res, next) => {
+  console.log(`${new Date().toISOString()} - ${req.method} ${req.path} - Origin: ${req.headers.origin}`);
+  next();
+});
+
+// 錯誤處理中間件
+app.use((err, req, res, next) => {
+  console.error('服務器錯誤:', err);
+  res.status(500).json({ 
+    success: false, 
+    error: '服務器內部錯誤',
+    message: process.env.NODE_ENV === 'development' ? err.message : '請稍後重試'
+  });
+});
+
+// 404處理
+app.use('*', (req, res) => {
+  res.status(404).json({ 
+    success: false, 
+    error: 'API端點不存在' 
+  });
 });
 
 // 导出为Vercel函数

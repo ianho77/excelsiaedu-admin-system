@@ -32,96 +32,96 @@ const apiRequest = async (endpoint, options = {}) => {
 export const api = {
   // 認證相關
   auth: {
-    login: (credentials) => apiRequest('/api/auth/login', {
+    login: (credentials) => apiRequest('/auth/login', {
       method: 'POST',
       body: JSON.stringify(credentials),
     }),
-    getUsers: () => apiRequest('/api/auth/users'),
-    createUser: (userData) => apiRequest('/api/auth/users', {
+    getUsers: () => apiRequest('/auth/users'),
+    createUser: (userData) => apiRequest('/auth/users', {
       method: 'POST',
       body: JSON.stringify(userData),
     }),
-    updatePassword: (username, password) => apiRequest(`/api/auth/users/${username}/password`, {
+    updatePassword: (username, password) => apiRequest(`/auth/users/${username}/password`, {
       method: 'PUT',
       body: JSON.stringify({ password }),
     }),
-    deleteUser: (username) => apiRequest(`/api/auth/users/${username}`, {
+    deleteUser: (username) => apiRequest(`/auth/users/${username}`, {
       method: 'DELETE',
     }),
   },
 
   // 學生相關
   students: {
-    getAll: () => apiRequest('/api/students'),
-    create: (studentData) => apiRequest('/api/students', {
+    getAll: () => apiRequest('/students'),
+    create: (studentData) => apiRequest('/students', {
       method: 'POST',
       body: JSON.stringify(studentData),
     }),
-    update: (id, studentData) => apiRequest(`/api/students/${id}`, {
+    update: (id, studentData) => apiRequest(`/students/${id}`, {
       method: 'PUT',
       body: JSON.stringify(studentData),
     }),
-    delete: (id) => apiRequest(`/api/students/${id}`, {
+    delete: (id) => apiRequest(`/students/${id}`, {
       method: 'DELETE',
     }),
   },
 
   // 教師相關
   teachers: {
-    getAll: () => apiRequest('/api/teachers'),
-    create: (teacherData) => apiRequest('/api/teachers', {
+    getAll: () => apiRequest('/teachers'),
+    create: (teacherData) => apiRequest('/teachers', {
       method: 'POST',
       body: JSON.stringify(teacherData),
     }),
-    update: (id, teacherData) => apiRequest(`/api/teachers/${id}`, {
+    update: (id, teacherData) => apiRequest(`/teachers/${id}`, {
       method: 'PUT',
       body: JSON.stringify(teacherData),
     }),
-    delete: (id) => apiRequest(`/api/teachers/${id}`, {
+    delete: (id) => apiRequest(`/teachers/${id}`, {
       method: 'DELETE',
     }),
   },
 
   // 課程相關
   courses: {
-    getAll: () => apiRequest('/api/courses'),
-    create: (courseData) => apiRequest('/api/courses', {
+    getAll: () => apiRequest('/courses'),
+    create: (courseData) => apiRequest('/courses', {
       method: 'POST',
       body: JSON.stringify(courseData),
     }),
-    update: (id, courseData) => apiRequest(`/api/courses/${id}`, {
+    update: (id, courseData) => apiRequest(`/courses/${id}`, {
       method: 'PUT',
       body: JSON.stringify(courseData),
     }),
-    delete: (id) => apiRequest(`/api/courses/${id}`, {
+    delete: (id) => apiRequest(`/courses/${id}`, {
       method: 'DELETE',
     }),
   },
 
   // 課堂相關
   classes: {
-    getAll: () => apiRequest('/api/classes'),
-    create: (classData) => apiRequest('/api/classes', {
+    getAll: () => apiRequest('/classes'),
+    create: (classData) => apiRequest('/classes', {
       method: 'POST',
       body: JSON.stringify(classData),
     }),
-    update: (id, classData) => apiRequest(`/api/classes/${id}`, {
+    update: (id, classData) => apiRequest(`/classes/${id}`, {
       method: 'PUT',
       body: JSON.stringify(classData),
     }),
-    delete: (id) => apiRequest(`/api/classes/${id}`, {
+    delete: (id) => apiRequest(`/classes/${id}`, {
       method: 'DELETE',
     }),
   },
 
   // 學生賬單狀態
   studentBillingStatus: {
-    getByMonth: (month) => apiRequest(`/api/student-billing-status?month=${month}`),
-    create: (statusData) => apiRequest('/api/student-billing-status', {
+    getByMonth: (month) => apiRequest(`/student-billing-status?month=${month}`),
+    create: (statusData) => apiRequest('/student-billing-status', {
       method: 'POST',
       body: JSON.stringify(statusData),
     }),
-    update: (id, statusData) => apiRequest(`/api/student-billing-status/${id}`, {
+    update: (id, statusData) => apiRequest(`/student-billing-status/${id}`, {
       method: 'PUT',
       body: JSON.stringify(statusData),
     }),
@@ -129,12 +129,12 @@ export const api = {
 
   // 教師賬單狀態
   teacherBillingStatus: {
-    getByMonth: (month) => apiRequest(`/api/teacher-billing-status?month=${month}`),
-    create: (statusData) => apiRequest('/api/teacher-billing-status', {
+    getByMonth: (month) => apiRequest(`/teacher-billing-status?month=${month}`),
+    create: (statusData) => apiRequest('/teacher-billing-status', {
       method: 'POST',
       body: JSON.stringify(statusData),
     }),
-    update: (id, statusData) => apiRequest(`/api/teacher-billing-status/${id}`, {
+    update: (id, statusData) => apiRequest(`/teacher-billing-status/${id}`, {
       method: 'PUT',
       body: JSON.stringify(statusData),
     }),
