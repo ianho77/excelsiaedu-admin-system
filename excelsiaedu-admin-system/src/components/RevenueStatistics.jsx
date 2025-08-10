@@ -89,7 +89,7 @@ const RevenueStatistics = () => {
     const defaultTab = getDefaultTab();
     console.log('設置默認標籤頁:', defaultTab);
     setActiveTab(defaultTab);
-  }, [location.pathname]); // 移除 getDefaultTab 依賴項
+  }, [location.pathname, getDefaultTab]);
 
   useEffect(() => {
     console.log('組件掛載，開始獲取數據');
