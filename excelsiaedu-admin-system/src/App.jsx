@@ -165,9 +165,9 @@ function AddClass() {
   const fetchAllData = async () => {
     try {
       const [studentsRes, coursesRes, teachersRes] = await Promise.all([
-        fetch(`${config.API_URL}/api/students`),
-        fetch(`${config.API_URL}/api/courses`),
-        fetch(`${config.API_URL}/api/teachers`)
+        fetch(`${config.API_URL}/students`),
+        fetch(`${config.API_URL}/courses`),
+        fetch(`${config.API_URL}/teachers`)
       ]);
 
       const studentsData = await studentsRes.json();
@@ -351,7 +351,7 @@ function AddClass() {
       for (const name of form.studentNames) {
         const idMatch = name.match(/^([\w\d]+)/);
         const studentId = idMatch ? idMatch[1] : '';
-        await fetch('http://localhost:4000/api/classes', {
+        await fetch('${config.API_URL}/classes', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -421,7 +421,7 @@ function AddClass() {
             }
 
             try {
-              const res = await fetch('http://localhost:4000/api/classes', {
+              const res = await fetch('${config.API_URL}/classes', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -669,7 +669,7 @@ function AddCourse() {
 
   const fetchTeachers = async () => {
     try {
-      const response = await fetch(`${config.API_URL}/api/teachers`);
+      const response = await fetch(`${config.API_URL}/teachers`);
       const data = await response.json();
       setTeachers(data);
     } catch (error) {
@@ -679,7 +679,7 @@ function AddCourse() {
 
   const fetchCourses = async () => {
     try {
-      const response = await fetch(`${config.API_URL}/api/courses`);
+      const response = await fetch(`${config.API_URL}/courses`);
       const data = await response.json();
       setCourses(data);
     } catch (error) {
@@ -737,7 +737,7 @@ function AddCourse() {
   // 處理確認彈窗的確認操作
   const handleConfirmSubmit = async () => {
     try {
-      const res = await fetch('http://localhost:4000/api/courses', {
+      const res = await fetch(`${config.API_URL}/courses`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -802,7 +802,7 @@ function AddCourse() {
             }
 
             try {
-              const res = await fetch('http://localhost:4000/api/courses', {
+              const res = await fetch('${config.API_URL}/courses', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -1039,7 +1039,7 @@ function AddStudent() {
   const fetchStudents = async () => {
     setLoading(true);
     try {
-      const response = await fetch(`${config.API_URL}/api/students`);
+      const response = await fetch(`${config.API_URL}/students`);
       const data = await response.json();
       setStudents(data);
     } catch (error) {
@@ -1083,7 +1083,7 @@ function AddStudent() {
     setShowConfirmModal(false);
     
     try {
-      const res = await fetch('http://localhost:4000/api/students', {
+      const res = await fetch(`${config.API_URL}/students`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(form)
@@ -1130,7 +1130,7 @@ function AddStudent() {
             }
 
             try {
-              const res = await fetch('http://localhost:4000/api/students', {
+              const res = await fetch(`${config.API_URL}/students`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -1414,7 +1414,7 @@ function AddTeacher() {
 
   const fetchTeachers = async () => {
     try {
-      const response = await fetch(`${config.API_URL}/api/teachers`);
+      const response = await fetch(`${config.API_URL}/teachers`);
       const data = await response.json();
       setTeachers(data);
     } catch (error) {
@@ -1449,7 +1449,7 @@ function AddTeacher() {
     setShowConfirmModal(false);
     
     try {
-      const res = await fetch('http://localhost:4000/api/teachers', {
+      const res = await fetch('${config.API_URL}/teachers', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(form),
@@ -1496,7 +1496,7 @@ function AddTeacher() {
             }
 
             try {
-              const res = await fetch('http://localhost:4000/api/teachers', {
+              const res = await fetch('${config.API_URL}/teachers', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -1675,10 +1675,10 @@ function ClassList() {
     setIsLoading(true);
     try {
       const [classesRes, studentsRes, coursesRes, teachersRes] = await Promise.all([
-        fetch(`${config.API_URL}/api/classes`),
-        fetch(`${config.API_URL}/api/students`),
-        fetch(`${config.API_URL}/api/courses`),
-        fetch(`${config.API_URL}/api/teachers`)
+        fetch(`${config.API_URL}/classes`),
+        fetch(`${config.API_URL}/students`),
+        fetch(`${config.API_URL}/courses`),
+        fetch(`${config.API_URL}/teachers`)
       ]);
 
       const classesData = await classesRes.json();
@@ -1704,7 +1704,7 @@ function ClassList() {
 
   const handleConfirmDelete = async () => {
     try {
-      const response = await fetch(`${config.API_URL}/api/classes/${deleteTarget}`, {
+      const response = await fetch(`${config.API_URL}/classes/${deleteTarget}`, {
         method: 'DELETE'
       });
       if (response.ok) {
@@ -1741,7 +1741,7 @@ function ClassList() {
         date: data.date ? data.date.replace(/-/g, '/') : data.date
       };
       
-      const response = await fetch(`${config.API_URL}/api/classes/${editingClass._id}`, {
+      const response = await fetch(`${config.API_URL}/classes/${editingClass._id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json'
@@ -1788,7 +1788,7 @@ function ClassList() {
 
       // 並行刪除所有課堂
       const deletePromises = classIdsToDelete.map(classId =>
-        fetch(`${config.API_URL}/api/classes/${classId}`, {
+        fetch(`${config.API_URL}/classes/${classId}`, {
           method: 'DELETE'
         })
       );
@@ -2205,7 +2205,7 @@ function StudentList() {
   const fetchStudents = async () => {
     setIsLoading(true);
     try {
-      const response = await fetch(`${config.API_URL}/api/students`);
+      const response = await fetch(`${config.API_URL}/students`);
       const data = await response.json();
       setStudents(data);
     } catch (error) {
@@ -2222,7 +2222,7 @@ function StudentList() {
 
   const handleConfirmDelete = async () => {
     try {
-      const response = await fetch(`${config.API_URL}/api/students/${deleteTarget}`, {
+      const response = await fetch(`${config.API_URL}/students/${deleteTarget}`, {
         method: 'DELETE'
       });
       if (response.ok) {
@@ -2249,7 +2249,7 @@ function StudentList() {
 
   const handleSave = async (data) => {
     try {
-      const response = await fetch(`${config.API_URL}/api/students/${editingStudent._id}`, {
+      const response = await fetch(`${config.API_URL}/students/${editingStudent._id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json'
@@ -2481,8 +2481,8 @@ function CourseList() {
     setIsLoading(true);
     try {
       const [coursesRes, teachersRes] = await Promise.all([
-        fetch(`${config.API_URL}/api/courses`),
-        fetch(`${config.API_URL}/api/teachers`)
+        fetch(`${config.API_URL}/courses`),
+        fetch(`${config.API_URL}/teachers`)
       ]);
 
       const coursesData = await coursesRes.json();
@@ -2504,7 +2504,7 @@ function CourseList() {
 
   const handleConfirmDelete = async () => {
     try {
-      const response = await fetch(`${config.API_URL}/api/courses/${deleteTarget}`, {
+      const response = await fetch(`${config.API_URL}/courses/${deleteTarget}`, {
         method: 'DELETE'
       });
       if (response.ok) {
@@ -2531,7 +2531,7 @@ function CourseList() {
 
   const handleSave = async (data) => {
     try {
-      const response = await fetch(`${config.API_URL}/api/courses/${editingCourse._id}`, {
+      const response = await fetch(`${config.API_URL}/courses/${editingCourse._id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json'
@@ -2608,7 +2608,7 @@ function CourseList() {
 
       // 並行刪除所有課程
       const deletePromises = courseIdsToDelete.map(courseId =>
-        fetch(`${config.API_URL}/api/courses/${courseId}`, {
+        fetch(`${config.API_URL}/courses/${courseId}`, {
           method: 'DELETE'
         })
       );
@@ -2915,7 +2915,7 @@ function TeacherList() {
   const fetchTeachers = async () => {
     setIsLoading(true);
     try {
-      const response = await fetch(`${config.API_URL}/api/teachers`);
+      const response = await fetch(`${config.API_URL}/teachers`);
       const data = await response.json();
       setTeachers(data);
     } catch (error) {
@@ -2932,7 +2932,7 @@ function TeacherList() {
 
   const handleConfirmDelete = async () => {
     try {
-      const response = await fetch(`http://localhost:4000/api/teachers/${deleteTarget}`, {
+      const response = await fetch(`${config.API_URL}/teachers/${deleteTarget}`, {
         method: 'DELETE'
       });
       if (response.ok) {
@@ -2959,7 +2959,7 @@ function TeacherList() {
 
   const handleSave = async (data) => {
     try {
-      const response = await fetch(`http://localhost:4000/api/teachers/${editingTeacher._id}`, {
+      const response = await fetch(`${config.API_URL}/teachers/${editingTeacher._id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json'

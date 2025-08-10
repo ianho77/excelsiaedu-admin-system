@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import './UserManagement.css';
+import config from '../config';
 
 const UserManagement = () => {
   const [users, setUsers] = useState([]);
@@ -20,7 +21,7 @@ const UserManagement = () => {
 
   const fetchUsers = async () => {
     try {
-      const response = await fetch('http://localhost:4000/api/auth/users');
+      const response = await fetch(`${config.API_URL}/auth/users`);
       if (response.ok) {
         const data = await response.json();
         setUsers(data);
@@ -37,7 +38,7 @@ const UserManagement = () => {
   const handleAddUser = async (e) => {
     e.preventDefault();
     try {
-      const response = await fetch('http://localhost:4000/api/auth/users', {
+      const response = await fetch(`${config.API_URL}/auth/users`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -63,7 +64,7 @@ const UserManagement = () => {
 
   const handleUpdatePassword = async (username, newPassword) => {
     try {
-      const response = await fetch(`http://localhost:4000/api/auth/users/${username}/password`, {
+      const response = await fetch(`${config.API_URL}/auth/users/${username}/password`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -92,7 +93,7 @@ const UserManagement = () => {
     }
 
     try {
-      const response = await fetch(`http://localhost:4000/api/auth/users/${username}`, {
+      const response = await fetch(`${config.API_URL}/auth/users/${username}`, {
         method: 'DELETE'
       });
 

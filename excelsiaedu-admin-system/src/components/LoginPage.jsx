@@ -20,7 +20,7 @@ const LoginPage = ({ onLogin }) => {
 
     try {
       // 使用API進行驗證
-      const response = await fetch(`${config.API_URL}/api/auth/login`, {
+      const response = await fetch(`${config.API_URL}/auth/login`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

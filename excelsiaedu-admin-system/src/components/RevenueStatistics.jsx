@@ -76,10 +76,10 @@ const RevenueStatistics = () => {
     setLoading(true);
     try {
       const [studentsRes, teachersRes, classesRes, coursesRes] = await Promise.all([
-        fetch(`${config.API_URL}/api/students`),
-        fetch(`${config.API_URL}/api/teachers`),
-        fetch(`${config.API_URL}/api/classes`),
-        fetch(`${config.API_URL}/api/courses`)
+        fetch(`${config.API_URL}/students`),
+        fetch(`${config.API_URL}/teachers`),
+        fetch(`${config.API_URL}/classes`),
+        fetch(`${config.API_URL}/courses`)
       ]);
 
       const studentsData = await studentsRes.json();

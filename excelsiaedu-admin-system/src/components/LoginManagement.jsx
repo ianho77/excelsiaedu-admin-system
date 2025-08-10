@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import './LoginManagement.css';
+import config from '../config';
 
 const LoginManagement = () => {
   const [users, setUsers] = useState([]);
@@ -14,7 +15,7 @@ const LoginManagement = () => {
 
   const fetchUsers = async () => {
     try {
-      const response = await fetch('http://localhost:4000/api/auth/users');
+      const response = await fetch(`${config.API_URL}/auth/users`);
       if (response.ok) {
         const data = await response.json();
         setUsers(data);
@@ -36,7 +37,7 @@ const LoginManagement = () => {
     }
 
     try {
-      const response = await fetch(`http://localhost:4000/api/auth/users/${selectedUser.username}/password`, {
+      const response = await fetch(`${config.API_URL}/auth/users/${selectedUser.username}/password`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',

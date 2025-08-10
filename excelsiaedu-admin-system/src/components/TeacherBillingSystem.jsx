@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import './TeacherBillingSystem.css';
 import html2pdf from 'html2pdf.js';
 import JSZip from 'jszip';
+import config from '../config';
 
 const TeacherBillingSystem = () => {
   const [teachers, setTeachers] = useState([]);
@@ -66,7 +67,7 @@ const TeacherBillingSystem = () => {
     // 獲取該月份的教師賬單狀態
     let billingStatuses = [];
     try {
-      const statusResponse = await fetch(`http://localhost:4000/api/teacher-billing-status?month=${selectedMonth}`);
+      const statusResponse = await fetch(`${config.API_URL}/teacher-billing-status?month=${selectedMonth}`);
       if (statusResponse.ok) {
         billingStatuses = await statusResponse.json();
       }
@@ -136,10 +137,10 @@ const TeacherBillingSystem = () => {
     setLoading(true);
     try {
       const [teachersRes, classesRes, coursesRes, studentsRes] = await Promise.all([
-        fetch('http://localhost:4000/api/teachers'),
-        fetch('http://localhost:4000/api/classes'),
-        fetch('http://localhost:4000/api/courses'),
-        fetch('http://localhost:4000/api/students')
+        fetch(`${config.API_URL}/teachers`),
+        fetch(`${config.API_URL}/classes`),
+        fetch(`${config.API_URL}/courses`),
+        fetch(`${config.API_URL}/students`)
       ]);
 
       const teachersData = await teachersRes.json();
@@ -194,7 +195,7 @@ const TeacherBillingSystem = () => {
 
   const handleVerificationChange = async (teacherId, isVerified) => {
     try {
-      const response = await fetch('http://localhost:4000/api/teacher-billing-status', {
+      const response = await fetch(`${config.API_URL}/teacher-billing-status`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -225,7 +226,7 @@ const TeacherBillingSystem = () => {
 
   const handlePaymentChange = async (teacherId, isPaid) => {
     try {
-      const response = await fetch('http://localhost:4000/api/teacher-billing-status', {
+      const response = await fetch(`${config.API_URL}/teacher-billing-status`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
