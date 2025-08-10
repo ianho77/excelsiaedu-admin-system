@@ -351,7 +351,7 @@ function AddClass() {
       for (const name of form.studentNames) {
         const idMatch = name.match(/^([\w\d]+)/);
         const studentId = idMatch ? idMatch[1] : '';
-        await fetch('${config.API_URL}/classes', {
+        await fetch(`${config.API_URL}/classes`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -421,7 +421,7 @@ function AddClass() {
             }
 
             try {
-              const res = await fetch('${config.API_URL}/classes', {
+              const res = await fetch(`${config.API_URL}/classes`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -802,7 +802,7 @@ function AddCourse() {
             }
 
             try {
-              const res = await fetch('${config.API_URL}/courses', {
+              const res = await fetch(`${config.API_URL}/courses`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -1449,7 +1449,7 @@ function AddTeacher() {
     setShowConfirmModal(false);
     
     try {
-      const res = await fetch('${config.API_URL}/teachers', {
+      const res = await fetch(`${config.API_URL}/teachers`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(form),
@@ -1496,7 +1496,7 @@ function AddTeacher() {
             }
 
             try {
-              const res = await fetch('${config.API_URL}/teachers', {
+              const res = await fetch(`${config.API_URL}/teachers`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
