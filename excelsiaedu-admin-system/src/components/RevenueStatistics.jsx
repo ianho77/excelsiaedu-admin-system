@@ -11,9 +11,13 @@ ChartJS.register(ArcElement, Tooltip, Legend, CategoryScale, LinearScale, BarEle
 const RevenueStatistics = () => {
   const location = useLocation();
   
+  // 添加調試信息
+  console.log('RevenueStatistics 組件渲染，當前路徑:', location.pathname);
+  
   // 根據URL參數決定默認標籤頁
   const getDefaultTab = useCallback(() => {
     const path = location.pathname;
+    console.log('getDefaultTab 被調用，路徑:', path);
     if (path.includes('/revenue-teacher')) return 'teacher';
     if (path.includes('/revenue-daily')) return 'daily';
     if (path.includes('/revenue-overview')) return 'overview';
@@ -27,6 +31,7 @@ const RevenueStatistics = () => {
   const [classes, setClasses] = useState([]);
   const [courses, setCourses] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null); // 添加錯誤狀態
   
   // 學生課堂明細篩選
   const [selectedStudent, setSelectedStudent] = useState('');
@@ -74,6 +79,9 @@ const RevenueStatistics = () => {
 
   const fetchData = async () => {
     setLoading(true);
+    setError(null); // 重置錯誤狀態
+    console.log('開始獲取數據，API URL:', config.API_URL);
+    
     try {
       const [studentsRes, teachersRes, classesRes, coursesRes] = await Promise.all([
         fetch(`${config.API_URL}/students`),
@@ -82,10 +90,29 @@ const RevenueStatistics = () => {
         fetch(`${config.API_URL}/courses`)
       ]);
 
+      console.log('API響應狀態:', {
+        students: studentsRes.status,
+        teachers: teachersRes.status,
+        classes: classesRes.status,
+        courses: coursesRes.status
+      });
+
+      // 檢查響應狀態
+      if (!studentsRes.ok || !teachersRes.ok || !classesRes.ok || !coursesRes.ok) {
+        throw new Error(`API響應錯誤: students(${studentsRes.status}), teachers(${teachersRes.status}), classes(${classesRes.status}), courses(${coursesRes.status})`);
+      }
+
       const studentsData = await studentsRes.json();
       const teachersData = await teachersRes.json();
       const classesData = await classesRes.json();
       const coursesData = await coursesRes.json();
+
+      console.log('獲取到的數據:', {
+        students: studentsData.length,
+        teachers: teachersData.length,
+        classes: classesData.length,
+        courses: coursesData.length
+      });
 
       setStudents(studentsData);
       setTeachers(teachersData);
@@ -93,6 +120,7 @@ const RevenueStatistics = () => {
       setCourses(coursesData);
     } catch (error) {
       console.error('獲取數據失敗:', error);
+      setError(`獲取數據失敗: ${error.message}`);
     } finally {
       setLoading(false);
     }
@@ -577,11 +605,60 @@ const RevenueStatistics = () => {
   };
 
   if (loading) {
-    return <div className="loading">載入中...</div>;
+    return (
+      <div className="revenue-statistics">
+        <div className="loading">載入中...</div>
+        <div style={{ padding: '20px', textAlign: 'center' }}>
+          <p>正在從 {config.API_URL} 獲取數據...</p>
+        </div>
+      </div>
+    );
   }
+
+  if (error) {
+    return (
+      <div className="revenue-statistics">
+        <div className="error-message" style={{ 
+          padding: '20px', 
+          textAlign: 'center', 
+          color: 'red',
+          backgroundColor: '#fee',
+          border: '1px solid #fcc',
+          borderRadius: '8px',
+          margin: '20px'
+        }}>
+          <h3>錯誤</h3>
+          <p>{error}</p>
+          <button onClick={fetchData} style={{
+            padding: '10px 20px',
+            backgroundColor: '#007bff',
+            color: 'white',
+            border: 'none',
+            borderRadius: '5px',
+            cursor: 'pointer'
+          }}>
+            重試
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  console.log('組件渲染，當前標籤頁:', activeTab);
+  console.log('數據狀態:', {
+    students: students.length,
+    teachers: teachers.length,
+    classes: classes.length,
+    courses: courses.length
+  });
 
   return (
     <div className="revenue-statistics">
+      <div style={{ padding: '10px', backgroundColor: '#e3f2fd', marginBottom: '20px', borderRadius: '5px' }}>
+        <p><strong>調試信息:</strong> 當前路徑: {location.pathname}, 當前標籤頁: {activeTab}</p>
+        <p><strong>數據狀態:</strong> 學生: {students.length}, 教師: {teachers.length}, 課堂: {classes.length}, 課程: {courses.length}</p>
+      </div>
+      
       <div className="tabs">
         <button 
           className={activeTab === 'student' ? 'active' : ''} 
