@@ -92,157 +92,158 @@ const StudentBillingStatus = mongoose.model('StudentBillingStatus', StudentBilli
 const TeacherBillingStatus = mongoose.model('TeacherBillingStatus', TeacherBillingStatusSchema);
 
 // 用户认证API
-app.post('/api/auth/login', async (req, res) => {
+app.post('/auth/login', async (req, res) => {
   try {
-    const { username, password } = req.body;
-    const user = await User.findOne({ username, password });
+    const { username, password, userType } = req.body;
+    const user = await User.findOne({ username, password, userType });
     
     if (user) {
       await User.updateOne({ username }, { lastLogin: new Date() });
       res.json({ success: true, user: { username: user.username, userType: user.userType, name: user.name } });
     } else {
-      res.status(401).json({ success: false, message: '用户名或密码错误' });
+      res.status(401).json({ success: false, error: '用户名或密码错误' });
     }
   } catch (error) {
-    res.status(500).json({ success: false, message: '服务器错误' });
+    console.error('登入錯誤:', error);
+    res.status(500).json({ success: false, error: '服务器错误' });
   }
 });
 
-app.get('/api/auth/users', async (req, res) => {
+app.get('/auth/users', async (req, res) => {
   try {
     const users = await User.find({}, { password: 0 });
     res.json(users);
   } catch (error) {
-    res.status(500).json({ success: false, message: '服务器错误' });
+    res.status(500).json({ success: false, error: '服务器错误' });
   }
 });
 
 // 学生API
-app.get('/api/students', async (req, res) => {
+app.get('/students', async (req, res) => {
   try {
     const students = await Student.find();
     res.json(students);
   } catch (error) {
-    res.status(500).json({ success: false, message: '服务器错误' });
+    res.status(500).json({ success: false, error: '服务器错误' });
   }
 });
 
-app.post('/api/students', async (req, res) => {
+app.post('/students', async (req, res) => {
   try {
     const student = new Student(req.body);
     await student.save();
     res.json({ success: true, student });
   } catch (error) {
-    res.status(500).json({ success: false, message: '服务器错误' });
+    res.status(500).json({ success: false, error: '服务器错误' });
   }
 });
 
 // 教师API
-app.get('/api/teachers', async (req, res) => {
+app.get('/teachers', async (req, res) => {
   try {
     const teachers = await Teacher.find();
     res.json(teachers);
   } catch (error) {
-    res.status(500).json({ success: false, message: '服务器错误' });
+    res.status(500).json({ success: false, error: '服务器错误' });
   }
 });
 
-app.post('/api/teachers', async (req, res) => {
+app.post('/teachers', async (req, res) => {
   try {
     const teacher = new Teacher(req.body);
     await teacher.save();
     res.json({ success: true, teacher });
   } catch (error) {
-    res.status(500).json({ success: false, message: '服务器错误' });
+    res.status(500).json({ success: false, error: '服务器错误' });
   }
 });
 
 // 课程API
-app.get('/api/courses', async (req, res) => {
+app.get('/courses', async (req, res) => {
   try {
     const courses = await Course.find();
     res.json(courses);
   } catch (error) {
-    res.status(500).json({ success: false, message: '服务器错误' });
+    res.status(500).json({ success: false, error: '服务器错误' });
   }
 });
 
-app.post('/api/courses', async (req, res) => {
+app.post('/courses', async (req, res) => {
   try {
     const course = new Course(req.body);
     await course.save();
     res.json({ success: true, course });
   } catch (error) {
-    res.status(500).json({ success: false, message: '服务器错误' });
+    res.status(500).json({ success: false, error: '服务器错误' });
   }
 });
 
 // 课堂API
-app.get('/api/classes', async (req, res) => {
+app.get('/classes', async (req, res) => {
   try {
     const classes = await Class.find();
     res.json(classes);
   } catch (error) {
-    res.status(500).json({ success: false, message: '服务器错误' });
+    res.status(500).json({ success: false, error: '服务器错误' });
   }
 });
 
-app.post('/api/classes', async (req, res) => {
+app.post('/classes', async (req, res) => {
   try {
     const classData = new Class(req.body);
     await classData.save();
     res.json({ success: true, class: classData });
   } catch (error) {
-    res.status(500).json({ success: false, message: '服务器错误' });
+    res.status(500).json({ success: false, error: '服务器错误' });
   }
 });
 
 // 学生账单状态API
-app.get('/api/student-billing-status', async (req, res) => {
+app.get('/student-billing-status', async (req, res) => {
   try {
     const { month } = req.query;
     const query = month ? { month } : {};
     const statuses = await StudentBillingStatus.find(query);
     res.json(statuses);
   } catch (error) {
-    res.status(500).json({ success: false, message: '服务器错误' });
+    res.status(500).json({ success: false, error: '服务器错误' });
   }
 });
 
-app.post('/api/student-billing-status', async (req, res) => {
+app.post('/student-billing-status', async (req, res) => {
   try {
     const status = new StudentBillingStatus(req.body);
     await status.save();
     res.json({ success: true, status });
   } catch (error) {
-    res.status(500).json({ success: false, message: '服务器错误' });
+    res.status(500).json({ success: false, error: '服务器错误' });
   }
 });
 
 // 教师账单状态API
-app.get('/api/teacher-billing-status', async (req, res) => {
+app.get('/teacher-billing-status', async (req, res) => {
   try {
     const { month } = req.query;
     const query = month ? { month } : {};
     const statuses = await TeacherBillingStatus.find(query);
     res.json(statuses);
   } catch (error) {
-    res.status(500).json({ success: false, message: '服务器错误' });
+    res.status(500).json({ success: false, error: '服务器错误' });
   }
 });
 
-app.post('/api/teacher-billing-status', async (req, res) => {
+app.post('/teacher-billing-status', async (req, res) => {
   try {
     const status = new TeacherBillingStatus(req.body);
     await status.save();
     res.json({ success: true, status });
   } catch (error) {
-    res.status(500).json({ success: false, message: '服务器错误' });
+    res.status(500).json({ success: false, error: '服务器错误' });
   }
 });
 
 // 健康检查
-app.get('/api/health', (req, res) => {
+app.get('/health', (req, res) => {
   res.json({ status: 'OK', timestamp: new Date().toISOString() });
 });
 
