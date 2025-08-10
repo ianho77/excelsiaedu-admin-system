@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import html2pdf from 'html2pdf.js';
 import JSZip from 'jszip';
 import './BillingSystem.css';
+import api from '../services/api';
 
 // Excel匯出功能
 const exportToExcel = async (billingData, statistics, selectedMonth, setExporting) => {
@@ -145,10 +146,7 @@ const BillingSystem = () => {
     // 獲取該月份的學生賬單狀態
     let billingStatuses = [];
     try {
-      const statusResponse = await fetch(`http://localhost:4000/api/student-billing-status?month=${selectedMonth}`);
-      if (statusResponse.ok) {
-        billingStatuses = await statusResponse.json();
-      }
+      billingStatuses = await api.studentBillingStatus.getByMonth(selectedMonth);
     } catch (error) {
       console.error('獲取賬單狀態失敗:', error);
     }
@@ -224,8 +222,7 @@ const BillingSystem = () => {
 
   const fetchStudents = async () => {
     try {
-      const response = await fetch('http://localhost:4000/api/students');
-      const data = await response.json();
+      const data = await api.students.getAll();
       setStudents(data);
     } catch (error) {
       console.error('獲取學生數據失敗:', error);
@@ -234,8 +231,7 @@ const BillingSystem = () => {
 
   const fetchClasses = async () => {
     try {
-      const response = await fetch('http://localhost:4000/api/classes');
-      const data = await response.json();
+      const data = await api.classes.getAll();
       setClasses(data);
     } catch (error) {
       console.error('獲取課堂數據失敗:', error);
@@ -244,8 +240,7 @@ const BillingSystem = () => {
 
   const fetchTeachers = async () => {
     try {
-      const response = await fetch('http://localhost:4000/api/teachers');
-      const data = await response.json();
+      const data = await api.teachers.getAll();
       setTeachers(data);
     } catch (error) {
       console.error('獲取教師數據失敗:', error);
@@ -254,8 +249,7 @@ const BillingSystem = () => {
 
   const fetchCourses = async () => {
     try {
-      const response = await fetch('http://localhost:4000/api/courses');
-      const data = await response.json();
+      const data = await api.courses.getAll();
       setCourses(data);
     } catch (error) {
       console.error('獲取課程數據失敗:', error);
@@ -299,30 +293,20 @@ const BillingSystem = () => {
 
   const updateBillingStatus = async (studentId, field, value) => {
     try {
-      const response = await fetch('http://localhost:4000/api/student-billing-status', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          studentId,
-          month: selectedMonth,
-          [field]: value
-        }),
+      await api.studentBillingStatus.create({
+        studentId,
+        month: selectedMonth,
+        [field]: value
       });
 
-      if (response.ok) {
-        // 更新本地狀態
-        setBillingData(prev => 
-          prev.map(item => 
-            item.studentId === studentId 
-              ? { ...item, [field]: value }
-              : item
-          )
-        );
-      } else {
-        console.error('更新狀態失敗');
-      }
+      // 更新本地狀態
+      setBillingData(prev => 
+        prev.map(item => 
+          item.studentId === studentId 
+            ? { ...item, [field]: value }
+            : item
+        )
+      );
     } catch (error) {
       console.error('更新狀態時發生錯誤:', error);
     }
