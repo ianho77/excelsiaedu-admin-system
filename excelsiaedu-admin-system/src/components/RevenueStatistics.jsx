@@ -781,30 +781,9 @@ const RevenueStatistics = () => {
     </div>
   );
 
-  // 如果還在載入或有錯誤，只顯示基礎內容
-  if (loading || error || !students || !teachers || !classes || !courses) {
-    return baseContent;
-  }
-
-  console.log('組件渲染，當前標籤頁:', activeTab);
-  console.log('數據狀態:', {
-    students: students.length,
-    teachers: teachers.length,
-    classes: classes.length,
-    courses: courses.length
-  });
-
-  return (
+  // 永遠顯示基礎內容，確保組件不會消失
+  const mainContent = (
     <div className="revenue-statistics">
-      {/* 測試渲染 - 確保組件可見 */}
-      {testRender}
-      
-      {/* 實時調試信息 */}
-      {debugInfo}
-      
-      {/* 安全內容區域 - 永遠可見 */}
-      {safeContent}
-      
       <div style={{ 
         padding: '20px', 
         backgroundColor: '#e3f2fd', 
@@ -818,7 +797,7 @@ const RevenueStatistics = () => {
         <p><strong>載入狀態:</strong> {loading ? '載入中...' : '載入完成'}</p>
         <p><strong>錯誤狀態:</strong> {error ? error : '無錯誤'}</p>
         <p><strong>API URL:</strong> {config.API_URL}</p>
-        <p><strong>數據狀態:</strong> 學生: {students.length}, 教師: {teachers.length}, 課堂: {classes.length}, 課程: {courses.length}</p>
+        <p><strong>數據狀態:</strong> 學生: {students ? students.length : '未定義'}, 教師: {teachers ? teachers.length : '未定義'}, 課堂: {classes ? classes.length : '未定義'}, 課程: {courses ? courses.length : '未定義'}</p>
         <p><strong>重要提示:</strong> 如果這個區域消失，請檢查控制台錯誤！</p>
       </div>
       
@@ -848,6 +827,8 @@ const RevenueStatistics = () => {
           營運概要
         </button>
       </div>
+      
+
 
       {activeTab === 'student' && (
         <div className="tab-content">
@@ -1206,6 +1187,14 @@ const RevenueStatistics = () => {
           )}
         </div>
       )}
+    </div>
+  );
+
+  // 返回組合的內容，確保黃色框永遠可見
+  return (
+    <div>
+      {baseContent}
+      {mainContent}
     </div>
   );
 };
