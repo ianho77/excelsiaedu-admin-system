@@ -114,11 +114,11 @@ const BillingSystem = () => {
   const [filteredStudents, setFilteredStudents] = useState([]);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [confirmAction, setConfirmAction] = useState('');
-  const [, setStatistics] = useState({
-    totalAmount: 0,
-    paidAmount: 0,
-    unpaidAmount: 0
-  });
+  // const [statistics, setStatistics] = useState({
+  //   totalAmount: 0,
+  //   paidAmount: 0,
+  //   unpaidAmount: 0
+  // });
 
   // 获取前一个月的默认值（暫時不使用）
   // const getPreviousMonth = () => {
@@ -154,9 +154,9 @@ const BillingSystem = () => {
     }
 
     const studentBilling = {};
-    let totalAmount = 0;
-    let paidAmount = 0;
-    let unpaidAmount = 0;
+    // let totalAmount = 0;
+    // let paidAmount = 0;
+    // let unpaidAmount = 0;
 
     filteredClasses.forEach(cls => {
       const student = students.find(s => s.studentId === cls.studentId);
@@ -177,25 +177,25 @@ const BillingSystem = () => {
           };
         }
         studentBilling[student.studentId].totalAmount += cls.price;
-        totalAmount += cls.price;
+        // totalAmount += cls.price;
       }
     });
 
     const billingDataArray = Object.values(studentBilling);
     
-    // 計算統計信息
-    paidAmount = billingDataArray
-      .filter(item => item.paymentStatus === '已繳交')
-      .reduce((sum, item) => sum + item.totalAmount, 0);
+    // 計算統計信息（已移至 getFilteredStatistics 函數中動態計算）
+    // paidAmount = billingDataArray
+    //   .filter(item => item.paymentStatus === '已繳交')
+    //   .reduce((sum, item) => sum + item.totalAmount, 0);
     
-    unpaidAmount = totalAmount - paidAmount;
+    // unpaidAmount = totalAmount - paidAmount;
 
     setBillingData(billingDataArray);
-    setStatistics({
-      totalAmount,
-      paidAmount,
-      unpaidAmount
-    });
+    // setStatistics({
+    //   totalAmount,
+    //   paidAmount,
+    //   unpaidAmount
+    // });
   }, [selectedMonth, students, classes]);
 
   // 獲取學生和課堂數據
@@ -217,8 +217,8 @@ const BillingSystem = () => {
     if (selectedMonth) {
       calculateBillingData();
     } else {
-      setBillingData([]);
-      setStatistics({ totalAmount: 0, paidAmount: 0, unpaidAmount: 0 });
+          setBillingData([]);
+    // setStatistics({ totalAmount: 0, paidAmount: 0, unpaidAmount: 0 });
     }
   }, [selectedMonth, students, classes, courses, calculateBillingData]);
 

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Routes, Route, Link, useLocation } from 'react-router-dom';
+import { Routes, Route, Link } from 'react-router-dom';
 import Papa from 'papaparse';
 import config from './config';
 import ConfirmModal from './components/ConfirmModal';
@@ -9,13 +9,13 @@ import BillingSystem from './components/BillingSystem';
 import TeacherBillingSystem from './components/TeacherBillingSystem';
 import RevenueStatistics from './components/RevenueStatistics';
 import LoginPage from './components/LoginPage';
-import MonthlyStatement from './components/MonthlyStatement';
-import UserManagement from './components/UserManagement';
+// import MonthlyStatement from './components/MonthlyStatement';
+// import UserManagement from './components/UserManagement';
 import LoginManagement from './components/LoginManagement';
 import './App.css';
 
 function Sidebar({ userType }) {
-  const location = useLocation();
+  // const location = useLocation();
   const [isAddDropdownOpen, setIsAddDropdownOpen] = React.useState(false);
   const [isManageDropdownOpen, setIsManageDropdownOpen] = React.useState(false);
   const [isRevenueDropdownOpen, setIsRevenueDropdownOpen] = React.useState(false);
@@ -140,7 +140,7 @@ function AddClass() {
   const [students, setStudents] = React.useState([]);
   const [courses, setCourses] = React.useState([]);
   const [teachers, setTeachers] = React.useState([]);
-  const [classes, setClasses] = React.useState([]);
+  // const [classes, setClasses] = React.useState([]);
   const [studentFilters, setStudentFilters] = React.useState([]);
   const [studentCountError, setStudentCountError] = React.useState('');
   const [loading, setLoading] = React.useState(false);
@@ -164,39 +164,36 @@ function AddClass() {
 
   const fetchAllData = async () => {
     try {
-      const [studentsRes, coursesRes, teachersRes, classesRes] = await Promise.all([
+      const [studentsRes, coursesRes, teachersRes] = await Promise.all([
         fetch(`${config.API_URL}/api/students`),
         fetch(`${config.API_URL}/api/courses`),
-        fetch(`${config.API_URL}/api/teachers`),
-        fetch(`${config.API_URL}/api/classes`)
+        fetch(`${config.API_URL}/api/teachers`)
       ]);
 
       const studentsData = await studentsRes.json();
       const coursesData = await coursesRes.json();
       const teachersData = await teachersRes.json();
-      const classesData = await classesRes.json();
 
       setStudents(studentsData);
       setCourses(coursesData);
       setTeachers(teachersData);
-      setClasses(classesData);
     } catch (error) {
       console.error('獲取數據失敗:', error);
     }
   };
 
   // 產生課程下拉選單
-  const courseOptions = courses.map(c => ({ value: c.id, label: `${c.id} - ${c.subject}` }));
+  // const courseOptions = courses.map(c => ({ value: c.id, label: `${c.id} - ${c.subject}` }));
 
   // 產生學生下拉選單（每個輸入框都可篩選）
-  const getFilteredStudents = (filter) => {
-    if (!filter) return students;
-    return students.filter(s =>
-      s.id.toString().includes(filter) ||
-      s.nameZh.includes(filter) ||
-      s.nameEn.toLowerCase().includes(filter.toLowerCase())
-    );
-  };
+  // const getFilteredStudents = (filter) => {
+  //   if (!filter) return students;
+  //   return students.filter(s =>
+  //     s.id.toString().includes(filter) ||
+  //     s.nameZh.includes(filter) ||
+  //     s.nameEn.toLowerCase().includes(filter.toLowerCase())
+  //   );
+  // };
 
   // 處理表單欄位變更
   const handleChange = (e) => {
@@ -656,8 +653,8 @@ function AddCourse() {
   const [teachers, setTeachers] = React.useState([]);
   const [courses, setCourses] = React.useState([]);
   const [loading, setLoading] = React.useState(false);
-  const [courseFilter, setCourseFilter] = React.useState('');
-  const [courseDisplay, setCourseDisplay] = React.useState('');
+  // const [courseFilter, setCourseFilter] = React.useState('');
+  // const [courseDisplay, setCourseDisplay] = React.useState('');
   const [csvLoading, setCsvLoading] = React.useState(false);
   const [csvMessage, setCsvMessage] = React.useState('');
   const [showConfirmModal, setShowConfirmModal] = React.useState(false);
@@ -695,9 +692,9 @@ function AddCourse() {
     setForm(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleSelectTeacher = (teacherId) => {
-    setForm(prev => ({ ...prev, teacherId }));
-  };
+  // const handleSelectTeacher = (teacherId) => {
+  //   setForm(prev => ({ ...prev, teacherId }));
+  // };
 
   const handleTeacherInput = (e) => {
     setTeacherDisplay(e.target.value);
@@ -2561,7 +2558,7 @@ function CourseList() {
   // 篩選邏輯
   const filteredCourses = courses.filter(course => {
     const teacher = teachers.find(t => t.teacherId === course.teacherId);
-    const teacherName = teacher ? teacher.name : '';
+    // const teacherName = teacher ? teacher.name : '';
     
     return (
       (subjectDisplay === '' || subjectDisplay === '全部' || course.subject === subjectDisplay) &&
@@ -3138,13 +3135,13 @@ function App() {
     }
     return { isLoggedIn: false, userType: null, username: '' };
   });
-  const [loading, setLoading] = React.useState(false);
-  const [courseFilter, setCourseFilter] = React.useState('');
-  const [courseDisplay, setCourseDisplay] = React.useState('');
-  const [csvLoading, setCsvLoading] = React.useState(false);
-  const [csvMessage, setCsvMessage] = React.useState('');
-  const [showConfirmModal, setShowConfirmModal] = React.useState(false);
-  const [confirmData, setConfirmData] = React.useState(null);
+  // const [loading, setLoading] = React.useState(false);
+  // const [courseFilter, setCourseFilter] = React.useState('');
+  // const [courseDisplay, setCourseDisplay] = React.useState('');
+  // const [csvLoading, setCsvLoading] = React.useState(false);
+  // const [csvMessage, setCsvMessage] = React.useState('');
+  // const [showConfirmModal, setShowConfirmModal] = React.useState(false);
+  // const [confirmData, setConfirmData] = React.useState(null);
 
   // 處理登入
   const handleLogin = (type, user) => {

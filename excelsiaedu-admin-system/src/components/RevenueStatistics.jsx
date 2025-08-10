@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useLocation } from 'react-router-dom';
 import { Chart as ChartJS, ArcElement, Tooltip, Legend, CategoryScale, LinearScale, BarElement, PointElement, LineElement } from 'chart.js';
-import { Pie, Bar, Line } from 'react-chartjs-2';
-import * as XLSX from 'xlsx';
+// import { Pie, Bar, Line } from 'react-chartjs-2';
+// import * as XLSX from 'xlsx';
 import './RevenueStatistics.css';
 import config from '../config';
 
@@ -66,7 +66,7 @@ const RevenueStatistics = () => {
   // 新增 useEffect 來監聽 URL 變化並更新 activeTab
   useEffect(() => {
     setActiveTab(getDefaultTab());
-  }, [location.pathname]);
+  }, [location.pathname, getDefaultTab]);
 
   useEffect(() => {
     fetchData();
@@ -148,36 +148,37 @@ const RevenueStatistics = () => {
   };
 
   // 處理月份選擇
-  const handleMonthSelection = (monthValue) => {
-    if (monthValue === 'all') {
-      // 如果選擇「全部月份」
-      const allMonths = generateMonthOptionsWithAll()
-        .filter(month => month.value !== 'all')
-        .map(month => month.value);
+  // const handleMonthSelection = (monthValue) => {
+  //   if (monthValue === 'all') {
+  //     // 如果選擇「全部月份」
+  //     const allMonths = generateMonthOptionsWithAll()
+  //       .filter(month => month.value !== 'all')
+  //       .map(month => month.value);
       
-      // 檢查是否所有月份都已選中
-      const isAllSelected = allMonths.every(month => selectedOverviewMonths.includes(month));
+  //     // 檢查是否所有月份都已選中
+  //     const isAllSelected = allMonths.every(month => selectedOverviewMonths.includes(month));
       
-      if (isAllSelected) {
-        // 如果所有月份都已選中，則取消選中所有月份
-        setSelectedOverviewMonths([]);
-      } else {
-        // 否則選中所有月份
-        setSelectedOverviewMonths(allMonths);
-      }
-    } else {
-      // 如果選擇個別月份
-      setSelectedOverviewMonths(prev => {
-        if (prev.includes(monthValue)) {
-          // 如果已經選中，則取消選中
-          return prev.filter(m => m !== monthValue);
-        } else {
-          // 如果未選中，則添加到選中列表
-          return [...prev, monthValue];
-        }
-      });
-    }
-  };
+  //     if (isAllSelected) {
+  //       // 如果所有月份都已選中，則取消選中所有月份
+  //       setSelectedOverviewMonths([]);
+  //     } else {
+  //       // 否則選中所有月份
+  //       setSelectedOverviewMonths(allMonths);
+  //     }
+  //   } else {
+  //     // 如果選擇個別月份
+  //     setSelectedOverviewMonths(prev => {
+  //       if (prev.includes(monthValue)) {
+  //           // 如果已經選中，則取消選中
+  //           return prev.filter(m => m !== monthValue);
+  //         } else {
+  //           // 如果未選中，則添加到選中列表
+  //           return [...prev, monthValue];
+  //         }
+  //       });
+  //     }
+  //   }
+  // };
 
   // 過濾學生選項
   const getFilteredStudents = () => {
@@ -559,7 +560,11 @@ const RevenueStatistics = () => {
     classes,
     students,
     teachers,
-    courses
+    courses,
+    calculateDailyData,
+    calculateOverviewData,
+    calculateStudentData,
+    calculateTeacherData
   ]);
 
   const formatCurrency = (amount) => {
