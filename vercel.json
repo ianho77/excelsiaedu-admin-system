@@ -2,7 +2,16 @@
   "version": 2,
   "buildCommand": "cd excelsiaedu-admin-system && npm run build",
   "outputDirectory": "excelsiaedu-admin-system/build",
+  "functions": {
+    "api/**/*.js": {
+      "maxDuration": 30
+    }
+  },
   "rewrites": [
+    {
+      "source": "/api/(.*)",
+      "destination": "/api/$1"
+    },
     {
       "source": "/(.*)",
       "destination": "/index.html"
