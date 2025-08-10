@@ -15,5 +15,9 @@
   "devDependencies": {},
   "engines": {
     "node": ">=18.0.0"
+  },
+  "vercel": {
+    "buildCommand": "npm run vercel-build",
+    "outputDirectory": "excelsiaedu-admin-system/build"
   }
 }

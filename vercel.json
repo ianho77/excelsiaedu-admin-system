@@ -28,15 +28,7 @@
     },
     {
       "source": "/(.*)",
-      "destination": "/excelsiaedu-admin-system/index.html"
+      "destination": "/index.html"
     }
-  ],
-  "functions": {
-    "api/index.js": {
-      "maxDuration": 30
-    },
-    "api/test.js": {
-      "maxDuration": 30
-    }
-  }
+  ]
 }
