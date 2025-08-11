@@ -767,8 +767,6 @@ const RevenueStatistics = () => {
                     />
                     <span>1月</span>
                   </label>
-                </div>
-                <div className="month-row">
                   <label className="month-checkbox">
                     <input
                       type="checkbox"
@@ -797,8 +795,6 @@ const RevenueStatistics = () => {
                     />
                     <span>3月</span>
                   </label>
-                </div>
-                <div className="month-row">
                   <label className="month-checkbox">
                     <input
                       type="checkbox"
@@ -827,8 +823,6 @@ const RevenueStatistics = () => {
                     />
                     <span>5月</span>
                   </label>
-                </div>
-                <div className="month-row">
                   <label className="month-checkbox">
                     <input
                       type="checkbox"
@@ -843,6 +837,8 @@ const RevenueStatistics = () => {
                     />
                     <span>6月</span>
                   </label>
+                </div>
+                <div className="month-row">
                   <label className="month-checkbox">
                     <input
                       type="checkbox"
@@ -857,8 +853,6 @@ const RevenueStatistics = () => {
                     />
                     <span>7月</span>
                   </label>
-                </div>
-                <div className="month-row">
                   <label className="month-checkbox">
                     <input
                       type="checkbox"
@@ -887,8 +881,6 @@ const RevenueStatistics = () => {
                     />
                     <span>9月</span>
                   </label>
-                </div>
-                <div className="month-row">
                   <label className="month-checkbox">
                     <input
                       type="checkbox"
@@ -917,8 +909,6 @@ const RevenueStatistics = () => {
                     />
                     <span>11月</span>
                   </label>
-                </div>
-                <div className="month-row">
                   <label className="month-checkbox">
                     <input
                       type="checkbox"
