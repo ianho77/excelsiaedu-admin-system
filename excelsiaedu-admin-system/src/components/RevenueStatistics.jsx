@@ -11,17 +11,15 @@ ChartJS.register(ArcElement, Tooltip, Legend, CategoryScale, LinearScale, BarEle
 const RevenueStatistics = () => {
   const location = useLocation();
   
-  // 根據URL參數決定默認標籤頁
-  
-  // 根據URL參數決定默認標籤頁
+  // 根據URL路徑決定默認標籤頁
   const getDefaultTab = useCallback(() => {
-    const hash = location.hash;
-    if (hash.includes('/revenue-teacher')) return 'teacher';
-    if (hash.includes('/revenue-daily')) return 'daily';
-    if (hash.includes('/revenue-overview')) return 'overview';
-    if (hash.includes('/revenue-student')) return 'student';
+    const pathname = location.pathname;
+    if (pathname.includes('/revenue-teacher')) return 'teacher';
+    if (pathname.includes('/revenue-daily')) return 'daily';
+    if (pathname.includes('/revenue-overview')) return 'overview';
+    if (pathname.includes('/revenue-student')) return 'student';
     return 'overview'; // 默認返回營運概要
-  }, [location.hash]);
+  }, [location.pathname]);
   
   const [activeTab, setActiveTab] = useState('overview'); // 設置默認值
   const [students, setStudents] = useState([]);
@@ -75,6 +73,13 @@ const RevenueStatistics = () => {
   useEffect(() => {
     fetchData();
   }, []); // 只在組件掛載時執行一次
+
+  // 當數據加載完成後，計算圖表數據
+  useEffect(() => {
+    if (classes.length > 0 && students.length > 0 && teachers.length > 0 && courses.length > 0) {
+      calculateOverviewData();
+    }
+  }, [classes, students, teachers, courses]);
 
   // 修復 useEffect 依賴問題 - 使用 useCallback 包裝函數
   const calculateStudentData = useCallback(() => {
