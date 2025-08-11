@@ -408,8 +408,16 @@ const RevenueStatistics = () => {
   const getFilteredStudents = () => {
     if (!studentSearch) return students;
     return students.filter(student => {
-      const name = (student.nameZh || student.nameEn || '').toLowerCase();
-      return name.includes(studentSearch.toLowerCase());
+      const searchText = studentSearch.toLowerCase();
+      const id = student.studentId?.toString() || '';
+      const nameZh = student.nameZh || '';
+      const nameEn = student.nameEn || '';
+      const nickname = student.nickname || '';
+      
+      return id.includes(searchText) || 
+             nameZh.toLowerCase().includes(searchText) || 
+             nameEn.toLowerCase().includes(searchText) || 
+             nickname.toLowerCase().includes(searchText);
     });
   };
 
@@ -480,39 +488,15 @@ const RevenueStatistics = () => {
         </div>
       )}
 
-      {/* 標籤頁 */}
-      <div className="tabs">
-        <button 
-          className={activeTab === 'student' ? 'active' : ''} 
-          onClick={() => setActiveTab('student')}
-        >
-          學生課堂明細
-        </button>
-        <button 
-          className={activeTab === 'teacher' ? 'active' : ''} 
-          onClick={() => setActiveTab('teacher')}
-        >
-          教師課堂明細
-        </button>
-        <button 
-          className={activeTab === 'daily' ? 'active' : ''} 
-          onClick={() => setActiveTab('daily')}
-        >
-          每日營收
-        </button>
-        <button 
-          className={activeTab === 'overview' ? 'active' : ''} 
-          onClick={() => setActiveTab('overview')}
-        >
-          營運概要
-        </button>
-      </div>
+
       
       {/* 學生課堂明細內容 */}
       {activeTab === 'student' && (
         <div className="tab-content">
-          <h2>學生課堂明細</h2>
-          <div className="filters">
+          <div className="section-header">
+            <h2>學生課堂明細</h2>
+          </div>
+          <div className="filters-row">
             <div className="filter-group">
               <label>選擇學生：</label>
               <div className="search-container">
@@ -535,7 +519,7 @@ const RevenueStatistics = () => {
                           setShowStudentDropdown(false);
                         }}
                       >
-                        {student.nameZh || student.nameEn}
+                        {student.studentId}-{student.nameZh}({student.nameEn})[{student.nickname || ''}]
                       </div>
                     ))}
                   </div>
@@ -589,8 +573,10 @@ const RevenueStatistics = () => {
       {/* 教師課堂明細內容 */}
       {activeTab === 'teacher' && (
         <div className="tab-content">
-          <h2>教師課堂明細</h2>
-          <div className="filters">
+          <div className="section-header">
+            <h2>教師課堂明細</h2>
+          </div>
+          <div className="filters-row">
             <div className="filter-group">
               <label>選擇教師：</label>
               <div className="search-container">
@@ -665,8 +651,10 @@ const RevenueStatistics = () => {
       {/* 每日營收內容 */}
       {activeTab === 'daily' && (
         <div className="tab-content">
-          <h2>每日營收</h2>
-          <div className="filters">
+          <div className="section-header">
+            <h2>每日營收</h2>
+          </div>
+          <div className="filters-row">
             <div className="filter-group">
               <label>開始日期：</label>
               <input
@@ -714,8 +702,16 @@ const RevenueStatistics = () => {
       {/* 營運概要內容 */}
       {activeTab === 'overview' && (
         <div className="tab-content">
-          <h2>營運概要</h2>
-          <div className="filters">
+          <div className="section-header">
+            <h2>營運概要</h2>
+          </div>
+          
+          {/* 總計金額顯示在上方 */}
+          <div className="overview-total">
+            <h3>總計金額: <span className="total-amount">{formatCurrency(totalAmount)}</span></h3>
+          </div>
+          
+          <div className="filters-row">
             <div className="filter-group">
               <label>選擇年份：</label>
               <select
@@ -728,16 +724,38 @@ const RevenueStatistics = () => {
             </div>
             <div className="filter-group">
               <label>選擇月份：</label>
-              <select
-                multiple
-                value={selectedOverviewMonths}
-                onChange={(e) => {
-                  const selectedOptions = Array.from(e.target.selectedOptions, option => option.value);
-                  setSelectedOverviewMonths(selectedOptions);
-                }}
-              >
-                {generateMonthOptions()}
-              </select>
+              <div className="month-checkboxes">
+                <label className="month-checkbox">
+                  <input
+                    type="checkbox"
+                    checked={selectedOverviewMonths.length === 12}
+                    onChange={(e) => {
+                      if (e.target.checked) {
+                        setSelectedOverviewMonths(['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12']);
+                      } else {
+                        setSelectedOverviewMonths([]);
+                      }
+                    }}
+                  />
+                  <span>全部</span>
+                </label>
+                {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map(month => (
+                  <label key={month} className="month-checkbox">
+                    <input
+                      type="checkbox"
+                      checked={selectedOverviewMonths.includes(month.toString())}
+                      onChange={(e) => {
+                        if (e.target.checked) {
+                          setSelectedOverviewMonths([...selectedOverviewMonths, month.toString()]);
+                        } else {
+                          setSelectedOverviewMonths(selectedOverviewMonths.filter(m => m !== month.toString()));
+                        }
+                      }}
+                    />
+                    <span>{month}月</span>
+                  </label>
+                ))}
+              </div>
             </div>
           </div>
           
@@ -974,7 +992,9 @@ const RevenueStatistics = () => {
           
           {selectedListTab === 'teacher' && overviewData.teacherRevenue.length > 0 && (
             <div className="data-summary">
-              <h3>教師營收統計</h3>
+              <div className="section-header">
+                <h3>教師營收統計</h3>
+              </div>
               <div className="data-table">
                 <table>
                   <thead>
@@ -998,7 +1018,9 @@ const RevenueStatistics = () => {
           
           {selectedListTab === 'course' && overviewData.courseRevenue.length > 0 && (
             <div className="data-summary">
-              <h3>課程營收統計</h3>
+              <div className="section-header">
+                <h3>課程營收統計</h3>
+              </div>
               <div className="data-table">
                 <table>
                   <thead>
@@ -1022,7 +1044,9 @@ const RevenueStatistics = () => {
           
           {selectedListTab === 'grade' && overviewData.gradeRevenue.length > 0 && (
             <div className="data-summary">
-              <h3>年級營收統計</h3>
+              <div className="section-header">
+                <h3>年級營收統計</h3>
+              </div>
               <div className="data-table">
                 <table>
                   <thead>
@@ -1046,7 +1070,9 @@ const RevenueStatistics = () => {
           
           {selectedListTab === 'monthly' && overviewData.monthlyRevenue.length > 0 && (
             <div className="data-summary">
-              <h3>月度營收統計</h3>
+              <div className="section-header">
+                <h3>月度營收統計</h3>
+              </div>
               <div className="data-table">
                 <table>
                   <thead>
