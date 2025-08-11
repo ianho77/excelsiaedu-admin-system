@@ -85,7 +85,7 @@ const RevenueStatistics = () => {
     if (selectedOverviewMonths.length > 0) {
       filteredClasses = filteredClasses.filter(cls => {
         const classDate = new Date(cls.date);
-        const classMonth = `${classDate.getFullYear()}-${String(classDate.getMonth() + 1).padStart(2, '0')}`;
+        const classMonth = String(classDate.getMonth() + 1);
         return selectedOverviewMonths.includes(classMonth);
       });
     }
@@ -321,6 +321,21 @@ const RevenueStatistics = () => {
       const classesData = await classesRes.json();
       const coursesData = await coursesRes.json();
 
+      // 添加調試信息
+      console.log('獲取到的數據:', {
+        students: studentsData.length,
+        teachers: teachersData.length,
+        classes: classesData.length,
+        courses: coursesData.length
+      });
+
+      if (classesData.length > 0) {
+        console.log('課堂數據示例:', classesData[0]);
+      }
+      if (teachersData.length > 0) {
+        console.log('教師數據示例:', teachersData[0]);
+      }
+
       setStudents(studentsData);
       setTeachers(teachersData);
       setClasses(classesData);
@@ -493,7 +508,7 @@ const RevenueStatistics = () => {
       {/* 學生課堂明細內容 */}
       {activeTab === 'student' && (
         <div className="tab-content">
-          <div className="section-header">
+          <div className="content-header">
             <h2>學生課堂明細</h2>
           </div>
           <div className="filters-row">
@@ -573,7 +588,7 @@ const RevenueStatistics = () => {
       {/* 教師課堂明細內容 */}
       {activeTab === 'teacher' && (
         <div className="tab-content">
-          <div className="section-header">
+          <div className="content-header">
             <h2>教師課堂明細</h2>
           </div>
           <div className="filters-row">
@@ -651,7 +666,7 @@ const RevenueStatistics = () => {
       {/* 每日營收內容 */}
       {activeTab === 'daily' && (
         <div className="tab-content">
-          <div className="section-header">
+          <div className="content-header">
             <h2>每日營收</h2>
           </div>
           <div className="filters-row">
@@ -702,13 +717,11 @@ const RevenueStatistics = () => {
       {/* 營運概要內容 */}
       {activeTab === 'overview' && (
         <div className="tab-content">
-          <div className="section-header">
+          <div className="overview-header">
             <h2>營運概要</h2>
-          </div>
-          
-          {/* 總計金額顯示在上方 */}
-          <div className="overview-total">
-            <h3>總計金額: <span className="total-amount">{formatCurrency(totalAmount)}</span></h3>
+            <div className="overview-total-right">
+              <span className="total-amount">{formatCurrency(totalAmount)}</span>
+            </div>
           </div>
           
           <div className="filters-row">
@@ -722,39 +735,205 @@ const RevenueStatistics = () => {
                 {generateYearOptions()}
               </select>
             </div>
-            <div className="filter-group">
+            <div className="filter-group month-filter">
               <label>選擇月份：</label>
               <div className="month-checkboxes">
-                <label className="month-checkbox">
-                  <input
-                    type="checkbox"
-                    checked={selectedOverviewMonths.length === 12}
-                    onChange={(e) => {
-                      if (e.target.checked) {
-                        setSelectedOverviewMonths(['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12']);
-                      } else {
-                        setSelectedOverviewMonths([]);
-                      }
-                    }}
-                  />
-                  <span>全部</span>
-                </label>
-                {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map(month => (
-                  <label key={month} className="month-checkbox">
+                <div className="month-row">
+                  <label className="month-checkbox">
                     <input
                       type="checkbox"
-                      checked={selectedOverviewMonths.includes(month.toString())}
+                      checked={selectedOverviewMonths.length === 12}
                       onChange={(e) => {
                         if (e.target.checked) {
-                          setSelectedOverviewMonths([...selectedOverviewMonths, month.toString()]);
+                          setSelectedOverviewMonths(['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12']);
                         } else {
-                          setSelectedOverviewMonths(selectedOverviewMonths.filter(m => m !== month.toString()));
+                          setSelectedOverviewMonths([]);
                         }
                       }}
                     />
-                    <span>{month}月</span>
+                    <span>全部</span>
                   </label>
-                ))}
+                  <label className="month-checkbox">
+                    <input
+                      type="checkbox"
+                      checked={selectedOverviewMonths.includes('1')}
+                      onChange={(e) => {
+                        if (e.target.checked) {
+                          setSelectedOverviewMonths([...selectedOverviewMonths, '1']);
+                        } else {
+                          setSelectedOverviewMonths(selectedOverviewMonths.filter(m => m !== '1'));
+                        }
+                      }}
+                    />
+                    <span>1月</span>
+                  </label>
+                </div>
+                <div className="month-row">
+                  <label className="month-checkbox">
+                    <input
+                      type="checkbox"
+                      checked={selectedOverviewMonths.includes('2')}
+                      onChange={(e) => {
+                        if (e.target.checked) {
+                          setSelectedOverviewMonths([...selectedOverviewMonths, '2']);
+                        } else {
+                          setSelectedOverviewMonths(selectedOverviewMonths.filter(m => m !== '2'));
+                        }
+                      }}
+                    />
+                    <span>2月</span>
+                  </label>
+                  <label className="month-checkbox">
+                    <input
+                      type="checkbox"
+                      checked={selectedOverviewMonths.includes('3')}
+                      onChange={(e) => {
+                        if (e.target.checked) {
+                          setSelectedOverviewMonths([...selectedOverviewMonths, '3']);
+                        } else {
+                          setSelectedOverviewMonths(selectedOverviewMonths.filter(m => m !== '3'));
+                        }
+                      }}
+                    />
+                    <span>3月</span>
+                  </label>
+                </div>
+                <div className="month-row">
+                  <label className="month-checkbox">
+                    <input
+                      type="checkbox"
+                      checked={selectedOverviewMonths.includes('4')}
+                      onChange={(e) => {
+                        if (e.target.checked) {
+                          setSelectedOverviewMonths([...selectedOverviewMonths, '4']);
+                        } else {
+                          setSelectedOverviewMonths(selectedOverviewMonths.filter(m => m !== '4'));
+                        }
+                      }}
+                    />
+                    <span>4月</span>
+                  </label>
+                  <label className="month-checkbox">
+                    <input
+                      type="checkbox"
+                      checked={selectedOverviewMonths.includes('5')}
+                      onChange={(e) => {
+                        if (e.target.checked) {
+                          setSelectedOverviewMonths([...selectedOverviewMonths, '5']);
+                        } else {
+                          setSelectedOverviewMonths(selectedOverviewMonths.filter(m => m !== '5'));
+                        }
+                      }}
+                    />
+                    <span>5月</span>
+                  </label>
+                </div>
+                <div className="month-row">
+                  <label className="month-checkbox">
+                    <input
+                      type="checkbox"
+                      checked={selectedOverviewMonths.includes('6')}
+                      onChange={(e) => {
+                        if (e.target.checked) {
+                          setSelectedOverviewMonths([...selectedOverviewMonths, '6']);
+                        } else {
+                          setSelectedOverviewMonths(selectedOverviewMonths.filter(m => m !== '6'));
+                        }
+                      }}
+                    />
+                    <span>6月</span>
+                  </label>
+                  <label className="month-checkbox">
+                    <input
+                      type="checkbox"
+                      checked={selectedOverviewMonths.includes('7')}
+                      onChange={(e) => {
+                        if (e.target.checked) {
+                          setSelectedOverviewMonths([...selectedOverviewMonths, '7']);
+                        } else {
+                          setSelectedOverviewMonths(selectedOverviewMonths.filter(m => m !== '7'));
+                        }
+                      }}
+                    />
+                    <span>7月</span>
+                  </label>
+                </div>
+                <div className="month-row">
+                  <label className="month-checkbox">
+                    <input
+                      type="checkbox"
+                      checked={selectedOverviewMonths.includes('8')}
+                      onChange={(e) => {
+                        if (e.target.checked) {
+                          setSelectedOverviewMonths([...selectedOverviewMonths, '8']);
+                        } else {
+                          setSelectedOverviewMonths(selectedOverviewMonths.filter(m => m !== '8'));
+                        }
+                      }}
+                    />
+                    <span>8月</span>
+                  </label>
+                  <label className="month-checkbox">
+                    <input
+                      type="checkbox"
+                      checked={selectedOverviewMonths.includes('9')}
+                      onChange={(e) => {
+                        if (e.target.checked) {
+                          setSelectedOverviewMonths([...selectedOverviewMonths, '9']);
+                        } else {
+                          setSelectedOverviewMonths(selectedOverviewMonths.filter(m => m !== '9'));
+                        }
+                      }}
+                    />
+                    <span>9月</span>
+                  </label>
+                </div>
+                <div className="month-row">
+                  <label className="month-checkbox">
+                    <input
+                      type="checkbox"
+                      checked={selectedOverviewMonths.includes('10')}
+                      onChange={(e) => {
+                        if (e.target.checked) {
+                          setSelectedOverviewMonths([...selectedOverviewMonths, '10']);
+                        } else {
+                          setSelectedOverviewMonths(selectedOverviewMonths.filter(m => m !== '10'));
+                        }
+                      }}
+                    />
+                    <span>10月</span>
+                  </label>
+                  <label className="month-checkbox">
+                    <input
+                      type="checkbox"
+                      checked={selectedOverviewMonths.includes('11')}
+                      onChange={(e) => {
+                        if (e.target.checked) {
+                          setSelectedOverviewMonths([...selectedOverviewMonths, '11']);
+                        } else {
+                          setSelectedOverviewMonths(selectedOverviewMonths.filter(m => m !== '11'));
+                        }
+                      }}
+                    />
+                    <span>11月</span>
+                  </label>
+                </div>
+                <div className="month-row">
+                  <label className="month-checkbox">
+                    <input
+                      type="checkbox"
+                      checked={selectedOverviewMonths.includes('12')}
+                      onChange={(e) => {
+                        if (e.target.checked) {
+                          setSelectedOverviewMonths([...selectedOverviewMonths, '12']);
+                        } else {
+                          setSelectedOverviewMonths(selectedOverviewMonths.filter(m => m !== '12'));
+                        }
+                      }}
+                    />
+                    <span>12月</span>
+                  </label>
+                </div>
               </div>
             </div>
           </div>
@@ -992,7 +1171,7 @@ const RevenueStatistics = () => {
           
           {selectedListTab === 'teacher' && overviewData.teacherRevenue.length > 0 && (
             <div className="data-summary">
-              <div className="section-header">
+              <div className="content-header">
                 <h3>教師營收統計</h3>
               </div>
               <div className="data-table">
@@ -1018,7 +1197,7 @@ const RevenueStatistics = () => {
           
           {selectedListTab === 'course' && overviewData.courseRevenue.length > 0 && (
             <div className="data-summary">
-              <div className="section-header">
+              <div className="content-header">
                 <h3>課程營收統計</h3>
               </div>
               <div className="data-table">
@@ -1044,7 +1223,7 @@ const RevenueStatistics = () => {
           
           {selectedListTab === 'grade' && overviewData.gradeRevenue.length > 0 && (
             <div className="data-summary">
-              <div className="section-header">
+              <div className="content-header">
                 <h3>年級營收統計</h3>
               </div>
               <div className="data-table">
@@ -1070,7 +1249,7 @@ const RevenueStatistics = () => {
           
           {selectedListTab === 'monthly' && overviewData.monthlyRevenue.length > 0 && (
             <div className="data-summary">
-              <div className="section-header">
+              <div className="content-header">
                 <h3>月度營收統計</h3>
               </div>
               <div className="data-table">
