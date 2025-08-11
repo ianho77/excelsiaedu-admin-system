@@ -510,6 +510,12 @@ const RevenueStatistics = () => {
         <div className="tab-content">
           <div className="content-header">
             <h2>學生課堂明細</h2>
+            {studentData.length > 0 && (
+              <div className="overview-total-right">
+                <div className="total-label">總計</div>
+                <div className="total-value">{formatCurrency(totalAmount)}</div>
+              </div>
+            )}
           </div>
           <div className="filters-row">
             <div className="filter-group">
@@ -590,6 +596,12 @@ const RevenueStatistics = () => {
         <div className="tab-content">
           <div className="content-header">
             <h2>教師課堂明細</h2>
+            {teacherData.length > 0 && (
+              <div className="overview-total-right">
+                <div className="total-label">總計</div>
+                <div className="total-value">{formatCurrency(totalAmount)}</div>
+              </div>
+            )}
           </div>
           <div className="filters-row">
             <div className="filter-group">
@@ -668,6 +680,12 @@ const RevenueStatistics = () => {
         <div className="tab-content">
           <div className="content-header">
             <h2>每日營收</h2>
+            {dailyData.length > 0 && (
+              <div className="overview-total-right">
+                <div className="total-label">總計</div>
+                <div className="total-value">{formatCurrency(totalAmount)}</div>
+              </div>
+            )}
           </div>
           <div className="filters-row">
             <div className="filter-group">
