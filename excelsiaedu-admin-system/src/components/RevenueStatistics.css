@@ -331,13 +331,18 @@
 .month-checkboxes {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 4px;
   margin-top: 8px;
+  background: #f8fafc;
+  padding: 10px;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+  max-width: 600px;
 }
 
 .month-row {
   display: flex;
-  gap: 20px;
+  gap: 6px;
   justify-content: flex-start;
   flex-wrap: wrap;
 }
@@ -345,27 +350,35 @@
 .month-checkbox {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 3px;
   cursor: pointer;
-  padding: 8px;
-  border-radius: 8px;
-  transition: background-color 0.2s;
+  padding: 3px 5px;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+  min-width: 45px;
+  background: white;
+  border: 1px solid #e2e8f0;
+  font-size: 11px;
 }
 
 .month-checkbox:hover {
-  background-color: #f3f4f6;
+  background-color: #f1f5f9;
+  border-color: #0f766e;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(15, 118, 110, 0.1);
 }
 
 .month-checkbox input[type="checkbox"] {
-  width: 16px;
-  height: 16px;
+  width: 11px;
+  height: 11px;
   accent-color: #0f766e;
 }
 
 .month-checkbox span {
-  font-size: 14px;
+  font-size: 11px;
   color: #374151;
   font-weight: 500;
+  white-space: nowrap;
 }
 
 .month-options-container {

@@ -106,7 +106,7 @@ const RevenueStatistics = () => {
             amount: 0
           };
         }
-        teacherRevenue[teacher.teacherId].amount += cls.price;
+        teacherRevenue[teacher.teacherId].amount += parseFloat(cls.price) || 0;
       }
 
       if (course) {
@@ -120,7 +120,7 @@ const RevenueStatistics = () => {
             amount: 0
           };
         }
-        courseRevenue[course.courseId].amount += cls.price;
+        courseRevenue[course.courseId].amount += parseFloat(cls.price) || 0;
       }
 
       if (course && course.grade) {
@@ -130,7 +130,7 @@ const RevenueStatistics = () => {
             amount: 0
           };
         }
-        gradeRevenue[course.grade].amount += cls.price;
+        gradeRevenue[course.grade].amount += parseFloat(cls.price) || 0;
       }
 
       const classDate = new Date(cls.date);
@@ -143,10 +143,11 @@ const RevenueStatistics = () => {
           amount: 0
         };
       }
-      monthlyRevenue[monthKey].amount += cls.price;
+      monthlyRevenue[monthKey].amount += parseFloat(cls.price) || 0;
     });
     
-    const total = Object.values(teacherRevenue).reduce((sum, item) => sum + item.amount, 0);
+    // 计算总金额 - 修复计算逻辑
+    const total = Object.values(teacherRevenue).reduce((sum, item) => sum + (item.amount || 0), 0);
     
     const sortedMonthlyRevenue = Object.values(monthlyRevenue)
       .sort((a, b) => {
@@ -166,7 +167,17 @@ const RevenueStatistics = () => {
       monthlyRevenue: sortedMonthlyRevenue
     });
     
+    // 设置总金额
     setTotalAmount(total);
+    
+    // 添加调试信息
+    console.log('營運概要數據計算:', {
+      filteredClassesCount: filteredClasses.length,
+      teacherRevenue,
+      total,
+      selectedYear,
+      selectedOverviewMonths
+    });
   }, [classes, selectedYear, selectedOverviewMonths, courses, teachers]);
 
   useEffect(() => {
@@ -204,12 +215,12 @@ const RevenueStatistics = () => {
         studentName: student ? (student.nameZh || student.nameEn) : '未知學生',
         courseName: course ? `${course.grade}${course.subject}` : '未知課程',
         teacherName: teacher ? (teacher.nameZh || teacher.nameEn) : '未知教師',
-            amount: cls.price
+            amount: parseFloat(cls.price) || 0
       };
     });
     
     setStudentData(data);
-    setTotalAmount(data.reduce((sum, item) => sum + item.amount, 0));
+    setTotalAmount(data.reduce((sum, item) => sum + (item.amount || 0), 0));
   }, [classes, students, courses, teachers, selectedStudent, selectedMonth]);
 
   const calculateTeacherData = useCallback(() => {
@@ -233,12 +244,12 @@ const RevenueStatistics = () => {
               date: cls.date,
         teacherName: teacher ? (teacher.nameZh || teacher.nameEn) : '未知教師',
         courseName: course ? `${course.grade}${course.subject}` : '未知課程',
-              amount: cls.price
+              amount: parseFloat(cls.price) || 0
         };
       });
     
     setTeacherData(data);
-    setTotalAmount(data.reduce((sum, item) => sum + item.amount, 0));
+    setTotalAmount(data.reduce((sum, item) => sum + (item.amount || 0), 0));
   }, [classes, teachers, courses, selectedTeacher, selectedTeacherMonth]);
 
   const calculateDailyData = useCallback(() => {
@@ -260,7 +271,7 @@ const RevenueStatistics = () => {
       if (!dailyRevenue[date]) {
         dailyRevenue[date] = 0;
       }
-      dailyRevenue[date] += cls.price;
+      dailyRevenue[date] += parseFloat(cls.price) || 0;
     });
 
     const data = Object.entries(dailyRevenue).map(([date, amount]) => ({
@@ -269,7 +280,7 @@ const RevenueStatistics = () => {
     })).sort((a, b) => new Date(a.date) - new Date(b.date));
 
     setDailyData(data);
-    setTotalAmount(data.reduce((sum, item) => sum + item.amount, 0));
+    setTotalAmount(data.reduce((sum, item) => sum + (item.amount || 0), 0));
   }, [classes, startDate, endDate]);
 
   useEffect(() => {
@@ -304,6 +315,8 @@ const RevenueStatistics = () => {
     setError(null);
     
     try {
+      console.log('正在從以下API獲取數據:', config.API_URL);
+      
       const [studentsRes, teachersRes, classesRes, coursesRes] = await Promise.all([
         fetch(`${config.API_URL}/students`),
         fetch(`${config.API_URL}/teachers`),
@@ -326,14 +339,37 @@ const RevenueStatistics = () => {
         students: studentsData.length,
         teachers: teachersData.length,
         classes: classesData.length,
-        courses: coursesData.length
+        courses: coursesData.length,
+        apiUrl: config.API_URL
       });
 
       if (classesData.length > 0) {
         console.log('課堂數據示例:', classesData[0]);
+        console.log('課堂數據中的教師ID:', classesData.map(cls => cls.teacherId).slice(0, 10));
       }
       if (teachersData.length > 0) {
         console.log('教師數據示例:', teachersData[0]);
+        console.log('教師數據中的教師ID:', teachersData.map(t => t.teacherId).slice(0, 10));
+      }
+
+      // 检查数据关联
+      if (classesData.length > 0 && teachersData.length > 0) {
+        const classTeacherIds = new Set(classesData.map(cls => cls.teacherId));
+        const teacherIds = new Set(teachersData.map(t => t.teacherId));
+        const missingTeacherIds = Array.from(classTeacherIds).filter(id => !teacherIds.has(id));
+        
+        if (missingTeacherIds.length > 0) {
+          console.warn('發現未匹配的教師ID:', missingTeacherIds);
+          console.warn('這可能導致顯示"未知教師"的問題');
+        }
+        
+        console.log('數據關聯檢查:', {
+          classTeacherIds: Array.from(classTeacherIds),
+          teacherIds: Array.from(teacherIds),
+          missingTeacherIds,
+          totalClasses: classesData.length,
+          totalTeachers: teachersData.length
+        });
       }
 
       setStudents(studentsData);
@@ -342,7 +378,16 @@ const RevenueStatistics = () => {
       setCourses(coursesData);
     } catch (error) {
       console.error('獲取數據失敗:', error);
-      setError(`獲取數據失敗: ${error.message}`);
+      console.error('API URL:', config.API_URL);
+      console.error('錯誤詳情:', error.message);
+      
+      // 提供更详细的错误信息
+      let errorMessage = `獲取數據失敗: ${error.message}`;
+      if (error.message.includes('Failed to fetch')) {
+        errorMessage = `無法連接到後端服務器 (${config.API_URL})。請檢查：\n1. 後端服務器是否正在運行\n2. API地址是否正確\n3. 網絡連接是否正常`;
+      }
+      
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -771,6 +816,8 @@ const RevenueStatistics = () => {
                     />
                     <span>全部</span>
                   </label>
+                </div>
+                <div className="month-row">
                   <label className="month-checkbox">
                     <input
                       type="checkbox"
@@ -1146,6 +1193,38 @@ const RevenueStatistics = () => {
                     height={300}
                   />
                 )}
+              </div>
+            </div>
+          </div>
+          
+          {/* 调试信息面板 */}
+          <div className="debug-panel" style={{
+            background: '#f8fafc',
+            padding: '16px',
+            borderRadius: '8px',
+            border: '1px solid #e2e8f0',
+            margin: '20px 0',
+            fontSize: '14px'
+          }}>
+            <h4 style={{ margin: '0 0 12px 0', color: '#374151' }}>🔍 數據調試信息</h4>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '12px' }}>
+              <div>
+                <strong>數據狀態:</strong>
+                <div>課堂數據: {classes.length} 筆</div>
+                <div>教師數據: {teachers.length} 筆</div>
+                <div>課程數據: {courses.length} 筆</div>
+                <div>學生數據: {students.length} 筆</div>
+              </div>
+              <div>
+                <strong>篩選條件:</strong>
+                <div>年份: {selectedYear || '全部'}</div>
+                <div>月份: {selectedOverviewMonths.length > 0 ? selectedOverviewMonths.join(', ') : '全部'}</div>
+              </div>
+              <div>
+                <strong>計算結果:</strong>
+                <div>總金額: {formatCurrency(totalAmount)}</div>
+                <div>教師營收: {overviewData.teacherRevenue.length} 項</div>
+                <div>課程營收: {overviewData.courseRevenue.length} 項</div>
               </div>
             </div>
           </div>
