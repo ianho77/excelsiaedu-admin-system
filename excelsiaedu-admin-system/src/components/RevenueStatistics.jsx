@@ -448,8 +448,8 @@ const RevenueStatistics = () => {
       return true;
     });
 
-    // 按学生分组
-    const studentGroups = {};
+    // 直接构建学生明细数据，不分组
+    const studentDetails = [];
     filteredData.forEach(cls => {
       const student = students.find(s => s.studentId === cls.studentId);
       const course = courses.find(c => c.courseId === cls.courseId);
@@ -471,34 +471,24 @@ const RevenueStatistics = () => {
         studentName = `${student.studentId}-${nameZh}${nameEn ? `(${nameEn})` : ''}${nickname ? `[${nickname}]` : ''}`;
       }
       
-      if (!studentGroups[studentName]) {
-        studentGroups[studentName] = {
-          studentName,
-          studentId: student ? student.studentId : 'unknown',
-          totalAmount: 0,
-          classes: []
-        };
-      }
-      
-      studentGroups[studentName].classes.push({
-        date: cls.date,
+      studentDetails.push({
+        studentName,
         courseName: course ? `${course.grade}${course.subject}` : '未知課程',
         teacherName: teacherName,
+        date: cls.date,
         amount: parseFloat(cls.price) || 0
       });
-      
-      studentGroups[studentName].totalAmount += parseFloat(cls.price) || 0;
     });
     
-    // 转换为数组格式，按总金额排序
-    const groupedData = Object.values(studentGroups).sort((a, b) => b.totalAmount - a.totalAmount);
+    // 按学生名称排序
+    const sortedData = studentDetails.sort((a, b) => a.studentName.localeCompare(b.studentName));
     
-    setStudentData(groupedData);
-    setTotalAmount(groupedData.reduce((sum, group) => sum + group.totalAmount, 0));
+    setStudentData(sortedData);
+    setTotalAmount(sortedData.reduce((sum, item) => sum + item.amount, 0));
   }, [classes, students, courses, teachers, selectedStudent, selectedMonth]);
 
   const calculateTeacherData = useCallback(() => {
-    if (!classes.length || !teachers.length || !courses.length) return;
+    if (!classes.length || !teachers.length || !courses.length || !students.length) return;
     
     let filteredData = classes.filter(cls => {
       if (selectedTeacher && cls.teacherId !== selectedTeacher) return false;
@@ -510,8 +500,8 @@ const RevenueStatistics = () => {
       return true;
     });
 
-    // 按教师分组
-    const teacherGroups = {};
+    // 直接构建教师明细数据，不分组
+    const teacherDetails = [];
     filteredData.forEach(cls => {
       // 优先使用已经关联好的教师信息，如果没有则尝试查找
       let teacherName = '未知教師';
@@ -523,30 +513,32 @@ const RevenueStatistics = () => {
       }
       
       const course = courses.find(c => c.courseId === cls.courseId);
+      const student = students.find(s => s.studentId === cls.studentId);
       
-      if (!teacherGroups[teacherName]) {
-        teacherGroups[teacherName] = {
-          teacherName,
-          totalAmount: 0,
-          classes: []
-        };
+      // 按照指定格式构建学生名称：id-中文名(英文名)[暱稱]
+      let studentName = '未知學生';
+      if (student) {
+        const nameZh = student.nameZh || '';
+        const nameEn = student.nameEn || '';
+        const nickname = student.nickname || '';
+        studentName = `${student.studentId}-${nameZh}${nameEn ? `(${nameEn})` : ''}${nickname ? `[${nickname}]` : ''}`;
       }
       
-      teacherGroups[teacherName].classes.push({
-        date: cls.date,
+      teacherDetails.push({
+        teacherName,
         courseName: course ? `${course.grade}${course.subject}` : '未知課程',
+        studentName,
+        date: cls.date,
         amount: parseFloat(cls.price) || 0
       });
-      
-      teacherGroups[teacherName].totalAmount += parseFloat(cls.price) || 0;
     });
     
-    // 转换为数组格式，按总金额排序
-    const groupedData = Object.values(teacherGroups).sort((a, b) => b.totalAmount - a.totalAmount);
+    // 按教师名称排序
+    const sortedData = teacherDetails.sort((a, b) => a.teacherName.localeCompare(b.teacherName));
     
-    setTeacherData(groupedData);
-    setTotalAmount(groupedData.reduce((sum, group) => sum + group.totalAmount, 0));
-  }, [classes, teachers, courses, selectedTeacher, selectedTeacherMonth]);
+    setTeacherData(sortedData);
+    setTotalAmount(sortedData.reduce((sum, item) => sum + item.amount, 0));
+  }, [classes, teachers, courses, students, selectedTeacher, selectedTeacherMonth]);
 
   const calculateDailyData = useCallback(() => {
     if (!classes.length || !students.length || !teachers.length || !courses.length) return;
@@ -561,19 +553,9 @@ const RevenueStatistics = () => {
       });
     }
 
-    // 按日期分组，包含详细信息
-    const dailyGroups = {};
+    // 直接构建每日营收数据，不分组
+    const dailyDetails = [];
     filteredData.forEach(cls => {
-      const date = cls.date.split('T')[0];
-      
-      if (!dailyGroups[date]) {
-        dailyGroups[date] = {
-          date,
-          totalAmount: 0,
-          classes: []
-        };
-      }
-      
       // 获取学生、教师、课程信息
       const student = students.find(s => s.studentId === cls.studentId);
       const course = courses.find(c => c.courseId === cls.courseId);
@@ -585,21 +567,29 @@ const RevenueStatistics = () => {
         teacherName = teacher ? teacher.name : '未知教師';
       }
       
-      dailyGroups[date].classes.push({
-        studentName: student ? student.name : '未知學生',
-        teacherName: teacherName,
+      // 按照指定格式构建学生名称：id-中文名(英文名)[暱稱]
+      let studentName = '未知學生';
+      if (student) {
+        const nameZh = student.nameZh || '';
+        const nameEn = student.nameEn || '';
+        const nickname = student.nickname || '';
+        studentName = `${student.studentId}-${nameZh}${nameEn ? `(${nameEn})` : ''}${nickname ? `[${nickname}]` : ''}`;
+      }
+      
+      dailyDetails.push({
+        date: cls.date,
+        teacherName,
+        studentName,
         courseName: course ? `${course.grade}${course.subject}` : '未知課程',
         amount: parseFloat(cls.price) || 0
       });
-      
-      dailyGroups[date].totalAmount += parseFloat(cls.price) || 0;
     });
 
-    // 转换为数组格式，按日期排序
-    const groupedData = Object.values(dailyGroups).sort((a, b) => new Date(a.date) - new Date(b.date));
+    // 按日期排序
+    const sortedData = dailyDetails.sort((a, b) => new Date(a.date) - new Date(b.date));
 
-    setDailyData(groupedData);
-    setTotalAmount(groupedData.reduce((sum, group) => sum + group.totalAmount, 0));
+    setDailyData(sortedData);
+    setTotalAmount(sortedData.reduce((sum, item) => sum + item.amount, 0));
   }, [classes, students, teachers, courses, startDate, endDate]);
 
   useEffect(() => {
@@ -844,29 +834,37 @@ const RevenueStatistics = () => {
           
           {studentData.length > 0 && (
             <div className="data-summary">
-              <h3>總計：{formatCurrency(totalAmount)}</h3>
-              <div className="data-table">
+              <div className="compact-table">
+                <div className="table-header">
+                  <h3>學生明細</h3>
+                </div>
                 <table>
                   <thead>
                     <tr>
                       <th>學生名稱</th>
-                      <th>科目</th>
+                      <th>課程</th>
+                      <th>教師</th>
                       <th>日期</th>
                       <th>金額</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {studentData.flatMap((studentGroup, groupIndex) =>
-                      studentGroup.classes.map((cls, index) => (
-                        <tr key={`${groupIndex}-${index}`} className={index % 2 === 0 ? 'even-row' : 'odd-row'}>
-                          <td className="student-cell">{studentGroup.studentName}</td>
-                          <td className="course-cell">{cls.courseName}</td>
-                          <td className="date-cell">{formatDate(cls.date)}</td>
-                          <td className="amount-cell">{formatCurrency(cls.amount)}</td>
-                        </tr>
-                      ))
-                    )}
+                    {studentData.map((item, index) => (
+                      <tr key={index} className={index % 2 === 0 ? 'even-row' : 'odd-row'}>
+                        <td className="student-cell">{item.studentName}</td>
+                        <td className="course-cell">{item.courseName}</td>
+                        <td className="teacher-cell">{item.teacherName}</td>
+                        <td className="date-cell">{formatDate(item.date)}</td>
+                        <td className="amount-cell">{formatCurrency(item.amount)}</td>
+                      </tr>
+                    ))}
                   </tbody>
+                  <tfoot>
+                    <tr>
+                      <td colSpan="4" className="total-label">合計</td>
+                      <td className="total-amount">{formatCurrency(totalAmount)}</td>
+                    </tr>
+                  </tfoot>
                 </table>
               </div>
             </div>
@@ -930,29 +928,37 @@ const RevenueStatistics = () => {
           
           {teacherData.length > 0 && (
             <div className="data-summary">
-              <h3>總計：{formatCurrency(totalAmount)}</h3>
-              <div className="data-table">
+              <div className="compact-table">
+                <div className="table-header">
+                  <h3>教師明細</h3>
+                </div>
                 <table>
                   <thead>
                     <tr>
-                      <th>科目</th>
                       <th>教師</th>
+                      <th>課程</th>
+                      <th>學生</th>
                       <th>日期</th>
                       <th>金額</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {teacherData.flatMap((teacherGroup, groupIndex) =>
-                      teacherGroup.classes.map((cls, index) => (
-                        <tr key={`${groupIndex}-${index}`} className={index % 2 === 0 ? 'even-row' : 'odd-row'}>
-                          <td className="course-cell">{cls.courseName}</td>
-                          <td className="teacher-cell">{teacherGroup.teacherName}</td>
-                          <td className="date-cell">{formatDate(cls.date)}</td>
-                          <td className="amount-cell">{formatCurrency(cls.amount)}</td>
-                        </tr>
-                      ))
-                    )}
+                    {teacherData.map((item, index) => (
+                      <tr key={index} className={index % 2 === 0 ? 'even-row' : 'odd-row'}>
+                        <td className="teacher-cell">{item.teacherName}</td>
+                        <td className="course-cell">{item.courseName}</td>
+                        <td className="student-cell">{item.studentName}</td>
+                        <td className="date-cell">{formatDate(item.date)}</td>
+                        <td className="amount-cell">{formatCurrency(item.amount)}</td>
+                      </tr>
+                    ))}
                   </tbody>
+                  <tfoot>
+                    <tr>
+                      <td colSpan="4" className="total-label">合計</td>
+                      <td className="total-amount">{formatCurrency(totalAmount)}</td>
+                    </tr>
+                  </tfoot>
                 </table>
               </div>
             </div>
@@ -993,29 +999,37 @@ const RevenueStatistics = () => {
           
           {dailyData.length > 0 && (
             <div className="data-summary">
-              <h3>總計：{formatCurrency(totalAmount)}</h3>
-              <div className="data-table">
+              <div className="compact-table">
+                <div className="table-header">
+                  <h3>每日營收</h3>
+                </div>
                 <table>
                   <thead>
                     <tr>
-                      <th>學生</th>
+                      <th>日期</th>
                       <th>教師</th>
+                      <th>學生</th>
                       <th>課程</th>
                       <th>金額</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {dailyData.flatMap((dailyGroup, groupIndex) =>
-                      dailyGroup.classes.map((cls, index) => (
-                        <tr key={`${groupIndex}-${index}`} className={index % 2 === 0 ? 'even-row' : 'odd-row'}>
-                          <td className="student-cell">{cls.studentName}</td>
-                          <td className="teacher-cell">{cls.teacherName}</td>
-                          <td className="course-cell">{cls.courseName}</td>
-                          <td className="amount-cell">{formatCurrency(cls.amount)}</td>
-                        </tr>
-                      ))
-                    )}
+                    {dailyData.map((item, index) => (
+                      <tr key={index} className={index % 2 === 0 ? 'even-row' : 'odd-row'}>
+                        <td className="date-cell">{formatDate(item.date)}</td>
+                        <td className="teacher-cell">{item.teacherName}</td>
+                        <td className="student-cell">{item.studentName}</td>
+                        <td className="course-cell">{item.courseName}</td>
+                        <td className="amount-cell">{formatCurrency(item.amount)}</td>
+                      </tr>
+                    ))}
                   </tbody>
+                  <tfoot>
+                    <tr>
+                      <td colSpan="4" className="total-label">合計</td>
+                      <td className="total-amount">{formatCurrency(totalAmount)}</td>
+                    </tr>
+                  </tfoot>
                 </table>
               </div>
             </div>
