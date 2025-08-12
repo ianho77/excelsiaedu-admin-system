@@ -99,6 +99,19 @@ const RevenueStatistics = () => {
       const teacher = teachers.find(t => t.teacherId === cls.teacherId);
       const course = courses.find(c => c.courseId === cls.courseId);
       
+      // 添加详细的调试信息
+      console.log('处理课堂数据:', {
+        classId: cls.classId || 'unknown',
+        teacherId: cls.teacherId,
+        courseId: cls.courseId,
+        price: cls.price,
+        date: cls.date,
+        foundTeacher: !!teacher,
+        foundCourse: !!course,
+        teacherName: teacher ? (teacher.nameZh || teacher.nameEn) : '未找到',
+        courseName: course ? `${course.grade}${course.subject}` : '未找到'
+      });
+      
       if (teacher) {
         if (!teacherRevenue[teacher.teacherId]) {
           teacherRevenue[teacher.teacherId] = {
@@ -106,7 +119,11 @@ const RevenueStatistics = () => {
             amount: 0
           };
         }
+        const oldAmount = teacherRevenue[teacher.teacherId].amount;
         teacherRevenue[teacher.teacherId].amount += parseFloat(cls.price) || 0;
+        console.log(`教师 ${teacher.nameZh || teacher.nameEn} 营收更新: ${oldAmount} + ${parseFloat(cls.price) || 0} = ${teacherRevenue[teacher.teacherId].amount}`);
+      } else {
+        console.warn(`未找到教师ID: ${cls.teacherId} 对应的教师数据`);
       }
 
       if (course) {
@@ -120,7 +137,11 @@ const RevenueStatistics = () => {
             amount: 0
           };
         }
+        const oldAmount = courseRevenue[course.courseId].amount;
         courseRevenue[course.courseId].amount += parseFloat(cls.price) || 0;
+        console.log(`课程 ${course.courseId} 营收更新: ${oldAmount} + ${parseFloat(cls.price) || 0} = ${courseRevenue[course.courseId].amount}`);
+      } else {
+        console.warn(`未找到课程ID: ${cls.courseId} 对应的课程数据`);
       }
 
       if (course && course.grade) {
@@ -1225,6 +1246,35 @@ const RevenueStatistics = () => {
                 <div>總金額: {formatCurrency(totalAmount)}</div>
                 <div>教師營收: {overviewData.teacherRevenue.length} 項</div>
                 <div>課程營收: {overviewData.courseRevenue.length} 項</div>
+              </div>
+            </div>
+            
+            {/* 数据关联详细信息 */}
+            <div style={{ marginTop: '16px', padding: '12px', background: 'white', borderRadius: '6px', border: '1px solid #e2e8f0' }}>
+              <strong>🔗 數據關聯分析:</strong>
+              <div style={{ marginTop: '8px', fontSize: '12px' }}>
+                {classes.length > 0 && teachers.length > 0 && (
+                  <>
+                    <div>課堂中的教師ID: {Array.from(new Set(classes.map(cls => cls.teacherId))).join(', ')}</div>
+                    <div>教師數據中的ID: {teachers.map(t => t.teacherId).join(', ')}</div>
+                    <div>課堂中的課程ID: {Array.from(new Set(classes.map(cls => cls.courseId))).join(', ')}</div>
+                    <div>課程數據中的ID: {courses.map(c => c.courseId).join(', ')}</div>
+                    {(() => {
+                      const classTeacherIds = new Set(classes.map(cls => cls.teacherId));
+                      const teacherIds = new Set(teachers.map(t => t.teacherId));
+                      const missingTeacherIds = Array.from(classTeacherIds).filter(id => !teacherIds.has(id));
+                      return missingTeacherIds.length > 0 ? (
+                        <div style={{ color: '#dc2626', marginTop: '4px' }}>
+                          ⚠️ 未匹配的教師ID: {missingTeacherIds.join(', ')}
+                        </div>
+                      ) : (
+                        <div style={{ color: '#059669', marginTop: '4px' }}>
+                          ✅ 所有教師ID都能匹配
+                        </div>
+                      );
+                    })()}
+                  </>
+                )}
               </div>
             </div>
           </div>
