@@ -279,7 +279,7 @@ const RevenueStatistics = () => {
     
     console.log('🔍 calculateStudentData 开始执行:');
     console.log('- 接收到的classes数量:', classes.length);
-    console.log('- classes中的teacherId示例:', classes.slice(0, 3).map(cls => ({ classId: cls.classId, teacherId: cls.teacherId }));
+    console.log('- classes中的teacherId示例:', classes.slice(0, 3).map(cls => cls.teacherId));
     
     let filteredData = classes.filter(cls => {
       if (selectedStudent && cls.studentId !== selectedStudent) return false;
@@ -417,7 +417,7 @@ const RevenueStatistics = () => {
 
       const studentsData = await studentsRes.json();
       const teachersData = await teachersRes.json();
-      const classesData = await classesRes.json();
+      let classesData = await classesRes.json();
       const coursesData = await coursesRes.json();
 
       // 添加調試信息
@@ -518,7 +518,7 @@ const RevenueStatistics = () => {
       console.log('- 教师数量:', teachersData.length);
       console.log('- 课堂数量:', classesData.length);
       console.log('- 课程数量:', coursesData.length);
-      console.log('- 课堂数据中的教师ID示例:', classesData.slice(0, 3).map(cls => ({ classId: cls.classId, teacherId: cls.teacherId })));
+      console.log('- 课堂数据中的教师ID示例:', classesData.slice(0, 3).map(cls => cls.teacherId));
     } catch (error) {
       console.error('獲取數據失敗:', error);
       console.error('API URL:', config.API_URL);
