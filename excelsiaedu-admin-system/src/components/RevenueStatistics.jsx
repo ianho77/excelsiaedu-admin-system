@@ -899,7 +899,7 @@ const RevenueStatistics = () => {
       {activeTab === 'teacher' && (
         <div className="tab-content">
           <div className="content-header">
-            <h2>教師課堂明細</h2>
+            <h2>教師</h2>
             {teacherData.length > 0 && (
               <div className="overview-total-right">
                 <div className="total-label">總計</div>
@@ -951,39 +951,62 @@ const RevenueStatistics = () => {
           
           {teacherData.length > 0 && (
             <div className="data-summary">
-              <div className="compact-table">
-                <table>
-                  <thead>
-                    <tr className="main-title-row">
-                      <th colSpan="5" className="main-title">教師明細</th>
-                    </tr>
-                    <tr className="subtitle-row">
-                      <th>課程</th>
-                      <th>學生</th>
-                      <th>日期</th>
-                      <th>價格</th>
-                      <th>小計</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {teacherData.map((item, index) => (
-                      <tr key={index} className={index % 2 === 0 ? 'even-row' : 'odd-row'}>
-                        <td className="course-cell">{item.courseName}</td>
-                        <td className="student-cell">{item.studentName}</td>
-                        <td className="date-cell">{formatDate(item.date)}</td>
-                        <td className="amount-cell">{formatCurrency(item.amount)}</td>
-                        <td className="subtotal-cell">{formatCurrency(item.amount)}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                  <tfoot>
-                    <tr>
-                      <td colSpan="4" className="total-label">合計</td>
-                      <td className="total-amount">{formatCurrency(totalAmount)}</td>
-                    </tr>
-                  </tfoot>
-                </table>
-              </div>
+              {/* 按教師分組顯示 */}
+              {(() => {
+                // 按教師分組數據
+                const groupedByTeacher = {};
+                teacherData.forEach(item => {
+                  const teacherId = item.teacherName.split('-')[0]; // 提取教師ID
+                  if (!groupedByTeacher[teacherId]) {
+                    groupedByTeacher[teacherId] = [];
+                  }
+                  groupedByTeacher[teacherId].push(item);
+                });
+
+                return Object.entries(groupedByTeacher).map(([teacherId, items]) => {
+                  const teacher = teachers.find(t => t.teacherId === teacherId);
+                  const teacherName = teacher ? `${teacher.nameZh}${teacher.nameEn ? `(${teacher.nameEn})` : ''}${teacher.nickname ? `[${teacher.nickname}]` : ''}` : '未知教師';
+                  const teacherTotal = items.reduce((sum, item) => sum + item.amount, 0);
+                  
+                  return (
+                    <div key={teacherId} className="teacher-section">
+                      <div className="compact-table">
+                        <table>
+                          <thead>
+                            <tr className="teacher-header-row">
+                              <th colSpan="4" className="teacher-header">
+                                {teacherId} - {teacherName}
+                              </th>
+                            </tr>
+                            <tr className="subtitle-row">
+                              <th>科目</th>
+                              <th>學生</th>
+                              <th>日期</th>
+                              <th>金額</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {items.map((item, index) => (
+                              <tr key={index} className={index % 2 === 0 ? 'even-row' : 'odd-row'}>
+                                <td className="course-cell">{item.courseName}</td>
+                                <td className="student-cell">{item.studentName}</td>
+                                <td className="date-cell">{formatDate(item.date)}</td>
+                                <td className="amount-cell">{formatCurrency(item.amount)}</td>
+                              </tr>
+                            ))}
+                          </tbody>
+                          <tfoot>
+                            <tr>
+                              <td colSpan="3" className="total-label">合計</td>
+                              <td className="total-amount">{formatCurrency(teacherTotal)}</td>
+                            </tr>
+                          </tfoot>
+                        </table>
+                      </div>
+                    </div>
+                  );
+                });
+              })()}
             </div>
           )}
         </div>
@@ -1022,39 +1045,60 @@ const RevenueStatistics = () => {
           
           {dailyData.length > 0 && (
             <div className="data-summary">
-              <div className="compact-table">
-                <table>
-                  <thead>
-                    <tr className="main-title-row">
-                      <th colSpan="5" className="main-title">每日營收</th>
-                    </tr>
-                    <tr className="subtitle-row">
-                      <th>教師</th>
-                      <th>學生</th>
-                      <th>日期</th>
-                      <th>金額</th>
-                      <th>小計</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {dailyData.map((item, index) => (
-                      <tr key={index} className={index % 2 === 0 ? 'even-row' : 'odd-row'}>
-                        <td className="teacher-cell">{item.teacherName}</td>
-                        <td className="student-cell">{item.studentName}</td>
-                        <td className="date-cell">{formatDate(item.date)}</td>
-                        <td className="amount-cell">{formatCurrency(item.amount)}</td>
-                        <td className="subtotal-cell">{formatCurrency(item.amount)}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                  <tfoot>
-                    <tr>
-                      <td colSpan="4" className="total-label">合計</td>
-                      <td className="total-amount">{formatCurrency(totalAmount)}</td>
-                    </tr>
-                  </tfoot>
-                </table>
-              </div>
+              {/* 按日期分組顯示 */}
+              {(() => {
+                // 按日期分組數據
+                const groupedByDate = {};
+                dailyData.forEach(item => {
+                  const dateKey = item.date; // 使用日期作為分組鍵
+                  if (!groupedByDate[dateKey]) {
+                    groupedByDate[dateKey] = [];
+                  }
+                  groupedByDate[dateKey].push(item);
+                });
+
+                return Object.entries(groupedByDate).map(([dateKey, items]) => {
+                  const dateTotal = items.reduce((sum, item) => sum + item.amount, 0);
+                  
+                  return (
+                    <div key={dateKey} className="daily-section">
+                      <div className="compact-table">
+                        <table>
+                          <thead>
+                            <tr className="daily-header-row">
+                              <th colSpan="4" className="daily-header">
+                                {formatDate(dateKey)}
+                              </th>
+                            </tr>
+                            <tr className="subtitle-row">
+                              <th>教師</th>
+                              <th>學生</th>
+                              <th>科目</th>
+                              <th>金額</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {items.map((item, index) => (
+                              <tr key={index} className={index % 2 === 0 ? 'even-row' : 'odd-row'}>
+                                <td className="teacher-cell">{item.teacherName}</td>
+                                <td className="student-cell">{item.studentName}</td>
+                                <td className="course-cell">{item.courseName}</td>
+                                <td className="amount-cell">{formatCurrency(item.amount)}</td>
+                              </tr>
+                            ))}
+                          </tbody>
+                          <tfoot>
+                            <tr>
+                              <td colSpan="3" className="total-label">合計</td>
+                              <td className="total-amount">{formatCurrency(dateTotal)}</td>
+                            </tr>
+                          </tfoot>
+                        </table>
+                      </div>
+                    </div>
+                  );
+                });
+              })()}
             </div>
           )}
         </div>

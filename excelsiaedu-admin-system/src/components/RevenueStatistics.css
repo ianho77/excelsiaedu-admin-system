@@ -809,6 +809,40 @@ tbody tr:hover {
   letter-spacing: normal !important;
 }
 
+/* 教師標識頭部樣式 */
+.teacher-header-row {
+  background: #0f766e !important;
+}
+
+.teacher-header {
+  background: #0f766e !important;
+  color: white !important;
+  text-align: left !important;
+  font-size: 18px !important;
+  font-weight: 600 !important;
+  padding: 16px 20px !important;
+  border: none !important;
+  text-transform: none !important;
+  letter-spacing: normal !important;
+}
+
+/* 每日標識頭部樣式 */
+.daily-header-row {
+  background: #0f766e !important;
+}
+
+.daily-header {
+  background: #0f766e !important;
+  color: white !important;
+  text-align: left !important;
+  font-size: 18px !important;
+  font-weight: 600 !important;
+  padding: 16px 20px !important;
+  border: none !important;
+  text-transform: none !important;
+  letter-spacing: normal !important;
+}
+
 /* 學生分組樣式 */
 .student-section {
   margin-bottom: 32px;
@@ -819,6 +853,32 @@ tbody tr:hover {
 }
 
 .student-section .compact-table {
+  margin-bottom: 0;
+}
+
+/* 教師分組樣式 */
+.teacher-section {
+  margin-bottom: 32px;
+}
+
+.teacher-section:last-child {
+  margin-bottom: 0;
+}
+
+.teacher-section .compact-table {
+  margin-bottom: 0;
+}
+
+/* 每日分組樣式 */
+.daily-section {
+  margin-bottom: 32px;
+}
+
+.daily-section:last-child {
+  margin-bottom: 0;
+}
+
+.daily-section .compact-table {
   margin-bottom: 0;
 }
 
