@@ -265,140 +265,7 @@ const RevenueStatistics = () => {
     });
   }, [classes, selectedYear, selectedOverviewMonths, courses, teachers]);
 
-  useEffect(() => {
-    fetchData();
-  }, [fetchData]); // 添加 fetchData 依赖
-
-  // 當數據加載完成後，計算圖表數據
-  useEffect(() => {
-    if (classes.length > 0 && students.length > 0 && teachers.length > 0 && courses.length > 0) {
-      calculateOverviewData();
-    }
-  }, [classes, students, teachers, courses, calculateOverviewData]);
-
-  // 修復 useEffect 依賴問題 - 使用 useCallback 包裝函數
-  const calculateStudentData = useCallback(() => {
-    if (!classes.length || !students.length || !courses.length || !teachers.length) return;
-    
-    console.log('🔍 calculateStudentData 开始执行:');
-    console.log('- 接收到的classes数量:', classes.length);
-    console.log('- classes中的teacherId示例:', classes.slice(0, 3).map(cls => cls.teacherId));
-    
-    let filteredData = classes.filter(cls => {
-      if (selectedStudent && cls.studentId !== selectedStudent) return false;
-      if (selectedMonth) {
-        const classDate = new Date(cls.date);
-        const classMonth = `${classDate.getFullYear()}-${String(classDate.getMonth() + 1).padStart(2, '0')}`;
-        if (classMonth !== selectedMonth) return false;
-      }
-      return true;
-    });
-
-    const data = filteredData.map(cls => {
-      const student = students.find(s => s.studentId === cls.studentId);
-      const course = courses.find(c => c.courseId === cls.courseId);
-      const teacher = teachers.find(t => t.teacherId === cls.teacherId);
-      
-      return {
-            date: cls.date,
-        studentName: student ? (student.nameZh || student.nameEn) : '未知學生',
-        courseName: course ? `${course.grade}${course.subject}` : '未知課程',
-        teacherName: teacher ? (teacher.nameZh || teacher.nameEn) : '未知教師',
-            amount: parseFloat(cls.price) || 0
-      };
-    });
-    
-    setStudentData(data);
-    setTotalAmount(data.reduce((sum, item) => sum + (item.amount || 0), 0));
-  }, [classes, students, courses, teachers, selectedStudent, selectedMonth]);
-
-  const calculateTeacherData = useCallback(() => {
-    if (!classes.length || !teachers.length || !courses.length) return;
-    
-    let filteredData = classes.filter(cls => {
-      if (selectedTeacher && cls.teacherId !== selectedTeacher) return false;
-      if (selectedTeacherMonth) {
-        const classDate = new Date(cls.date);
-        const classMonth = `${classDate.getFullYear()}-${String(classDate.getMonth() + 1).padStart(2, '0')}`;
-        if (classMonth !== selectedTeacherMonth) return false;
-      }
-      return true;
-    });
-
-    const data = filteredData.map(cls => {
-      const teacher = teachers.find(t => t.teacherId === cls.teacherId);
-      const course = courses.find(c => c.courseId === cls.courseId);
-      
-      return {
-              date: cls.date,
-        teacherName: teacher ? (teacher.nameZh || teacher.nameEn) : '未知教師',
-        courseName: course ? `${course.grade}${course.subject}` : '未知課程',
-              amount: parseFloat(cls.price) || 0
-        };
-      });
-    
-    setTeacherData(data);
-    setTotalAmount(data.reduce((sum, item) => sum + (item.amount || 0), 0));
-  }, [classes, teachers, courses, selectedTeacher, selectedTeacherMonth]);
-
-  const calculateDailyData = useCallback(() => {
-    if (!classes.length) return;
-
-    let filteredData = classes;
-    if (startDate && endDate) {
-      filteredData = classes.filter(cls => {
-        const classDate = new Date(cls.date);
-        const start = new Date(startDate);
-        const end = new Date(endDate);
-        return classDate >= start && classDate <= end;
-      });
-    }
-
-    const dailyRevenue = {};
-    filteredData.forEach(cls => {
-      const date = cls.date.split('T')[0];
-      if (!dailyRevenue[date]) {
-        dailyRevenue[date] = 0;
-      }
-      dailyRevenue[date] += parseFloat(cls.price) || 0;
-    });
-
-    const data = Object.entries(dailyRevenue).map(([date, amount]) => ({
-      date,
-      amount
-    })).sort((a, b) => new Date(a.date) - new Date(b.date));
-
-    setDailyData(data);
-    setTotalAmount(data.reduce((sum, item) => sum + (item.amount || 0), 0));
-  }, [classes, startDate, endDate]);
-
-  useEffect(() => {
-    if (activeTab === 'student') {
-      calculateStudentData();
-    } else if (activeTab === 'teacher') {
-      calculateTeacherData();
-    } else if (activeTab === 'daily') {
-      calculateDailyData();
-    } else if (activeTab === 'overview') {
-      calculateOverviewData();
-    }
-  }, [
-    activeTab,
-    calculateStudentData,
-    calculateTeacherData,
-    calculateDailyData,
-    calculateOverviewData
-  ]);
-
-  const formatCurrency = (amount) => {
-    return `$${amount.toLocaleString()}`;
-  };
-
-  const formatDate = (dateStr) => {
-    const date = new Date(dateStr);
-    return `${date.getFullYear()}/${date.getMonth() + 1}/${date.getDate()}`;
-  };
-
+  // 将 fetchData 函数定义移到 useEffect 之前
   const fetchData = useCallback(async () => {
     setLoading(true);
     setError(null);
@@ -545,6 +412,142 @@ const RevenueStatistics = () => {
       setLoading(false);
     }
   }, [activeTab, calculateOverviewData]);
+
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]); // 添加 fetchData 依赖
+
+  // 當數據加載完成後，計算圖表數據
+  useEffect(() => {
+    if (classes.length > 0 && students.length > 0 && teachers.length > 0 && courses.length > 0) {
+      calculateOverviewData();
+    }
+  }, [classes, students, teachers, courses, calculateOverviewData]);
+
+  // 修復 useEffect 依賴問題 - 使用 useCallback 包裝函數
+  const calculateStudentData = useCallback(() => {
+    if (!classes.length || !students.length || !courses.length || !teachers.length) return;
+    
+    console.log('🔍 calculateStudentData 开始执行:');
+    console.log('- 接收到的classes数量:', classes.length);
+    console.log('- classes中的teacherId示例:', classes.slice(0, 3).map(cls => cls.teacherId));
+    
+    let filteredData = classes.filter(cls => {
+      if (selectedStudent && cls.studentId !== selectedStudent) return false;
+      if (selectedMonth) {
+        const classDate = new Date(cls.date);
+        const classMonth = `${classDate.getFullYear()}-${String(classDate.getMonth() + 1).padStart(2, '0')}`;
+        if (classMonth !== selectedMonth) return false;
+      }
+      return true;
+    });
+
+    const data = filteredData.map(cls => {
+      const student = students.find(s => s.studentId === cls.studentId);
+      const course = courses.find(c => c.courseId === cls.courseId);
+      const teacher = teachers.find(t => t.teacherId === cls.teacherId);
+      
+      return {
+            date: cls.date,
+        studentName: student ? (student.nameZh || student.nameEn) : '未知學生',
+        courseName: course ? `${course.grade}${course.subject}` : '未知課程',
+        teacherName: teacher ? (teacher.nameZh || teacher.nameEn) : '未知教師',
+            amount: parseFloat(cls.price) || 0
+      };
+    });
+    
+    setStudentData(data);
+    setTotalAmount(data.reduce((sum, item) => sum + (item.amount || 0), 0));
+  }, [classes, students, courses, teachers, selectedStudent, selectedMonth]);
+
+  const calculateTeacherData = useCallback(() => {
+    if (!classes.length || !teachers.length || !courses.length) return;
+    
+    let filteredData = classes.filter(cls => {
+      if (selectedTeacher && cls.teacherId !== selectedTeacher) return false;
+      if (selectedTeacherMonth) {
+        const classDate = new Date(cls.date);
+        const classMonth = `${classDate.getFullYear()}-${String(classDate.getMonth() + 1).padStart(2, '0')}`;
+        if (classMonth !== selectedTeacherMonth) return false;
+      }
+      return true;
+    });
+
+    const data = filteredData.map(cls => {
+      const teacher = teachers.find(t => t.teacherId === cls.teacherId);
+      const course = courses.find(c => c.courseId === cls.courseId);
+      
+      return {
+              date: cls.date,
+        teacherName: teacher ? (teacher.nameZh || teacher.nameEn) : '未知教師',
+        courseName: course ? `${course.grade}${course.subject}` : '未知課程',
+              amount: parseFloat(cls.price) || 0
+        };
+      });
+    
+    setTeacherData(data);
+    setTotalAmount(data.reduce((sum, item) => sum + (item.amount || 0), 0));
+  }, [classes, teachers, courses, selectedTeacher, selectedTeacherMonth]);
+
+  const calculateDailyData = useCallback(() => {
+    if (!classes.length) return;
+
+    let filteredData = classes;
+    if (startDate && endDate) {
+      filteredData = classes.filter(cls => {
+        const classDate = new Date(cls.date);
+        const start = new Date(startDate);
+        const end = new Date(endDate);
+        return classDate >= start && classDate <= end;
+      });
+    }
+
+    const dailyRevenue = {};
+    filteredData.forEach(cls => {
+      const date = cls.date.split('T')[0];
+      if (!dailyRevenue[date]) {
+        dailyRevenue[date] = 0;
+      }
+      dailyRevenue[date] += parseFloat(cls.price) || 0;
+    });
+
+    const data = Object.entries(dailyRevenue).map(([date, amount]) => ({
+      date,
+      amount
+    })).sort((a, b) => new Date(a.date) - new Date(b.date));
+
+    setDailyData(data);
+    setTotalAmount(data.reduce((sum, item) => sum + (item.amount || 0), 0));
+  }, [classes, startDate, endDate]);
+
+  useEffect(() => {
+    if (activeTab === 'student') {
+      calculateStudentData();
+    } else if (activeTab === 'teacher') {
+      calculateTeacherData();
+    } else if (activeTab === 'daily') {
+      calculateDailyData();
+    } else if (activeTab === 'overview') {
+      calculateOverviewData();
+    }
+  }, [
+    activeTab,
+    calculateStudentData,
+    calculateTeacherData,
+    calculateDailyData,
+    calculateOverviewData
+  ]);
+
+  const formatCurrency = (amount) => {
+    return `$${amount.toLocaleString()}`;
+  };
+
+  const formatDate = (dateStr) => {
+    const date = new Date(dateStr);
+    return `${date.getFullYear()}/${date.getMonth() + 1}/${date.getDate()}`;
+  };
+
+  // 生成月份選項（包含"全部月份"選項）
 
   // 生成月份選項（包含"全部月份"選項）
   const generateMonthOptionsWithAll = () => {
