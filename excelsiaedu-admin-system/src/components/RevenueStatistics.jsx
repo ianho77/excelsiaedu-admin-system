@@ -448,7 +448,9 @@ const RevenueStatistics = () => {
       return true;
     });
 
-    const data = filteredData.map(cls => {
+    // 按学生分组
+    const studentGroups = {};
+    filteredData.forEach(cls => {
       const student = students.find(s => s.studentId === cls.studentId);
       const course = courses.find(c => c.courseId === cls.courseId);
       // 优先使用已经关联好的教师信息，如果没有则尝试查找
@@ -460,17 +462,31 @@ const RevenueStatistics = () => {
         teacherName = teacher ? teacher.name : '未知教師';
       }
       
-      return {
-            date: cls.date,
-        studentName: student ? student.name : '未知學生',
+      const studentName = student ? student.name : '未知學生';
+      
+      if (!studentGroups[studentName]) {
+        studentGroups[studentName] = {
+          studentName,
+          totalAmount: 0,
+          classes: []
+        };
+      }
+      
+      studentGroups[studentName].classes.push({
+        date: cls.date,
         courseName: course ? `${course.grade}${course.subject}` : '未知課程',
         teacherName: teacherName,
-            amount: parseFloat(cls.price) || 0
-      };
+        amount: parseFloat(cls.price) || 0
+      });
+      
+      studentGroups[studentName].totalAmount += parseFloat(cls.price) || 0;
     });
     
-    setStudentData(data);
-    setTotalAmount(data.reduce((sum, item) => sum + (item.amount || 0), 0));
+    // 转换为数组格式，按总金额排序
+    const groupedData = Object.values(studentGroups).sort((a, b) => b.totalAmount - a.totalAmount);
+    
+    setStudentData(groupedData);
+    setTotalAmount(groupedData.reduce((sum, group) => sum + group.totalAmount, 0));
   }, [classes, students, courses, teachers, selectedStudent, selectedMonth]);
 
   const calculateTeacherData = useCallback(() => {
@@ -486,7 +502,9 @@ const RevenueStatistics = () => {
       return true;
     });
 
-    const data = filteredData.map(cls => {
+    // 按教师分组
+    const teacherGroups = {};
+    filteredData.forEach(cls => {
       // 优先使用已经关联好的教师信息，如果没有则尝试查找
       let teacherName = '未知教師';
       if (cls.teacherName) {
@@ -498,20 +516,32 @@ const RevenueStatistics = () => {
       
       const course = courses.find(c => c.courseId === cls.courseId);
       
-      return {
-              date: cls.date,
-        teacherName: teacherName,
-        courseName: course ? `${course.grade}${course.subject}` : '未知課程',
-              amount: parseFloat(cls.price) || 0
+      if (!teacherGroups[teacherName]) {
+        teacherGroups[teacherName] = {
+          teacherName,
+          totalAmount: 0,
+          classes: []
         };
+      }
+      
+      teacherGroups[teacherName].classes.push({
+        date: cls.date,
+        courseName: course ? `${course.grade}${course.subject}` : '未知課程',
+        amount: parseFloat(cls.price) || 0
       });
+      
+      teacherGroups[teacherName].totalAmount += parseFloat(cls.price) || 0;
+    });
     
-    setTeacherData(data);
-    setTotalAmount(data.reduce((sum, item) => sum + (item.amount || 0), 0));
+    // 转换为数组格式，按总金额排序
+    const groupedData = Object.values(teacherGroups).sort((a, b) => b.totalAmount - a.totalAmount);
+    
+    setTeacherData(groupedData);
+    setTotalAmount(groupedData.reduce((sum, group) => sum + group.totalAmount, 0));
   }, [classes, teachers, courses, selectedTeacher, selectedTeacherMonth]);
 
   const calculateDailyData = useCallback(() => {
-    if (!classes.length) return;
+    if (!classes.length || !students.length || !teachers.length || !courses.length) return;
 
     let filteredData = classes;
     if (startDate && endDate) {
@@ -523,23 +553,46 @@ const RevenueStatistics = () => {
       });
     }
 
-    const dailyRevenue = {};
+    // 按日期分组，包含详细信息
+    const dailyGroups = {};
     filteredData.forEach(cls => {
       const date = cls.date.split('T')[0];
-      if (!dailyRevenue[date]) {
-        dailyRevenue[date] = 0;
+      
+      if (!dailyGroups[date]) {
+        dailyGroups[date] = {
+          date,
+          totalAmount: 0,
+          classes: []
+        };
       }
-      dailyRevenue[date] += parseFloat(cls.price) || 0;
+      
+      // 获取学生、教师、课程信息
+      const student = students.find(s => s.studentId === cls.studentId);
+      const course = courses.find(c => c.courseId === cls.courseId);
+      let teacherName = '未知教師';
+      if (cls.teacherName) {
+        teacherName = cls.teacherName;
+      } else if (cls.teacherId) {
+        const teacher = teachers.find(t => t.teacherId === cls.teacherId);
+        teacherName = teacher ? teacher.name : '未知教師';
+      }
+      
+      dailyGroups[date].classes.push({
+        studentName: student ? student.name : '未知學生',
+        teacherName: teacherName,
+        courseName: course ? `${course.grade}${course.subject}` : '未知課程',
+        amount: parseFloat(cls.price) || 0
+      });
+      
+      dailyGroups[date].totalAmount += parseFloat(cls.price) || 0;
     });
 
-    const data = Object.entries(dailyRevenue).map(([date, amount]) => ({
-      date,
-      amount
-    })).sort((a, b) => new Date(a.date) - new Date(b.date));
+    // 转换为数组格式，按日期排序
+    const groupedData = Object.values(dailyGroups).sort((a, b) => new Date(a.date) - new Date(b.date));
 
-    setDailyData(data);
-    setTotalAmount(data.reduce((sum, item) => sum + (item.amount || 0), 0));
-  }, [classes, startDate, endDate]);
+    setDailyData(groupedData);
+    setTotalAmount(groupedData.reduce((sum, group) => sum + group.totalAmount, 0));
+  }, [classes, students, teachers, courses, startDate, endDate]);
 
   useEffect(() => {
     if (activeTab === 'student') {
@@ -784,30 +837,38 @@ const RevenueStatistics = () => {
           {studentData.length > 0 && (
             <div className="data-summary">
               <h3>總計：{formatCurrency(totalAmount)}</h3>
-              <div className="data-table">
-                <table>
-                  <thead>
-                    <tr>
-                      <th>日期</th>
-                      <th>學生</th>
-                      <th>課程</th>
-                      <th>教師</th>
-                      <th>金額</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {studentData.map((item, index) => (
-                      <tr key={index}>
-                        <td>{formatDate(item.date)}</td>
-                        <td>{item.studentName}</td>
-                        <td>{item.courseName}</td>
-                        <td>{item.teacherName}</td>
-                        <td>{formatCurrency(item.amount)}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+              {studentData.map((studentGroup, groupIndex) => (
+                <div key={groupIndex} className="student-group">
+                  <div className="group-header">
+                    <h4>{studentGroup.studentName}</h4>
+                    <div className="group-total">
+                      小計：{formatCurrency(studentGroup.totalAmount)}
+                    </div>
+                  </div>
+                  <div className="data-table">
+                    <table>
+                      <thead>
+                        <tr>
+                          <th>日期</th>
+                          <th>課程</th>
+                          <th>教師</th>
+                          <th>金額</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {studentGroup.classes.map((cls, index) => (
+                          <tr key={index}>
+                            <td>{formatDate(cls.date)}</td>
+                            <td>{cls.courseName}</td>
+                            <td>{cls.teacherName}</td>
+                            <td>{formatCurrency(cls.amount)}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              ))}
             </div>
           )}
         </div>
@@ -870,28 +931,36 @@ const RevenueStatistics = () => {
           {teacherData.length > 0 && (
             <div className="data-summary">
               <h3>總計：{formatCurrency(totalAmount)}</h3>
-              <div className="data-table">
-                <table>
-                  <thead>
-                    <tr>
-                      <th>日期</th>
-                      <th>教師</th>
-                      <th>課程</th>
-                      <th>金額</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {teacherData.map((item, index) => (
-                      <tr key={index}>
-                        <td>{formatDate(item.date)}</td>
-                        <td>{item.teacherName}</td>
-                        <td>{item.courseName}</td>
-                        <td>{formatCurrency(item.amount)}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+              {teacherData.map((teacherGroup, groupIndex) => (
+                <div key={groupIndex} className="teacher-group">
+                  <div className="group-header">
+                    <h4>{teacherGroup.teacherName}</h4>
+                    <div className="group-total">
+                      小計：{formatCurrency(teacherGroup.totalAmount)}
+                    </div>
+                  </div>
+                  <div className="data-table">
+                    <table>
+                      <thead>
+                        <tr>
+                          <th>日期</th>
+                          <th>課程</th>
+                          <th>金額</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {teacherGroup.classes.map((cls, index) => (
+                          <tr key={index}>
+                            <td>{formatDate(cls.date)}</td>
+                            <td>{cls.courseName}</td>
+                            <td>{formatCurrency(cls.amount)}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              ))}
             </div>
           )}
         </div>
@@ -931,24 +1000,38 @@ const RevenueStatistics = () => {
           {dailyData.length > 0 && (
             <div className="data-summary">
               <h3>總計：{formatCurrency(totalAmount)}</h3>
-              <div className="data-table">
-                <table>
-                  <thead>
-                    <tr>
-                      <th>日期</th>
-                      <th>營收金額</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {dailyData.map((item, index) => (
-                      <tr key={index}>
-                        <td>{formatDate(item.date)}</td>
-                        <td>{formatCurrency(item.amount)}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+              {dailyData.map((dailyGroup, groupIndex) => (
+                <div key={groupIndex} className="daily-group">
+                  <div className="group-header">
+                    <h4>{formatDate(dailyGroup.date)}</h4>
+                    <div className="group-total">
+                      小計：{formatCurrency(dailyGroup.totalAmount)}
+                    </div>
+                  </div>
+                  <div className="data-table">
+                    <table>
+                      <thead>
+                        <tr>
+                          <th>學生</th>
+                          <th>教師</th>
+                          <th>課程</th>
+                          <th>金額</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {dailyGroup.classes.map((cls, index) => (
+                          <tr key={index}>
+                            <td>{cls.studentName}</td>
+                            <td>{cls.teacherName}</td>
+                            <td>{cls.courseName}</td>
+                            <td>{formatCurrency(cls.amount)}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              ))}
             </div>
           )}
         </div>
