@@ -809,6 +809,19 @@ tbody tr:hover {
   letter-spacing: normal !important;
 }
 
+/* 學生分組樣式 */
+.student-section {
+  margin-bottom: 32px;
+}
+
+.student-section:last-child {
+  margin-bottom: 0;
+}
+
+.student-section .compact-table {
+  margin-bottom: 0;
+}
+
 /* 緊湊表格樣式 */
 .compact-table {
   background: white;
