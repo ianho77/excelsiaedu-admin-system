@@ -462,11 +462,19 @@ const RevenueStatistics = () => {
         teacherName = teacher ? teacher.name : '未知教師';
       }
       
-      const studentName = student ? student.name : '未知學生';
+      // 按照指定格式构建学生名称：id-中文名(英文名)[暱稱]
+      let studentName = '未知學生';
+      if (student) {
+        const nameZh = student.nameZh || '';
+        const nameEn = student.nameEn || '';
+        const nickname = student.nickname || '';
+        studentName = `${student.studentId}-${nameZh}${nameEn ? `(${nameEn})` : ''}${nickname ? `[${nickname}]` : ''}`;
+      }
       
       if (!studentGroups[studentName]) {
         studentGroups[studentName] = {
           studentName,
+          studentId: student ? student.studentId : 'unknown',
           totalAmount: 0,
           classes: []
         };
@@ -840,9 +848,17 @@ const RevenueStatistics = () => {
               {studentData.map((studentGroup, groupIndex) => (
                 <div key={groupIndex} className="student-group">
                   <div className="group-header">
-                    <h4>{studentGroup.studentName}</h4>
-                    <div className="group-total">
-                      小計：{formatCurrency(studentGroup.totalAmount)}
+                    <div className="group-title">
+                      <h4>{studentGroup.studentName}</h4>
+                      <span className="student-id">ID: {studentGroup.studentId}</span>
+                    </div>
+                    <div className="group-summary">
+                      <div className="class-count">
+                        課堂數：{studentGroup.classes.length}
+                      </div>
+                      <div className="group-total">
+                        小計：{formatCurrency(studentGroup.totalAmount)}
+                      </div>
                     </div>
                   </div>
                   <div className="data-table">
@@ -857,11 +873,11 @@ const RevenueStatistics = () => {
                       </thead>
                       <tbody>
                         {studentGroup.classes.map((cls, index) => (
-                          <tr key={index}>
-                            <td>{formatDate(cls.date)}</td>
-                            <td>{cls.courseName}</td>
-                            <td>{cls.teacherName}</td>
-                            <td>{formatCurrency(cls.amount)}</td>
+                          <tr key={index} className={index % 2 === 0 ? 'even-row' : 'odd-row'}>
+                            <td className="date-cell">{formatDate(cls.date)}</td>
+                            <td className="course-cell">{cls.courseName}</td>
+                            <td className="teacher-cell">{cls.teacherName}</td>
+                            <td className="amount-cell">{formatCurrency(cls.amount)}</td>
                           </tr>
                         ))}
                       </tbody>
@@ -934,9 +950,16 @@ const RevenueStatistics = () => {
               {teacherData.map((teacherGroup, groupIndex) => (
                 <div key={groupIndex} className="teacher-group">
                   <div className="group-header">
-                    <h4>{teacherGroup.teacherName}</h4>
-                    <div className="group-total">
-                      小計：{formatCurrency(teacherGroup.totalAmount)}
+                    <div className="group-title">
+                      <h4>{teacherGroup.teacherName}</h4>
+                    </div>
+                    <div className="group-summary">
+                      <div className="class-count">
+                        課堂數：{teacherGroup.classes.length}
+                      </div>
+                      <div className="group-total">
+                        小計：{formatCurrency(teacherGroup.totalAmount)}
+                      </div>
                     </div>
                   </div>
                   <div className="data-table">
@@ -950,10 +973,10 @@ const RevenueStatistics = () => {
                       </thead>
                       <tbody>
                         {teacherGroup.classes.map((cls, index) => (
-                          <tr key={index}>
-                            <td>{formatDate(cls.date)}</td>
-                            <td>{cls.courseName}</td>
-                            <td>{formatCurrency(cls.amount)}</td>
+                          <tr key={index} className={index % 2 === 0 ? 'even-row' : 'odd-row'}>
+                            <td className="date-cell">{formatDate(cls.date)}</td>
+                            <td className="course-cell">{cls.courseName}</td>
+                            <td className="amount-cell">{formatCurrency(cls.amount)}</td>
                           </tr>
                         ))}
                       </tbody>
@@ -1003,9 +1026,16 @@ const RevenueStatistics = () => {
               {dailyData.map((dailyGroup, groupIndex) => (
                 <div key={groupIndex} className="daily-group">
                   <div className="group-header">
-                    <h4>{formatDate(dailyGroup.date)}</h4>
-                    <div className="group-total">
-                      小計：{formatCurrency(dailyGroup.totalAmount)}
+                    <div className="group-title">
+                      <h4>{formatDate(dailyGroup.date)}</h4>
+                    </div>
+                    <div className="group-summary">
+                      <div className="class-count">
+                        課堂數：{dailyGroup.classes.length}
+                      </div>
+                      <div className="group-total">
+                        小計：{formatCurrency(dailyGroup.totalAmount)}
+                      </div>
                     </div>
                   </div>
                   <div className="data-table">
@@ -1020,11 +1050,11 @@ const RevenueStatistics = () => {
                       </thead>
                       <tbody>
                         {dailyGroup.classes.map((cls, index) => (
-                          <tr key={index}>
-                            <td>{cls.studentName}</td>
-                            <td>{cls.teacherName}</td>
-                            <td>{cls.courseName}</td>
-                            <td>{formatCurrency(cls.amount)}</td>
+                          <tr key={index} className={index % 2 === 0 ? 'even-row' : 'odd-row'}>
+                            <td className="student-cell">{cls.studentName}</td>
+                            <td className="teacher-cell">{cls.teacherName}</td>
+                            <td className="course-cell">{cls.courseName}</td>
+                            <td className="amount-cell">{formatCurrency(cls.amount)}</td>
                           </tr>
                         ))}
                       </tbody>
