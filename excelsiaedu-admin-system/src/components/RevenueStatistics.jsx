@@ -96,8 +96,8 @@ const RevenueStatistics = () => {
     const monthlyRevenue = {};
 
     filteredClasses.forEach(cls => {
-      // 检查必要字段是否存在
-      if (!cls.teacherId || !cls.courseId || !cls.price) {
+      // 检查必要字段是否存在，但允许teacherId缺失的情况
+      if (!cls.courseId || !cls.price) {
         console.warn('课堂数据缺少必要字段:', {
           classId: cls.classId || 'unknown',
           teacherId: cls.teacherId,
@@ -110,19 +110,28 @@ const RevenueStatistics = () => {
         return; // 跳过无效数据
       }
 
-      const teacher = teachers.find(t => String(t.teacherId) === String(cls.teacherId)); // 转换为字符串进行比较
-      const course = courses.find(c => String(c.courseId) === String(cls.courseId)); // 转换为字符串进行比较
+      // 如果teacherId缺失，记录警告但继续处理
+      if (!cls.teacherId || cls.teacherId === '') {
+        console.warn('课堂数据缺少教师ID，将显示为"未知教师":', {
+          classId: cls.classId || 'unknown',
+          courseId: cls.courseId,
+          price: cls.price
+        });
+      }
+
+      const teacher = cls.teacherId ? teachers.find(t => String(t.teacherId) === String(cls.teacherId)) : null;
+      const course = courses.find(c => String(c.courseId) === String(cls.courseId));
       
       // 添加详细的调试信息
       console.log('处理课堂数据:', {
         classId: cls.classId || 'unknown',
-        teacherId: cls.teacherId,
+        teacherId: cls.teacherId || '缺失',
         courseId: cls.courseId,
         price: cls.price,
         date: cls.date,
         foundTeacher: !!teacher,
         foundCourse: !!course,
-        teacherName: teacher ? (teacher.nameZh || teacher.nameEn) : '未找到',
+        teacherName: teacher ? (teacher.nameZh || teacher.nameEn) : '未知教師',
         courseName: course ? `${course.grade}${course.subject}` : '未找到',
         teacherIdType: typeof cls.teacherId,
         courseIdType: typeof cls.courseId
@@ -138,7 +147,7 @@ const RevenueStatistics = () => {
         const oldAmount = teacherRevenue[teacher.teacherId].amount;
         teacherRevenue[teacher.teacherId].amount += parseFloat(cls.price) || 0;
         console.log(`教师 ${teacher.nameZh || teacher.nameEn} 营收更新: ${oldAmount} + ${parseFloat(cls.price) || 0} = ${teacherRevenue[teacher.teacherId].amount}`);
-      } else {
+      } else if (cls.teacherId) {
         console.warn(`未找到教师ID: ${cls.teacherId} 对应的教师数据`);
         // 尝试查找可能的匹配
         const possibleMatches = teachers.filter(t => 
@@ -151,7 +160,6 @@ const RevenueStatistics = () => {
 
       if (course) {
         if (!courseRevenue[course.courseId]) {
-          const teacher = teachers.find(t => String(t.teacherId) === String(cls.teacherId));
           const teacherName = teacher ? (teacher.nameZh || teacher.nameEn) : '未知教師';
           const courseName = `${course.courseId}-${course.grade}${course.subject}`;
           courseRevenue[course.courseId] = {
@@ -191,7 +199,18 @@ const RevenueStatistics = () => {
     });
     
     // 计算总金额 - 修复计算逻辑
-    const total = Object.values(teacherRevenue).reduce((sum, item) => sum + (item.amount || 0), 0);
+    // 即使没有教师营收，也要计算课程营收和总金额
+    const teacherTotal = Object.values(teacherRevenue).reduce((sum, item) => sum + (item.amount || 0), 0);
+    const courseTotal = Object.values(courseRevenue).reduce((sum, item) => sum + (item.amount || 0), 0);
+    const total = Math.max(teacherTotal, courseTotal); // 使用较大的值作为总金额
+    
+    console.log('营收计算详情:', {
+      teacherTotal,
+      courseTotal,
+      total,
+      teacherRevenueCount: Object.keys(teacherRevenue).length,
+      courseRevenueCount: Object.keys(courseRevenue).length
+    });
     
     const sortedMonthlyRevenue = Object.values(monthlyRevenue)
       .sort((a, b) => {
@@ -1340,6 +1359,28 @@ const RevenueStatistics = () => {
                   )}
                 </div>
               </div>
+              
+              {/* 数据修复建议 */}
+              {classes.filter(cls => !cls.teacherId || cls.teacherId === '').length > 0 && (
+                <div style={{ marginTop: '12px', padding: '12px', background: '#fee2e2', borderRadius: '6px', border: '1px solid #ef4444' }}>
+                  <strong>⚠️ 數據修復建議:</strong>
+                  <div style={{ marginTop: '8px', fontSize: '12px', color: '#991b1b' }}>
+                    <div>發現 {classes.filter(cls => !cls.teacherId || cls.teacherId === '').length} 筆課堂數據缺少教師ID</div>
+                    <div style={{ marginTop: '6px' }}>
+                      <strong>解決方法:</strong>
+                      <ul style={{ margin: '4px 0', paddingLeft: '16px' }}>
+                        <li>檢查後端數據庫中的課堂記錄</li>
+                        <li>確保課堂數據包含有效的 teacherId 字段</li>
+                        <li>更新課堂記錄，關聯到正確的教師</li>
+                        <li>或者將這些課堂記錄標記為"未分配教師"</li>
+                      </ul>
+                    </div>
+                    <div style={{ marginTop: '6px', fontSize: '11px', color: '#dc2626' }}>
+                      <strong>影響:</strong> 缺少教師ID的課堂將無法計算教師營收，但課程營收和總金額仍會正常計算
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
           
