@@ -123,6 +123,7 @@ const RevenueStatistics = () => {
        let teacher = null;
        if (cls.teacherId) {
          teacher = teachers.find(t => String(t.teacherId) === String(cls.teacherId));
+         console.log(`查找教师ID ${cls.teacherId}:`, teacher ? '找到' : '未找到');
        } else {
          // 如果没有teacherId，尝试通过courseId找到对应的教师
          // 这里假设课程和教师有某种关联关系
@@ -153,7 +154,9 @@ const RevenueStatistics = () => {
         teacherName: teacher ? (teacher.nameZh || teacher.nameEn) : '未知教師',
         courseName: course ? `${course.grade}${course.subject}` : '未找到',
         teacherIdType: typeof cls.teacherId,
-        courseIdType: typeof cls.courseId
+        courseIdType: typeof cls.courseId,
+        teachersAvailable: teachers.length,
+        teacherIdsAvailable: teachers.map(t => t.teacherId).slice(0, 5)
       });
       
       if (teacher) {
@@ -519,6 +522,13 @@ const RevenueStatistics = () => {
       console.log('- 课堂数量:', classesData.length);
       console.log('- 课程数量:', coursesData.length);
       console.log('- 课堂数据中的教师ID示例:', classesData.slice(0, 3).map(cls => cls.teacherId));
+      
+      // 立即计算数据，避免状态更新延迟问题
+      setTimeout(() => {
+        if (activeTab === 'overview') {
+          calculateOverviewData();
+        }
+      }, 100);
     } catch (error) {
       console.error('獲取數據失敗:', error);
       console.error('API URL:', config.API_URL);
