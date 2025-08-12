@@ -835,27 +835,27 @@ const RevenueStatistics = () => {
           {studentData.length > 0 && (
             <div className="data-summary">
               <div className="compact-table">
-                <div className="table-header">
-                  <h3>學生明細</h3>
-                </div>
                 <table>
                   <thead>
-                    <tr>
-                      <th>學生名稱</th>
+                    <tr className="main-title-row">
+                      <th colSpan="5" className="main-title">學生明細</th>
+                    </tr>
+                    <tr className="subtitle-row">
                       <th>課程</th>
                       <th>教師</th>
                       <th>日期</th>
-                      <th>金額</th>
+                      <th>價格</th>
+                      <th>小計</th>
                     </tr>
                   </thead>
                   <tbody>
                     {studentData.map((item, index) => (
                       <tr key={index} className={index % 2 === 0 ? 'even-row' : 'odd-row'}>
-                        <td className="student-cell">{item.studentName}</td>
                         <td className="course-cell">{item.courseName}</td>
                         <td className="teacher-cell">{item.teacherName}</td>
                         <td className="date-cell">{formatDate(item.date)}</td>
                         <td className="amount-cell">{formatCurrency(item.amount)}</td>
+                        <td className="subtotal-cell">{formatCurrency(item.amount)}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -929,27 +929,27 @@ const RevenueStatistics = () => {
           {teacherData.length > 0 && (
             <div className="data-summary">
               <div className="compact-table">
-                <div className="table-header">
-                  <h3>教師明細</h3>
-                </div>
                 <table>
                   <thead>
-                    <tr>
-                      <th>教師</th>
+                    <tr className="main-title-row">
+                      <th colSpan="5" className="main-title">教師明細</th>
+                    </tr>
+                    <tr className="subtitle-row">
                       <th>課程</th>
                       <th>學生</th>
                       <th>日期</th>
-                      <th>金額</th>
+                      <th>價格</th>
+                      <th>小計</th>
                     </tr>
                   </thead>
                   <tbody>
                     {teacherData.map((item, index) => (
                       <tr key={index} className={index % 2 === 0 ? 'even-row' : 'odd-row'}>
-                        <td className="teacher-cell">{item.teacherName}</td>
                         <td className="course-cell">{item.courseName}</td>
                         <td className="student-cell">{item.studentName}</td>
                         <td className="date-cell">{formatDate(item.date)}</td>
                         <td className="amount-cell">{formatCurrency(item.amount)}</td>
+                        <td className="subtotal-cell">{formatCurrency(item.amount)}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -1000,27 +1000,27 @@ const RevenueStatistics = () => {
           {dailyData.length > 0 && (
             <div className="data-summary">
               <div className="compact-table">
-                <div className="table-header">
-                  <h3>每日營收</h3>
-                </div>
                 <table>
                   <thead>
-                    <tr>
-                      <th>日期</th>
+                    <tr className="main-title-row">
+                      <th colSpan="5" className="main-title">每日營收</th>
+                    </tr>
+                    <tr className="subtitle-row">
                       <th>教師</th>
                       <th>學生</th>
-                      <th>課程</th>
+                      <th>日期</th>
                       <th>金額</th>
+                      <th>小計</th>
                     </tr>
                   </thead>
                   <tbody>
                     {dailyData.map((item, index) => (
                       <tr key={index} className={index % 2 === 0 ? 'even-row' : 'odd-row'}>
-                        <td className="date-cell">{formatDate(item.date)}</td>
                         <td className="teacher-cell">{item.teacherName}</td>
                         <td className="student-cell">{item.studentName}</td>
-                        <td className="course-cell">{item.courseName}</td>
+                        <td className="date-cell">{formatDate(item.date)}</td>
                         <td className="amount-cell">{formatCurrency(item.amount)}</td>
+                        <td className="subtotal-cell">{formatCurrency(item.amount)}</td>
                       </tr>
                     ))}
                   </tbody>
