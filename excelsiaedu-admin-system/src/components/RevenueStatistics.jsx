@@ -119,15 +119,26 @@ const RevenueStatistics = () => {
         });
       }
 
-             // 使用已经通过课程关联添加的teacherId
+             // 直接使用已经关联好的教师信息
        let teacher = null;
-       if (cls.teacherId) {
+       if (cls.teacherId && cls.teacherName) {
+         // 如果已经有教师姓名，直接使用
+         teacher = {
+           teacherId: cls.teacherId,
+           nameZh: cls.teacherName,
+           nameEn: cls.teacherName
+         };
+         console.log(`使用已关联的教师信息: ${cls.teacherName} (ID: ${cls.teacherId})`);
+       } else if (cls.teacherId) {
+         // 如果没有教师姓名但有ID，尝试查找
          teacher = teachers.find(t => String(t.teacherId) === String(cls.teacherId));
          console.log(`查找教师ID ${cls.teacherId}:`, teacher ? '找到' : '未找到');
        } else {
-         console.warn('课堂数据仍然缺少teacherId，这不应该发生:', {
+         console.warn('课堂数据缺少教师信息:', {
            classId: cls.classId,
-           courseId: cls.courseId
+           courseId: cls.courseId,
+           teacherId: cls.teacherId,
+           teacherName: cls.teacherName
          });
        }
       const course = courses.find(c => String(c.courseId) === String(cls.courseId));
@@ -305,15 +316,26 @@ const RevenueStatistics = () => {
             // 为课堂数据添加教师ID字段（通过课程关联）
       if (classesData.length > 0 && coursesData.length > 0) {
         console.log('正在为课堂数据添加教师ID字段...');
-        // 创建新的数组，避免直接修改原数组
+        // 创建新的数组，完成完整的教师关联（ID + 姓名）
         const enrichedClassesData = classesData.map(cls => {
           const course = coursesData.find(c => c.courseId === cls.courseId);
           if (course && course.teacherId) {
-            console.log(`课堂 ${cls.classId} 关联到教师ID: ${course.teacherId}`);
-            return { ...cls, teacherId: course.teacherId };
+            // 通过teacherId找到教师信息
+            const teacher = teachersData.find(t => String(t.teacherId) === String(course.teacherId));
+            if (teacher) {
+              console.log(`课堂 ${cls.classId} 关联到教师: ${teacher.nameZh || teacher.nameEn} (ID: ${course.teacherId})`);
+              return { 
+                ...cls, 
+                teacherId: course.teacherId,
+                teacherName: teacher.nameZh || teacher.nameEn  // 直接添加教师姓名
+              };
+            } else {
+              console.warn(`课堂 ${cls.classId} 找到课程但未找到对应教师: ${course.teacherId}`);
+              return { ...cls, teacherId: course.teacherId, teacherName: '未知教師' };
+            }
           } else {
-            console.warn(`课堂 ${cls.classId} 无法找到对应的教师ID`);
-            return { ...cls, teacherId: null };
+            console.warn(`课堂 ${cls.classId} 无法找到对应的课程或教师ID`);
+            return { ...cls, teacherId: null, teacherName: '未知教師' };
           }
         });
 
