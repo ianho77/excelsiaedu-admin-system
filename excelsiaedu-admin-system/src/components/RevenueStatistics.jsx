@@ -125,8 +125,7 @@ const RevenueStatistics = () => {
          // 如果已经有教师姓名，直接使用
          teacher = {
            teacherId: cls.teacherId,
-           nameZh: cls.teacherName,
-           nameEn: cls.teacherName
+           name: cls.teacherName
          };
          console.log(`使用已关联的教师信息: ${cls.teacherName} (ID: ${cls.teacherId})`);
        } else if (cls.teacherId) {
@@ -152,7 +151,7 @@ const RevenueStatistics = () => {
         date: cls.date,
         foundTeacher: !!teacher,
         foundCourse: !!course,
-        teacherName: teacher ? (teacher.nameZh || teacher.nameEn) : '未知教師',
+        teacherName: teacher ? teacher.name : '未知教師',
         courseName: course ? `${course.grade}${course.subject}` : '未找到',
         teacherIdType: typeof cls.teacherId,
         courseIdType: typeof cls.courseId,
@@ -163,13 +162,13 @@ const RevenueStatistics = () => {
       if (teacher) {
         if (!teacherRevenue[teacher.teacherId]) {
           teacherRevenue[teacher.teacherId] = {
-            name: teacher.nameZh || teacher.nameEn,
+            name: teacher.name,
             amount: 0
           };
         }
         const oldAmount = teacherRevenue[teacher.teacherId].amount;
         teacherRevenue[teacher.teacherId].amount += parseFloat(cls.price) || 0;
-        console.log(`教师 ${teacher.nameZh || teacher.nameEn} 营收更新: ${oldAmount} + ${parseFloat(cls.price) || 0} = ${teacherRevenue[teacher.teacherId].amount}`);
+        console.log(`教师 ${teacher.name} 营收更新: ${oldAmount} + ${parseFloat(cls.price) || 0} = ${teacherRevenue[teacher.teacherId].amount}`);
       } else if (cls.teacherId) {
         console.warn(`未找到教师ID: ${cls.teacherId} 对应的教师数据`);
         // 尝试查找可能的匹配
@@ -183,7 +182,7 @@ const RevenueStatistics = () => {
 
       if (course) {
         if (!courseRevenue[course.courseId]) {
-          const teacherName = teacher ? (teacher.nameZh || teacher.nameEn) : '未知教師';
+          const teacherName = teacher ? teacher.name : '未知教師';
           const courseName = `${course.courseId}-${course.grade}${course.subject}`;
           courseRevenue[course.courseId] = {
             name: courseName,
@@ -323,11 +322,11 @@ const RevenueStatistics = () => {
             // 通过teacherId找到教师信息
             const teacher = teachersData.find(t => String(t.teacherId) === String(course.teacherId));
             if (teacher) {
-              console.log(`课堂 ${cls.classId} 关联到教师: ${teacher.nameZh || teacher.nameEn} (ID: ${course.teacherId})`);
+              console.log(`课堂 ${cls.classId} 关联到教师: ${teacher.name} (ID: ${course.teacherId})`);
               return { 
                 ...cls, 
                 teacherId: course.teacherId,
-                teacherName: teacher.nameZh || teacher.nameEn  // 直接添加教师姓名
+                teacherName: teacher.name  // 直接添加教师姓名
               };
             } else {
               console.warn(`课堂 ${cls.classId} 找到课程但未找到对应教师: ${course.teacherId}`);
