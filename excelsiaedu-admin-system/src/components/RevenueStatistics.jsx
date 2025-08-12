@@ -277,9 +277,13 @@ const RevenueStatistics = () => {
   const calculateStudentData = useCallback(() => {
     if (!classes.length || !students.length || !courses.length || !teachers.length) return;
     
+    console.log('🔍 calculateStudentData 开始执行:');
+    console.log('- 接收到的classes数量:', classes.length);
+    console.log('- classes中的teacherId示例:', classes.slice(0, 3).map(cls => ({ classId: cls.classId, teacherId: cls.teacherId }));
+    
     let filteredData = classes.filter(cls => {
       if (selectedStudent && cls.studentId !== selectedStudent) return false;
-    if (selectedMonth) {
+      if (selectedMonth) {
         const classDate = new Date(cls.date);
         const classMonth = `${classDate.getFullYear()}-${String(classDate.getMonth() + 1).padStart(2, '0')}`;
         if (classMonth !== selectedMonth) return false;
@@ -310,7 +314,7 @@ const RevenueStatistics = () => {
     
     let filteredData = classes.filter(cls => {
       if (selectedTeacher && cls.teacherId !== selectedTeacher) return false;
-    if (selectedTeacherMonth) {
+      if (selectedTeacherMonth) {
         const classDate = new Date(cls.date);
         const classMonth = `${classDate.getFullYear()}-${String(classDate.getMonth() + 1).padStart(2, '0')}`;
         if (classMonth !== selectedTeacherMonth) return false;
@@ -438,23 +442,26 @@ const RevenueStatistics = () => {
         console.log('課程數據中的教師ID:', coursesData.map(c => c.teacherId).slice(0, 10));
       }
 
-      // 为课堂数据添加教师ID字段（通过课程关联）
+            // 为课堂数据添加教师ID字段（通过课程关联）
       if (classesData.length > 0 && coursesData.length > 0) {
         console.log('正在为课堂数据添加教师ID字段...');
-        classesData.forEach(cls => {
-          // 通过courseId找到对应的课程
+        // 创建新的数组，避免直接修改原数组
+        const enrichedClassesData = classesData.map(cls => {
           const course = coursesData.find(c => c.courseId === cls.courseId);
           if (course && course.teacherId) {
-            cls.teacherId = course.teacherId;
             console.log(`课堂 ${cls.classId} 关联到教师ID: ${course.teacherId}`);
+            return { ...cls, teacherId: course.teacherId };
           } else {
             console.warn(`课堂 ${cls.classId} 无法找到对应的教师ID`);
-            cls.teacherId = null;
+            return { ...cls, teacherId: null };
           }
         });
-        
+
         console.log('课堂数据教师ID关联完成');
-        console.log('课堂数据中的教师ID:', classesData.map(cls => cls.teacherId).slice(0, 10));
+        console.log('课堂数据中的教师ID:', enrichedClassesData.map(cls => cls.teacherId).slice(0, 10));
+        
+        // 使用更新后的数据
+        classesData = enrichedClassesData;
       }
 
       // 检查数据关联
@@ -504,6 +511,14 @@ const RevenueStatistics = () => {
       setTeachers(teachersData);
       setClasses(classesData);
       setCourses(coursesData);
+      
+      // 添加调试信息，确认数据设置
+      console.log('✅ 数据设置完成:');
+      console.log('- 学生数量:', studentsData.length);
+      console.log('- 教师数量:', teachersData.length);
+      console.log('- 课堂数量:', classesData.length);
+      console.log('- 课程数量:', coursesData.length);
+      console.log('- 课堂数据中的教师ID示例:', classesData.slice(0, 3).map(cls => ({ classId: cls.classId, teacherId: cls.teacherId })));
     } catch (error) {
       console.error('獲取數據失敗:', error);
       console.error('API URL:', config.API_URL);
