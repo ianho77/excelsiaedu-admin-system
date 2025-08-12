@@ -792,6 +792,75 @@ tbody tr:hover {
   border: 1px solid #e2e8f0;
 }
 
+/* 學生標識頭部樣式 */
+.student-header-row {
+  background: #0f766e !important;
+}
+
+.student-header {
+  background: #0f766e !important;
+  color: white !important;
+  text-align: left !important;
+  font-size: 18px !important;
+  font-weight: 600 !important;
+  padding: 16px 20px !important;
+  border: none !important;
+  text-transform: none !important;
+  letter-spacing: normal !important;
+}
+
+/* 緊湊表格樣式 */
+.compact-table {
+  background: white;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05);
+  border: 1px solid #e2e8f0;
+}
+
+.compact-table table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 0;
+}
+
+.compact-table thead {
+  background: #f8fafc;
+}
+
+.compact-table th {
+  padding: 16px 20px;
+  text-align: left;
+  font-weight: 600;
+  color: #374151;
+  border-bottom: 1px solid #e2e8f0;
+  font-size: 14px;
+  text-transform: none;
+  letter-spacing: normal;
+}
+
+.compact-table td {
+  padding: 16px 20px;
+  border-bottom: 1px solid #f1f5f9;
+  color: #4b5563;
+  font-size: 14px;
+}
+
+.compact-table tbody tr:hover {
+  background: #f8fafc;
+}
+
+.compact-table .total-label {
+  font-weight: 600;
+  color: #374151;
+}
+
+.compact-table .total-amount {
+  font-weight: 600;
+  color: #0f766e;
+  font-size: 16px;
+}
+
 .loading-spinner {
   width: 60px;
   height: 60px;

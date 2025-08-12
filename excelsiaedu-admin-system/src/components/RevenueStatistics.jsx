@@ -837,15 +837,24 @@ const RevenueStatistics = () => {
               <div className="compact-table">
                 <table>
                   <thead>
-                    <tr className="main-title-row">
-                      <th colSpan="5" className="main-title">學生明細</th>
+                    <tr className="student-header-row">
+                      <th colSpan="4" className="student-header">
+                        {selectedStudent ? (() => {
+                          const student = students.find(s => s.studentId === selectedStudent);
+                          if (student) {
+                            const nameZh = student.nameZh || '';
+                            const nameEn = student.nameEn || '';
+                            return `${student.studentId} - ${nameZh} (${nameEn})`;
+                          }
+                          return '學生明細';
+                        })() : '學生明細'}
+                      </th>
                     </tr>
                     <tr className="subtitle-row">
-                      <th>課程</th>
+                      <th>科目</th>
                       <th>教師</th>
                       <th>日期</th>
-                      <th>價格</th>
-                      <th>小計</th>
+                      <th>金額</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -855,13 +864,12 @@ const RevenueStatistics = () => {
                         <td className="teacher-cell">{item.teacherName}</td>
                         <td className="date-cell">{formatDate(item.date)}</td>
                         <td className="amount-cell">{formatCurrency(item.amount)}</td>
-                        <td className="subtotal-cell">{formatCurrency(item.amount)}</td>
                       </tr>
                     ))}
                   </tbody>
                   <tfoot>
                     <tr>
-                      <td colSpan="4" className="total-label">合計</td>
+                      <td colSpan="3" className="total-label">合計</td>
                       <td className="total-amount">{formatCurrency(totalAmount)}</td>
                     </tr>
                   </tfoot>
