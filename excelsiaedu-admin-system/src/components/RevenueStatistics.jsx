@@ -427,16 +427,39 @@ const RevenueStatistics = () => {
 
       if (classesData.length > 0) {
         console.log('課堂數據示例:', classesData[0]);
-        console.log('課堂數據中的教師ID:', classesData.map(cls => cls.teacherId).slice(0, 10));
+        console.log('課堂數據中的課程ID:', classesData.map(cls => cls.courseId).slice(0, 10));
       }
       if (teachersData.length > 0) {
         console.log('教師數據示例:', teachersData[0]);
         console.log('教師數據中的教師ID:', teachersData.map(t => t.teacherId).slice(0, 10));
       }
+      if (coursesData.length > 0) {
+        console.log('課程數據示例:', coursesData[0]);
+        console.log('課程數據中的教師ID:', coursesData.map(c => c.teacherId).slice(0, 10));
+      }
+
+      // 为课堂数据添加教师ID字段（通过课程关联）
+      if (classesData.length > 0 && coursesData.length > 0) {
+        console.log('正在为课堂数据添加教师ID字段...');
+        classesData.forEach(cls => {
+          // 通过courseId找到对应的课程
+          const course = coursesData.find(c => c.courseId === cls.courseId);
+          if (course && course.teacherId) {
+            cls.teacherId = course.teacherId;
+            console.log(`课堂 ${cls.classId} 关联到教师ID: ${course.teacherId}`);
+          } else {
+            console.warn(`课堂 ${cls.classId} 无法找到对应的教师ID`);
+            cls.teacherId = null;
+          }
+        });
+        
+        console.log('课堂数据教师ID关联完成');
+        console.log('课堂数据中的教师ID:', classesData.map(cls => cls.teacherId).slice(0, 10));
+      }
 
       // 检查数据关联
       if (classesData.length > 0 && teachersData.length > 0) {
-        const classTeacherIds = new Set(classesData.map(cls => cls.teacherId));
+        const classTeacherIds = new Set(classesData.map(cls => cls.teacherId).filter(id => id !== null));
         const teacherIds = new Set(teachersData.map(t => t.teacherId));
         const missingTeacherIds = Array.from(classTeacherIds).filter(id => !teacherIds.has(id));
         
@@ -461,7 +484,7 @@ const RevenueStatistics = () => {
           });
           
           // 重新检查修复后的数据
-          const fixedClassTeacherIds = new Set(classesData.map(cls => cls.teacherId));
+          const fixedClassTeacherIds = new Set(classesData.map(cls => cls.teacherId).filter(id => id !== null));
           const fixedMissingTeacherIds = Array.from(fixedClassTeacherIds).filter(id => !teacherIds.has(id));
           if (fixedMissingTeacherIds.length < missingTeacherIds.length) {
             console.log('✅ ID类型修复成功，未匹配ID数量减少');
@@ -1339,12 +1362,12 @@ const RevenueStatistics = () => {
               <div style={{ marginTop: '8px', fontSize: '12px' }}>
                 {classes.length > 0 && teachers.length > 0 && (
                   <>
-                    <div>課堂中的教師ID: {Array.from(new Set(classes.map(cls => cls.teacherId))).join(', ') || '無數據'}</div>
+                    <div>課堂中的教師ID: {Array.from(new Set(classes.map(cls => cls.teacherId).filter(id => id !== null))).join(', ') || '無數據'}</div>
                     <div>教師數據中的ID: {teachers.map(t => t.teacherId).join(', ')}</div>
                     <div>課堂中的課程ID: {Array.from(new Set(classes.map(cls => cls.courseId))).join(', ') || '無數據'}</div>
                     <div>課程數據中的ID: {courses.map(c => c.courseId).join(', ')}</div>
                     {(() => {
-                      const classTeacherIds = new Set(classes.map(cls => cls.teacherId));
+                      const classTeacherIds = new Set(classes.map(cls => cls.teacherId).filter(id => id !== null));
                       const teacherIds = new Set(teachers.map(t => t.teacherId));
                       const missingTeacherIds = Array.from(classTeacherIds).filter(id => !teacherIds.has(id));
                       return missingTeacherIds.length > 0 ? (
