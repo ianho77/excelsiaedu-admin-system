@@ -451,13 +451,20 @@ const RevenueStatistics = () => {
     const data = filteredData.map(cls => {
       const student = students.find(s => s.studentId === cls.studentId);
       const course = courses.find(c => c.courseId === cls.courseId);
-      const teacher = teachers.find(t => t.teacherId === cls.teacherId);
+      // 优先使用已经关联好的教师信息，如果没有则尝试查找
+      let teacherName = '未知教師';
+      if (cls.teacherName) {
+        teacherName = cls.teacherName;
+      } else if (cls.teacherId) {
+        const teacher = teachers.find(t => t.teacherId === cls.teacherId);
+        teacherName = teacher ? teacher.name : '未知教師';
+      }
       
       return {
             date: cls.date,
-        studentName: student ? (student.nameZh || student.nameEn) : '未知學生',
+        studentName: student ? student.name : '未知學生',
         courseName: course ? `${course.grade}${course.subject}` : '未知課程',
-        teacherName: teacher ? (teacher.nameZh || teacher.nameEn) : '未知教師',
+        teacherName: teacherName,
             amount: parseFloat(cls.price) || 0
       };
     });
@@ -480,12 +487,20 @@ const RevenueStatistics = () => {
     });
 
     const data = filteredData.map(cls => {
-      const teacher = teachers.find(t => t.teacherId === cls.teacherId);
+      // 优先使用已经关联好的教师信息，如果没有则尝试查找
+      let teacherName = '未知教師';
+      if (cls.teacherName) {
+        teacherName = cls.teacherName;
+      } else if (cls.teacherId) {
+        const teacher = teachers.find(t => t.teacherId === cls.teacherId);
+        teacherName = teacher ? teacher.name : '未知教師';
+      }
+      
       const course = courses.find(c => c.courseId === cls.courseId);
       
       return {
               date: cls.date,
-        teacherName: teacher ? (teacher.nameZh || teacher.nameEn) : '未知教師',
+        teacherName: teacherName,
         courseName: course ? `${course.grade}${course.subject}` : '未知課程',
               amount: parseFloat(cls.price) || 0
         };
