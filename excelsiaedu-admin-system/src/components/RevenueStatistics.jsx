@@ -96,8 +96,22 @@ const RevenueStatistics = () => {
     const monthlyRevenue = {};
 
     filteredClasses.forEach(cls => {
-      const teacher = teachers.find(t => t.teacherId === cls.teacherId);
-      const course = courses.find(c => c.courseId === cls.courseId);
+      // 检查必要字段是否存在
+      if (!cls.teacherId || !cls.courseId || !cls.price) {
+        console.warn('课堂数据缺少必要字段:', {
+          classId: cls.classId || 'unknown',
+          teacherId: cls.teacherId,
+          courseId: cls.courseId,
+          price: cls.price,
+          hasTeacherId: !!cls.teacherId,
+          hasCourseId: !!cls.courseId,
+          hasPrice: !!cls.price
+        });
+        return; // 跳过无效数据
+      }
+
+      const teacher = teachers.find(t => t.teacherId == cls.teacherId); // 使用 == 进行类型转换
+      const course = courses.find(c => c.courseId == cls.courseId); // 使用 == 进行类型转换
       
       // 添加详细的调试信息
       console.log('处理课堂数据:', {
@@ -109,7 +123,9 @@ const RevenueStatistics = () => {
         foundTeacher: !!teacher,
         foundCourse: !!course,
         teacherName: teacher ? (teacher.nameZh || teacher.nameEn) : '未找到',
-        courseName: course ? `${course.grade}${course.subject}` : '未找到'
+        courseName: course ? `${course.grade}${course.subject}` : '未找到',
+        teacherIdType: typeof cls.teacherId,
+        courseIdType: typeof cls.courseId
       });
       
       if (teacher) {
@@ -124,11 +140,19 @@ const RevenueStatistics = () => {
         console.log(`教师 ${teacher.nameZh || teacher.nameEn} 营收更新: ${oldAmount} + ${parseFloat(cls.price) || 0} = ${teacherRevenue[teacher.teacherId].amount}`);
       } else {
         console.warn(`未找到教师ID: ${cls.teacherId} 对应的教师数据`);
+        // 尝试查找可能的匹配
+        const possibleMatches = teachers.filter(t => 
+          t.teacherId.toString() === cls.teacherId.toString() ||
+          t.teacherId == cls.teacherId
+        );
+        if (possibleMatches.length > 0) {
+          console.log('找到可能的匹配:', possibleMatches);
+        }
       }
 
       if (course) {
         if (!courseRevenue[course.courseId]) {
-          const teacher = teachers.find(t => t.teacherId === cls.teacherId);
+          const teacher = teachers.find(t => t.teacherId == cls.teacherId);
           const teacherName = teacher ? (teacher.nameZh || teacher.nameEn) : '未知教師';
           const courseName = `${course.courseId}-${course.grade}${course.subject}`;
           courseRevenue[course.courseId] = {
@@ -382,6 +406,29 @@ const RevenueStatistics = () => {
         if (missingTeacherIds.length > 0) {
           console.warn('發現未匹配的教師ID:', missingTeacherIds);
           console.warn('這可能導致顯示"未知教師"的問題');
+          
+          // 尝试修复ID类型不匹配的问题
+          console.log('尝试修复ID类型不匹配...');
+          classesData.forEach(cls => {
+            if (cls.teacherId !== null && cls.teacherId !== undefined) {
+              // 尝试转换为数字类型
+              const numericTeacherId = parseInt(cls.teacherId);
+              if (!isNaN(numericTeacherId)) {
+                const foundTeacher = teachersData.find(t => t.teacherId === numericTeacherId);
+                if (foundTeacher) {
+                  console.log(`修复教师ID类型: ${cls.teacherId} -> ${numericTeacherId}`);
+                  cls.teacherId = numericTeacherId;
+                }
+              }
+            }
+          });
+          
+          // 重新检查修复后的数据
+          const fixedClassTeacherIds = new Set(classesData.map(cls => cls.teacherId));
+          const fixedMissingTeacherIds = Array.from(fixedClassTeacherIds).filter(id => !teacherIds.has(id));
+          if (fixedMissingTeacherIds.length < missingTeacherIds.length) {
+            console.log('✅ ID类型修复成功，未匹配ID数量减少');
+          }
         }
         
         console.log('數據關聯檢查:', {
@@ -1255,9 +1302,9 @@ const RevenueStatistics = () => {
               <div style={{ marginTop: '8px', fontSize: '12px' }}>
                 {classes.length > 0 && teachers.length > 0 && (
                   <>
-                    <div>課堂中的教師ID: {Array.from(new Set(classes.map(cls => cls.teacherId))).join(', ')}</div>
+                    <div>課堂中的教師ID: {Array.from(new Set(classes.map(cls => cls.teacherId))).join(', ') || '無數據'}</div>
                     <div>教師數據中的ID: {teachers.map(t => t.teacherId).join(', ')}</div>
-                    <div>課堂中的課程ID: {Array.from(new Set(classes.map(cls => cls.courseId))).join(', ')}</div>
+                    <div>課堂中的課程ID: {Array.from(new Set(classes.map(cls => cls.courseId))).join(', ') || '無數據'}</div>
                     <div>課程數據中的ID: {courses.map(c => c.courseId).join(', ')}</div>
                     {(() => {
                       const classTeacherIds = new Set(classes.map(cls => cls.teacherId));
@@ -1275,6 +1322,24 @@ const RevenueStatistics = () => {
                     })()}
                   </>
                 )}
+              </div>
+              
+              {/* 数据质量检查 */}
+              <div style={{ marginTop: '12px', padding: '8px', background: '#fef3c7', borderRadius: '4px', border: '1px solid #f59e0b' }}>
+                <strong>🔍 數據質量檢查:</strong>
+                <div style={{ marginTop: '6px', fontSize: '11px' }}>
+                  {classes.length > 0 && (
+                    <>
+                      <div>課堂數據總數: {classes.length}</div>
+                      <div>有效教師ID: {classes.filter(cls => cls.teacherId && cls.teacherId !== '').length}</div>
+                      <div>無效教師ID: {classes.filter(cls => !cls.teacherId || cls.teacherId === '').length}</div>
+                      <div>有效課程ID: {classes.filter(cls => cls.courseId && cls.courseId !== '').length}</div>
+                      <div>無效課程ID: {classes.filter(cls => !cls.courseId || cls.courseId === '').length}</div>
+                      <div>有效價格: {classes.filter(cls => cls.price && cls.price > 0).length}</div>
+                      <div>無效價格: {classes.filter(cls => !cls.price || cls.price <= 0).length}</div>
+                    </>
+                  )}
+                </div>
               </div>
             </div>
           </div>
