@@ -322,12 +322,12 @@ const RevenueStatistics = () => {
             // 通过teacherId找到教师信息
             const teacher = teachersData.find(t => String(t.teacherId) === String(course.teacherId));
             if (teacher) {
-              console.log(`课堂 ${cls.classId} 关联到教师: ${teacher.name} (ID: ${course.teacherId})`);
-              return { 
-                ...cls, 
-                teacherId: course.teacherId,
-                teacherName: teacher.name  // 直接添加教师姓名
-              };
+                      console.log(`课堂 ${cls.classId} 关联到教师: ${teacher.name} (ID: ${course.teacherId})`);
+        return { 
+          ...cls, 
+          teacherId: course.teacherId,
+          teacherName: teacher.name  // 直接添加教师姓名
+        };
             } else {
               console.warn(`课堂 ${cls.classId} 找到课程但未找到对应教师: ${course.teacherId}`);
               return { ...cls, teacherId: course.teacherId, teacherName: '未知教師' };
@@ -491,7 +491,18 @@ const RevenueStatistics = () => {
     if (!classes.length || !teachers.length || !courses.length || !students.length) return;
     
     let filteredData = classes.filter(cls => {
-      if (selectedTeacher && cls.teacherId !== selectedTeacher) return false;
+      if (selectedTeacher) {
+        // 修复教师筛选逻辑：通过教师ID或教师姓名进行筛选
+        const teacher = teachers.find(t => t.teacherId === selectedTeacher);
+        if (teacher) {
+          const teacherName = teacher.name || '';
+          if (cls.teacherName !== teacherName && cls.teacherId !== selectedTeacher) {
+            return false;
+          }
+        } else {
+          return false;
+        }
+      }
       if (selectedTeacherMonth) {
         const classDate = new Date(cls.date);
         const classMonth = `${classDate.getFullYear()}-${String(classDate.getMonth() + 1).padStart(2, '0')}`;
@@ -505,11 +516,18 @@ const RevenueStatistics = () => {
     filteredData.forEach(cls => {
       // 优先使用已经关联好的教师信息，如果没有则尝试查找
       let teacherName = '未知教師';
+      let teacherId = '';
       if (cls.teacherName) {
         teacherName = cls.teacherName;
+        // 尝试从教师数据中找到对应的ID
+        const teacher = teachers.find(t => t.name === cls.teacherName);
+        teacherId = teacher ? teacher.teacherId : '';
       } else if (cls.teacherId) {
         const teacher = teachers.find(t => t.teacherId === cls.teacherId);
-        teacherName = teacher ? teacher.name : '未知教師';
+        if (teacher) {
+          teacherName = teacher.name;
+          teacherId = teacher.teacherId;
+        }
       }
       
       const course = courses.find(c => c.courseId === cls.courseId);
@@ -525,7 +543,7 @@ const RevenueStatistics = () => {
       }
       
       teacherDetails.push({
-        teacherName,
+        teacherName: teacherId ? `${teacherId}-${teacherName}` : teacherName,
         courseName: course ? `${course.grade}${course.subject}` : '未知課程',
         studentName,
         date: cls.date,
@@ -713,7 +731,7 @@ const RevenueStatistics = () => {
   const getFilteredTeachers = () => {
     if (!teacherSearch) return teachers;
     return teachers.filter(teacher => {
-      const name = (teacher.nameZh || teacher.nameEn || '').toLowerCase();
+      const name = (teacher.name || '').toLowerCase();
       return name.includes(teacherSearch.toLowerCase());
     });
   };
@@ -926,11 +944,11 @@ const RevenueStatistics = () => {
                         className="dropdown-item"
                         onClick={() => {
                           setSelectedTeacher(teacher.teacherId);
-                          setTeacherSearch(teacher.nameZh || teacher.nameEn);
+                          setTeacherSearch(teacher.name);
                           setShowTeacherDropdown(false);
                         }}
                       >
-                        {teacher.nameZh || teacher.nameEn}
+                        {teacher.name}
                       </div>
                     ))}
                   </div>
@@ -963,19 +981,20 @@ const RevenueStatistics = () => {
                   groupedByTeacher[teacherId].push(item);
                 });
 
-                return Object.entries(groupedByTeacher).map(([teacherId, items]) => {
-                  const teacher = teachers.find(t => t.teacherId === teacherId);
-                  const teacherName = teacher ? `${teacher.nameZh}${teacher.nameEn ? `(${teacher.nameEn})` : ''}${teacher.nickname ? `[${teacher.nickname}]` : ''}` : '未知教師';
+                return Object.entries(groupedByTeacher).map(([teacherName, items]) => {
+                  // 从教师名称中提取ID，如果没有ID则使用名称本身
+                  const teacherId = teacherName.includes('-') ? teacherName.split('-')[0] : '';
+                  const displayTeacherName = teacherName.includes('-') ? teacherName.split('-')[1] : teacherName;
                   const teacherTotal = items.reduce((sum, item) => sum + item.amount, 0);
                   
                   return (
-                    <div key={teacherId} className="teacher-section">
+                    <div key={teacherName} className="teacher-section">
                       <div className="compact-table">
                         <table>
                           <thead>
                             <tr className="teacher-header-row">
                               <th colSpan="4" className="teacher-header">
-                                {teacherId} - {teacherName}
+                                {teacherId ? `${teacherId} - ${displayTeacherName}` : displayTeacherName}
                               </th>
                             </tr>
                             <tr className="subtitle-row">
