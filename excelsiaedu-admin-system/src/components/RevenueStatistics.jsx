@@ -845,46 +845,30 @@ const RevenueStatistics = () => {
           {studentData.length > 0 && (
             <div className="data-summary">
               <h3>總計：{formatCurrency(totalAmount)}</h3>
-              {studentData.map((studentGroup, groupIndex) => (
-                <div key={groupIndex} className="student-group">
-                  <div className="group-header">
-                    <div className="group-title">
-                      <h4>{studentGroup.studentName}</h4>
-                      <span className="student-id">ID: {studentGroup.studentId}</span>
-                    </div>
-                    <div className="group-summary">
-                      <div className="class-count">
-                        課堂數：{studentGroup.classes.length}
-                      </div>
-                      <div className="group-total">
-                        小計：{formatCurrency(studentGroup.totalAmount)}
-                      </div>
-                    </div>
-                  </div>
-                  <div className="data-table">
-                    <table>
-                      <thead>
-                        <tr>
-                          <th>日期</th>
-                          <th>課程</th>
-                          <th>教師</th>
-                          <th>金額</th>
+              <div className="data-table">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>學生名稱</th>
+                      <th>科目</th>
+                      <th>日期</th>
+                      <th>金額</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {studentData.flatMap((studentGroup, groupIndex) =>
+                      studentGroup.classes.map((cls, index) => (
+                        <tr key={`${groupIndex}-${index}`} className={index % 2 === 0 ? 'even-row' : 'odd-row'}>
+                          <td className="student-cell">{studentGroup.studentName}</td>
+                          <td className="course-cell">{cls.courseName}</td>
+                          <td className="date-cell">{formatDate(cls.date)}</td>
+                          <td className="amount-cell">{formatCurrency(cls.amount)}</td>
                         </tr>
-                      </thead>
-                      <tbody>
-                        {studentGroup.classes.map((cls, index) => (
-                          <tr key={index} className={index % 2 === 0 ? 'even-row' : 'odd-row'}>
-                            <td className="date-cell">{formatDate(cls.date)}</td>
-                            <td className="course-cell">{cls.courseName}</td>
-                            <td className="teacher-cell">{cls.teacherName}</td>
-                            <td className="amount-cell">{formatCurrency(cls.amount)}</td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
-              ))}
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
             </div>
           )}
         </div>
@@ -947,43 +931,30 @@ const RevenueStatistics = () => {
           {teacherData.length > 0 && (
             <div className="data-summary">
               <h3>總計：{formatCurrency(totalAmount)}</h3>
-              {teacherData.map((teacherGroup, groupIndex) => (
-                <div key={groupIndex} className="teacher-group">
-                  <div className="group-header">
-                    <div className="group-title">
-                      <h4>{teacherGroup.teacherName}</h4>
-                    </div>
-                    <div className="group-summary">
-                      <div className="class-count">
-                        課堂數：{teacherGroup.classes.length}
-                      </div>
-                      <div className="group-total">
-                        小計：{formatCurrency(teacherGroup.totalAmount)}
-                      </div>
-                    </div>
-                  </div>
-                  <div className="data-table">
-                    <table>
-                      <thead>
-                        <tr>
-                          <th>日期</th>
-                          <th>課程</th>
-                          <th>金額</th>
+              <div className="data-table">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>科目</th>
+                      <th>教師</th>
+                      <th>日期</th>
+                      <th>金額</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {teacherData.flatMap((teacherGroup, groupIndex) =>
+                      teacherGroup.classes.map((cls, index) => (
+                        <tr key={`${groupIndex}-${index}`} className={index % 2 === 0 ? 'even-row' : 'odd-row'}>
+                          <td className="course-cell">{cls.courseName}</td>
+                          <td className="teacher-cell">{teacherGroup.teacherName}</td>
+                          <td className="date-cell">{formatDate(cls.date)}</td>
+                          <td className="amount-cell">{formatCurrency(cls.amount)}</td>
                         </tr>
-                      </thead>
-                      <tbody>
-                        {teacherGroup.classes.map((cls, index) => (
-                          <tr key={index} className={index % 2 === 0 ? 'even-row' : 'odd-row'}>
-                            <td className="date-cell">{formatDate(cls.date)}</td>
-                            <td className="course-cell">{cls.courseName}</td>
-                            <td className="amount-cell">{formatCurrency(cls.amount)}</td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
-              ))}
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
             </div>
           )}
         </div>
@@ -1023,45 +994,30 @@ const RevenueStatistics = () => {
           {dailyData.length > 0 && (
             <div className="data-summary">
               <h3>總計：{formatCurrency(totalAmount)}</h3>
-              {dailyData.map((dailyGroup, groupIndex) => (
-                <div key={groupIndex} className="daily-group">
-                  <div className="group-header">
-                    <div className="group-title">
-                      <h4>{formatDate(dailyGroup.date)}</h4>
-                    </div>
-                    <div className="group-summary">
-                      <div className="class-count">
-                        課堂數：{dailyGroup.classes.length}
-                      </div>
-                      <div className="group-total">
-                        小計：{formatCurrency(dailyGroup.totalAmount)}
-                      </div>
-                    </div>
-                  </div>
-                  <div className="data-table">
-                    <table>
-                      <thead>
-                        <tr>
-                          <th>學生</th>
-                          <th>教師</th>
-                          <th>課程</th>
-                          <th>金額</th>
+              <div className="data-table">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>學生</th>
+                      <th>教師</th>
+                      <th>課程</th>
+                      <th>金額</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {dailyData.flatMap((dailyGroup, groupIndex) =>
+                      dailyGroup.classes.map((cls, index) => (
+                        <tr key={`${groupIndex}-${index}`} className={index % 2 === 0 ? 'even-row' : 'odd-row'}>
+                          <td className="student-cell">{cls.studentName}</td>
+                          <td className="teacher-cell">{cls.teacherName}</td>
+                          <td className="course-cell">{cls.courseName}</td>
+                          <td className="amount-cell">{formatCurrency(cls.amount)}</td>
                         </tr>
-                      </thead>
-                      <tbody>
-                        {dailyGroup.classes.map((cls, index) => (
-                          <tr key={index} className={index % 2 === 0 ? 'even-row' : 'odd-row'}>
-                            <td className="student-cell">{cls.studentName}</td>
-                            <td className="teacher-cell">{cls.teacherName}</td>
-                            <td className="course-cell">{cls.courseName}</td>
-                            <td className="amount-cell">{formatCurrency(cls.amount)}</td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
-              ))}
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
             </div>
           )}
         </div>
