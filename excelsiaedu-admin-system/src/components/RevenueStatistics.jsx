@@ -119,26 +119,16 @@ const RevenueStatistics = () => {
         });
       }
 
-             // 智能教师关联：优先使用teacherId，如果没有则尝试通过courseId关联
+             // 使用已经通过课程关联添加的teacherId
        let teacher = null;
        if (cls.teacherId) {
          teacher = teachers.find(t => String(t.teacherId) === String(cls.teacherId));
          console.log(`查找教师ID ${cls.teacherId}:`, teacher ? '找到' : '未找到');
        } else {
-         // 如果没有teacherId，尝试通过courseId找到对应的教师
-         // 这里假设课程和教师有某种关联关系
-         console.log('课堂缺少teacherId，尝试通过courseId关联教师:', {
+         console.warn('课堂数据仍然缺少teacherId，这不应该发生:', {
            classId: cls.classId,
            courseId: cls.courseId
          });
-         
-         // 如果这是第一个课堂，我们可以假设教师ID为1（根据您的数据）
-         if (cls.courseId === '1') {
-           teacher = teachers.find(t => t.teacherId === '1');
-           if (teacher) {
-             console.log('通过courseId关联到教师:', teacher.name);
-           }
-         }
        }
       const course = courses.find(c => String(c.courseId) === String(cls.courseId));
       
