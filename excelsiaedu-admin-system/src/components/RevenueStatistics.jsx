@@ -267,7 +267,7 @@ const RevenueStatistics = () => {
 
   useEffect(() => {
     fetchData();
-  }, []); // 只在組件掛載時執行一次
+  }, [fetchData]); // 添加 fetchData 依赖
 
   // 當數據加載完成後，計算圖表數據
   useEffect(() => {
@@ -399,7 +399,7 @@ const RevenueStatistics = () => {
     return `${date.getFullYear()}/${date.getMonth() + 1}/${date.getDate()}`;
   };
 
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     setLoading(true);
     setError(null);
     
@@ -544,7 +544,7 @@ const RevenueStatistics = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [activeTab, calculateOverviewData]);
 
   // 生成月份選項（包含"全部月份"選項）
   const generateMonthOptionsWithAll = () => {
