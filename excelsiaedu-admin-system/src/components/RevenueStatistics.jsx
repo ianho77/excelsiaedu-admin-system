@@ -390,12 +390,7 @@ const RevenueStatistics = () => {
       console.log('- 课程数量:', coursesData.length);
       console.log('- 课堂数据中的教师ID示例:', classesData.slice(0, 3).map(cls => cls.teacherId));
       
-      // 立即计算数据，避免状态更新延迟问题
-      setTimeout(() => {
-        if (activeTab === 'overview') {
-          calculateOverviewData();
-        }
-      }, 100);
+
     } catch (error) {
       console.error('獲取數據失敗:', error);
       console.error('API URL:', config.API_URL);
@@ -411,7 +406,7 @@ const RevenueStatistics = () => {
     } finally {
       setLoading(false);
     }
-  }, [activeTab, calculateOverviewData]);
+  }, []); // 移除所有依赖，避免无限循环
 
   useEffect(() => {
     fetchData();
