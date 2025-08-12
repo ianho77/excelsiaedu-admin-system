@@ -110,8 +110,8 @@ const RevenueStatistics = () => {
         return; // 跳过无效数据
       }
 
-      const teacher = teachers.find(t => t.teacherId == cls.teacherId); // 使用 == 进行类型转换
-      const course = courses.find(c => c.courseId == cls.courseId); // 使用 == 进行类型转换
+      const teacher = teachers.find(t => String(t.teacherId) === String(cls.teacherId)); // 转换为字符串进行比较
+      const course = courses.find(c => String(c.courseId) === String(cls.courseId)); // 转换为字符串进行比较
       
       // 添加详细的调试信息
       console.log('处理课堂数据:', {
@@ -142,8 +142,7 @@ const RevenueStatistics = () => {
         console.warn(`未找到教师ID: ${cls.teacherId} 对应的教师数据`);
         // 尝试查找可能的匹配
         const possibleMatches = teachers.filter(t => 
-          t.teacherId.toString() === cls.teacherId.toString() ||
-          t.teacherId == cls.teacherId
+          String(t.teacherId) === String(cls.teacherId)
         );
         if (possibleMatches.length > 0) {
           console.log('找到可能的匹配:', possibleMatches);
@@ -152,7 +151,7 @@ const RevenueStatistics = () => {
 
       if (course) {
         if (!courseRevenue[course.courseId]) {
-          const teacher = teachers.find(t => t.teacherId == cls.teacherId);
+          const teacher = teachers.find(t => String(t.teacherId) === String(cls.teacherId));
           const teacherName = teacher ? (teacher.nameZh || teacher.nameEn) : '未知教師';
           const courseName = `${course.courseId}-${course.grade}${course.subject}`;
           courseRevenue[course.courseId] = {
