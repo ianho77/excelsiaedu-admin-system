@@ -1122,10 +1122,18 @@ function AddStudent() {
           const students = results.data;
           let successCount = 0;
           let errorCount = 0;
+          let errorDetails = [];
+
+          console.log('CSV解析結果:', students); // 調試用
 
           for (const student of students) {
-            // 驗證必要欄位
-            if (!student.nameZh || !student.nameEn || !student.grade) {
+            console.log('處理學生資料:', student); // 調試用
+            
+            // 驗證必要欄位（只要求中文姓名和年級）
+            if (!student.nameZh || !student.grade) {
+              const errorMsg = `學生資料缺少必要欄位: nameZh=${student.nameZh}, grade=${student.grade}`;
+              console.log(errorMsg);
+              errorDetails.push(errorMsg);
               errorCount++;
               continue;
             }
@@ -1135,8 +1143,9 @@ function AddStudent() {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
+                  studentId: student.studentId || '', // 如果CSV中有studentId則使用
                   nameZh: student.nameZh,
-                  nameEn: student.nameEn,
+                  nameEn: student.nameEn || '',
                   grade: student.grade,
                   nickname: student.nickname || '',
                   phone: student.phone || '',
@@ -1150,15 +1159,29 @@ function AddStudent() {
                 const newStudent = await res.json();
                 setStudents(prev => [...prev, newStudent]);
                 successCount++;
+                console.log('成功創建學生:', newStudent);
               } else {
+                const errorData = await res.json();
+                const errorMsg = `創建學生失敗: ${errorData.message || '未知錯誤'}`;
+                console.log(errorMsg);
+                errorDetails.push(errorMsg);
                 errorCount++;
               }
             } catch (error) {
+              const errorMsg = `網路錯誤: ${error.message}`;
+              console.log(errorMsg);
+              errorDetails.push(errorMsg);
               errorCount++;
             }
           }
 
-          setCsvMessage(`匯入完成！成功：${successCount} 筆，失敗：${errorCount} 筆`);
+          const message = `匯入完成！成功：${successCount} 筆，失敗：${errorCount} 筆`;
+          if (errorDetails.length > 0) {
+            console.log('錯誤詳情:', errorDetails);
+            setCsvMessage(message + '\n錯誤詳情請查看瀏覽器控制台');
+          } else {
+            setCsvMessage(message);
+          }
         } catch (error) {
           setCsvMessage('匯入失敗：' + error.message);
         } finally {

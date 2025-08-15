@@ -245,11 +245,32 @@ app.get('/students', async (req, res) => {
 });
 
 app.post('/students', async (req, res) => {
-  const count = await Student.countDocuments();
-  const studentId = (count + 1).toString();
-  const student = new Student({ studentId, ...req.body });
-  await student.save();
-  res.json(student);
+  try {
+    let studentId;
+    
+    // 如果請求中包含自定義的studentId，使用它；否則自動生成
+    if (req.body.studentId && req.body.studentId.trim() !== '') {
+      // 檢查ID是否已存在
+      const existingStudent = await Student.findOne({ studentId: req.body.studentId });
+      if (existingStudent) {
+        return res.status(400).json({ 
+          message: `學生ID "${req.body.studentId}" 已存在，請使用不同的ID` 
+        });
+      }
+      studentId = req.body.studentId;
+    } else {
+      // 自動生成ID
+      const count = await Student.countDocuments();
+      studentId = (count + 1).toString();
+    }
+    
+    const student = new Student({ studentId, ...req.body });
+    await student.save();
+    res.json(student);
+  } catch (error) {
+    console.error('創建學生時發生錯誤:', error);
+    res.status(500).json({ message: '創建學生失敗', error: error.message });
+  }
 });
 
 app.put('/students/:id', async (req, res) => {

@@ -28,10 +28,17 @@
 
 #### 學生資料 CSV 格式：
 ```csv
-nameZh,nameEn,grade,nickname,phone,wechat,school,notes
-張小明,Cheung Siu Ming,中一,小明,12345678,wechat123,香港中學,備註內容
-李小華,Lee Siu Wah,中二,小華,87654321,wechat456,九龍中學,備註內容
+studentId,nameZh,nameEn,grade,nickname,phone,wechat,school,notes
+S001,張小明,Cheung Siu Ming,中一,小明,12345678,wechat123,香港中學,備註內容
+S002,李小華,Lee Siu Wah,中二,小華,87654321,wechat456,九龍中學,備註內容
 ```
+
+**注意事項：**
+- `studentId`：可選欄位，如果不提供或為空，系統會自動生成
+- `nameZh`：必填欄位，中文姓名
+- `nameEn`：可選欄位，英文姓名
+- `grade`：必填欄位，年級
+- 其他欄位均為可選
 
 #### 教師資料 CSV 格式：
 ```csv
