@@ -259,9 +259,16 @@ app.post('/students', async (req, res) => {
       }
       studentId = req.body.studentId;
     } else {
-      // 自動生成ID
-      const count = await Student.countDocuments();
-      studentId = (count + 1).toString();
+      // 自動生成ID - 基於現有最大學生ID
+      const maxStudent = await Student.findOne().sort({ studentId: -1 });
+      if (maxStudent && maxStudent.studentId) {
+        // 提取數字部分並加1
+        const currentMax = parseInt(maxStudent.studentId.replace(/\D/g, '')) || 0;
+        studentId = (currentMax + 1).toString();
+      } else {
+        // 如果沒有學生，從1開始
+        studentId = '1';
+      }
     }
     
     const student = new Student({ studentId, ...req.body });
