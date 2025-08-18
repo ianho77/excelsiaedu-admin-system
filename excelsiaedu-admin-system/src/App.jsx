@@ -1259,7 +1259,11 @@ function AddStudent() {
         <form onSubmit={handleSubmit} className="course-form class-form-left">
           <div className="form-group">
             <label>學生ID</label>
-            <input type="text" value={students.length + 1} disabled />
+            <input type="text" value={(() => {
+              if (students.length === 0) return '1';
+              const maxId = Math.max(...students.map(s => parseInt(s.studentId.replace(/\D/g, '')) || 0));
+              return (maxId + 1).toString();
+            })()} disabled />
           </div>
           <div className="form-group">
             <label>學生姓名（中文）</label>
