@@ -260,14 +260,24 @@ app.post('/students', async (req, res) => {
       studentId = req.body.studentId;
     } else {
       // 自動生成ID - 基於現有最大學生ID
-      const maxStudent = await Student.findOne().sort({ studentId: -1 });
-      if (maxStudent && maxStudent.studentId) {
-        // 提取數字部分並加1
-        const currentMax = parseInt(maxStudent.studentId.replace(/\D/g, '')) || 0;
+      // 獲取所有學生，然後在JavaScript中找出最大ID
+      const allStudents = await Student.find({}, 'studentId');
+      console.log('🔍 調試 - 所有學生ID:', allStudents.map(s => s.studentId));
+      
+      if (allStudents.length > 0) {
+        // 提取所有ID的數字部分，找出最大值
+        const numericIds = allStudents
+          .map(s => s.studentId)
+          .filter(id => id && id.trim() !== '')
+          .map(id => parseInt(id.replace(/\D/g, '')) || 0);
+        
+        const currentMax = Math.max(...numericIds);
         studentId = (currentMax + 1).toString();
+        console.log(`🔍 調試 - 所有數字ID: ${numericIds}, 最大ID: ${currentMax}, 新ID: ${studentId}`);
       } else {
         // 如果沒有學生，從1開始
         studentId = '1';
+        console.log('🔍 調試 - 沒有學生記錄，從1開始');
       }
     }
     
