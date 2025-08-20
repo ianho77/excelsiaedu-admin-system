@@ -406,7 +406,7 @@ button[type="submit"]:hover {
   border-radius: 12px;
   max-height: 200px;
   overflow-y: auto;
-  z-index: 10;
+  z-index: 99999;
   box-shadow: 0 8px 25px rgba(13, 148, 136, 0.15);
   margin: 0;
   padding: 8px 0;
@@ -961,6 +961,8 @@ button[type="submit"]:hover {
   box-shadow: 0 4px 15px rgba(0,0,0,0.08);
   margin-bottom: 24px;
   border: 1px solid rgba(0,0,0,0.05);
+  position: relative;
+  z-index: 99999;
 }
 
 .filter-container {
@@ -975,6 +977,7 @@ button[type="submit"]:hover {
   display: flex;
   flex-direction: column;
   min-width: 180px;
+  z-index: 99999;
 }
 
 .filter-group label {
@@ -1088,7 +1091,7 @@ button[type="submit"]:hover {
   border-top: none;
   border-radius: 0 0 8px 8px;
   box-shadow: 0 6px 20px rgba(0,0,0,0.15);
-  z-index: 1000;
+  z-index: 99999;
   max-height: 200px;
   overflow-y: auto;
   margin: 0;
@@ -1396,7 +1399,7 @@ button[type="submit"]:hover {
   position: -webkit-sticky !important;
   position: sticky !important;
   top: 0 !important;
-  z-index: 9999 !important;
+  z-index: 1000 !important;
   background: #0f766e !important;
   border: none !important;
 }
@@ -1420,7 +1423,7 @@ button[type="submit"]:hover {
   position: -webkit-sticky !important;
   position: sticky !important;
   top: 0 !important;
-  z-index: 9999 !important;
+  z-index: 1000 !important;
   box-sizing: border-box !important;
 }
 
