@@ -370,7 +370,9 @@ function AddClass() {
     switch (e.key) {
       case 'ArrowDown':
         e.preventDefault();
-        const nextIndex = (selectedStudentIndices[idx] || -1) < filteredStudents.length - 1 ? (selectedStudentIndices[idx] || -1) + 1 : 0;
+        // 如果當前沒有選中索引，直接選中第一個選項
+        const currentIndex = selectedStudentIndices[idx] ?? -1;
+        const nextIndex = currentIndex < filteredStudents.length - 1 ? currentIndex + 1 : 0;
         setSelectedStudentIndices(prev => ({
           ...prev,
           [idx]: nextIndex
@@ -380,7 +382,9 @@ function AddClass() {
         break;
       case 'ArrowUp':
         e.preventDefault();
-        const prevIndex = (selectedStudentIndices[idx] || -1) > 0 ? (selectedStudentIndices[idx] || -1) - 1 : filteredStudents.length - 1;
+        // 如果當前沒有選中索引，直接選中最後一個選項
+        const currentIndexUp = selectedStudentIndices[idx] ?? -1;
+        const prevIndex = currentIndexUp > 0 ? currentIndexUp - 1 : filteredStudents.length - 1;
         setSelectedStudentIndices(prev => ({
           ...prev,
           [idx]: prevIndex
