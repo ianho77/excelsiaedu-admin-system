@@ -161,9 +161,13 @@ function AddClass() {
   // 新增：課程選擇的鍵盤導航狀態
   const [selectedCourseIndex, setSelectedCourseIndex] = React.useState(-1);
   const [isCourseDropdownOpen, setIsCourseDropdownOpen] = React.useState(false);
+  // 新增：課程下拉選單的 ref
+  const courseDropdownRef = React.useRef(null);
   // 新增：學生選擇的鍵盤導航狀態
   const [selectedStudentIndices, setSelectedStudentIndices] = React.useState({});
   const [isStudentDropdownsOpen, setIsStudentDropdownsOpen] = React.useState({});
+  // 新增：學生下拉選單的 refs
+  const studentDropdownRefs = React.useRef({});
 
   React.useEffect(() => {
     fetchAllData();
@@ -308,15 +312,17 @@ function AddClass() {
     switch (e.key) {
       case 'ArrowDown':
         e.preventDefault();
-        setSelectedCourseIndex(prev => 
-          prev < filteredCourses.length - 1 ? prev + 1 : 0
-        );
+        const nextIndex = selectedCourseIndex < filteredCourses.length - 1 ? selectedCourseIndex + 1 : 0;
+        setSelectedCourseIndex(nextIndex);
+        // 自動滾動到選中的選項
+        setTimeout(() => scrollToSelectedOption(nextIndex), 0);
         break;
       case 'ArrowUp':
         e.preventDefault();
-        setSelectedCourseIndex(prev => 
-          prev > 0 ? prev - 1 : filteredCourses.length - 1
-        );
+        const prevIndex = selectedCourseIndex > 0 ? selectedCourseIndex - 1 : filteredCourses.length - 1;
+        setSelectedCourseIndex(prevIndex);
+        // 自動滾動到選中的選項
+        setTimeout(() => scrollToSelectedOption(prevIndex), 0);
         break;
       case 'Enter':
         e.preventDefault();
@@ -335,6 +341,20 @@ function AddClass() {
     }
   };
 
+  // 新增：滾動到選中的選項
+  const scrollToSelectedOption = (index) => {
+    if (courseDropdownRef.current) {
+      const dropdown = courseDropdownRef.current;
+      const selectedItem = dropdown.children[index];
+      if (selectedItem) {
+        selectedItem.scrollIntoView({
+          behavior: 'smooth',
+          block: 'nearest'
+        });
+      }
+    }
+  };
+
   // 新增：處理學生選擇的鍵盤事件
   const handleStudentKeyDown = (e, idx) => {
     const isOpen = isStudentDropdownsOpen[idx];
@@ -350,17 +370,23 @@ function AddClass() {
     switch (e.key) {
       case 'ArrowDown':
         e.preventDefault();
+        const nextIndex = (selectedStudentIndices[idx] || -1) < filteredStudents.length - 1 ? (selectedStudentIndices[idx] || -1) + 1 : 0;
         setSelectedStudentIndices(prev => ({
           ...prev,
-          [idx]: prev[idx] < filteredStudents.length - 1 ? prev[idx] + 1 : 0
+          [idx]: nextIndex
         }));
+        // 自動滾動到選中的選項
+        setTimeout(() => scrollToSelectedStudentOption(idx, nextIndex), 0);
         break;
       case 'ArrowUp':
         e.preventDefault();
+        const prevIndex = (selectedStudentIndices[idx] || -1) > 0 ? (selectedStudentIndices[idx] || -1) - 1 : filteredStudents.length - 1;
         setSelectedStudentIndices(prev => ({
           ...prev,
-          [idx]: prev[idx] > 0 ? prev[idx] - 1 : filteredStudents.length - 1
+          [idx]: prevIndex
         }));
+        // 自動滾動到選中的選項
+        setTimeout(() => scrollToSelectedStudentOption(idx, prevIndex), 0);
         break;
       case 'Enter':
         e.preventDefault();
@@ -377,6 +403,20 @@ function AddClass() {
       default:
         // 忽略其他按鍵
         break;
+    }
+  };
+
+  // 新增：滾動到選中的學生選項
+  const scrollToSelectedStudentOption = (idx, index) => {
+    const dropdownRef = studentDropdownRefs.current[idx];
+    if (dropdownRef) {
+      const selectedItem = dropdownRef.children[index];
+      if (selectedItem) {
+        selectedItem.scrollIntoView({
+          behavior: 'smooth',
+          block: 'nearest'
+        });
+      }
     }
   };
 
@@ -656,7 +696,7 @@ function AddClass() {
             />
             {formErrors.courseId && <div style={{color: 'red', fontSize: '0.9em', marginTop: 4}}>{formErrors.courseId}</div>}
             {isCourseDropdownOpen && courseFilter && courseFilter.trim() !== '' && (
-              <ul className="dropdown">
+              <ul className="dropdown" ref={courseDropdownRef}>
                 {filteredCourses.map((c, index) => {
                   const teacher = teachers.find(t => t.teacherId === c.teacherId);
                   return (
@@ -665,8 +705,8 @@ function AddClass() {
                       onClick={() => handleSelectCourse(c.courseId)}
                       className={index === selectedCourseIndex ? 'selected' : ''}
                       style={{
-                        backgroundColor: index === selectedCourseIndex ? '#e3f2fd' : 'transparent',
-                        color: index === selectedCourseIndex ? '#1976d2' : 'inherit'
+                        backgroundColor: selectedCourseIndex >= 0 && index === selectedCourseIndex ? '#e3f2fd' : 'transparent',
+                        color: selectedCourseIndex >= 0 && index === selectedCourseIndex ? '#1976d2' : 'inherit'
                       }}
                     >
                       {c.courseId} - {c.grade}{c.subject} {teacher ? teacher.name : ''}
@@ -725,7 +765,7 @@ function AddClass() {
                   />
                   {formErrors.studentNames[idx] && <div style={{color: 'red', fontSize: '0.9em', marginTop: 4}}>{formErrors.studentNames[idx]}</div>}
                   {isStudentDropdownsOpen[idx] && studentFilters[idx] && studentFilters[idx].trim() !== '' && (
-                    <ul className="dropdown">
+                    <ul className="dropdown" ref={el => studentDropdownRefs.current[idx] = el}>
                       {students.filter(s =>
                         (s.studentId && s.studentId.includes(studentFilters[idx])) ||
                         (s.nameZh && s.nameZh.includes(studentFilters[idx])) ||
@@ -737,8 +777,8 @@ function AddClass() {
                           onClick={() => handleSelectStudent(idx, s)}
                           className={studentIndex === selectedStudentIndices[idx] ? 'selected' : ''}
                           style={{
-                            backgroundColor: studentIndex === selectedStudentIndices[idx] ? '#e3f2fd' : 'transparent',
-                            color: studentIndex === selectedStudentIndices[idx] ? '#1976d2' : 'inherit'
+                            backgroundColor: (selectedStudentIndices[idx] || -1) >= 0 && studentIndex === selectedStudentIndices[idx] ? '#e3f2fd' : 'transparent',
+                            color: (selectedStudentIndices[idx] || -1) >= 0 && studentIndex === selectedStudentIndices[idx] ? '#1976d2' : 'inherit'
                           }}
                         >
                           {s.studentId} {s.nameZh}（{s.nameEn}）{s.nickname ? ` [${s.nickname}]` : ''}
@@ -814,6 +854,8 @@ function AddCourse() {
   // 新增：教師選擇的鍵盤導航狀態
   const [selectedTeacherIndex, setSelectedTeacherIndex] = React.useState(-1);
   const [isTeacherDropdownOpen, setIsTeacherDropdownOpen] = React.useState(false);
+  // 新增：教師下拉選單的 ref
+  const teacherDropdownRef = React.useRef(null);
 
   React.useEffect(() => {
     fetchTeachers();
@@ -885,15 +927,17 @@ function AddCourse() {
     switch (e.key) {
       case 'ArrowDown':
         e.preventDefault();
-        setSelectedTeacherIndex(prev => 
-          prev < filteredTeachers.length - 1 ? prev + 1 : 0
-        );
+        const nextIndex = selectedTeacherIndex < filteredTeachers.length - 1 ? selectedTeacherIndex + 1 : 0;
+        setSelectedTeacherIndex(nextIndex);
+        // 自動滾動到選中的選項
+        setTimeout(() => scrollToSelectedTeacherOption(nextIndex), 0);
         break;
       case 'ArrowUp':
         e.preventDefault();
-        setSelectedTeacherIndex(prev => 
-          prev > 0 ? prev - 1 : filteredTeachers.length - 1
-        );
+        const prevIndex = selectedTeacherIndex > 0 ? selectedTeacherIndex - 1 : filteredTeachers.length - 1;
+        setSelectedTeacherIndex(prevIndex);
+        // 自動滾動到選中的選項
+        setTimeout(() => scrollToSelectedTeacherOption(prevIndex), 0);
         break;
       case 'Enter':
         e.preventDefault();
@@ -909,6 +953,20 @@ function AddCourse() {
       default:
         // 忽略其他按鍵
         break;
+    }
+  };
+
+  // 新增：滾動到選中的教師選項
+  const scrollToSelectedTeacherOption = (index) => {
+    if (teacherDropdownRef.current) {
+      const dropdown = teacherDropdownRef.current;
+      const selectedItem = dropdown.children[index];
+      if (selectedItem) {
+        selectedItem.scrollIntoView({
+          behavior: 'smooth',
+          block: 'nearest'
+        });
+      }
     }
   };
 
@@ -1137,7 +1195,7 @@ function AddCourse() {
             autoComplete="off"
           />
           {isTeacherDropdownOpen && teacherFilter && teacherFilter.trim() !== '' && (
-            <ul className="dropdown">
+            <ul className="dropdown" ref={teacherDropdownRef}>
                 {teachers.filter(t => 
                   t.teacherId.includes(teacherFilter) || 
                   t.name.includes(teacherFilter)
@@ -1147,8 +1205,8 @@ function AddCourse() {
                     onClick={() => handleSelectTeacherFromDropdown(t.teacherId)}
                     className={index === selectedTeacherIndex ? 'selected' : ''}
                     style={{
-                      backgroundColor: index === selectedTeacherIndex ? '#e3f2fd' : 'transparent',
-                      color: index === selectedTeacherIndex ? '#1976d2' : 'inherit'
+                      backgroundColor: selectedTeacherIndex >= 0 && index === selectedTeacherIndex ? '#e3f2fd' : 'transparent',
+                      color: selectedTeacherIndex >= 0 && index === selectedTeacherIndex ? '#1976d2' : 'inherit'
                     }}
                   >
                     {t.teacherId}-{t.name}
