@@ -312,14 +312,16 @@ function AddClass() {
     switch (e.key) {
       case 'ArrowDown':
         e.preventDefault();
-        const nextIndex = selectedCourseIndex < filteredCourses.length - 1 ? selectedCourseIndex + 1 : 0;
+        // 如果當前沒有選中索引，直接選中第一個選項
+        const nextIndex = selectedCourseIndex < 0 ? 0 : (selectedCourseIndex < filteredCourses.length - 1 ? selectedCourseIndex + 1 : 0);
         setSelectedCourseIndex(nextIndex);
         // 自動滾動到選中的選項
         setTimeout(() => scrollToSelectedOption(nextIndex), 0);
         break;
       case 'ArrowUp':
         e.preventDefault();
-        const prevIndex = selectedCourseIndex > 0 ? selectedCourseIndex - 1 : filteredCourses.length - 1;
+        // 如果當前沒有選中索引，直接選中最後一個選項
+        const prevIndex = selectedCourseIndex < 0 ? filteredCourses.length - 1 : (selectedCourseIndex > 0 ? selectedCourseIndex - 1 : filteredCourses.length - 1);
         setSelectedCourseIndex(prevIndex);
         // 自動滾動到選中的選項
         setTimeout(() => scrollToSelectedOption(prevIndex), 0);
@@ -682,7 +684,13 @@ function AddClass() {
               value={courseDisplay}
               onChange={handleCourseInput}
               onKeyDown={handleCourseKeyDown}
-              onFocus={() => setIsCourseDropdownOpen(true)}
+              onFocus={() => {
+                setIsCourseDropdownOpen(true);
+                // 當聚焦時，如果有過濾結果，預選第一個選項
+                if (filteredCourses.length > 0) {
+                  setSelectedCourseIndex(0);
+                }
+              }}
               onBlur={() => {
                 // 延遲關閉，讓點擊事件有機會觸發
                 setTimeout(() => {
@@ -692,7 +700,7 @@ function AddClass() {
                   }
                   setIsCourseDropdownOpen(false);
                   setSelectedCourseIndex(-1);
-                }, 150);
+                }, 100);
               }}
               placeholder="請輸入課程ID、年級、科目或教師姓名"
               autoComplete="off"
@@ -707,6 +715,7 @@ function AddClass() {
                     <li 
                       key={c.courseId} 
                       onClick={() => handleSelectCourse(c.courseId)}
+                      onMouseDown={(e) => e.preventDefault()} // 防止 onBlur 觸發
                       className={index === selectedCourseIndex ? 'selected' : ''}
                       style={{
                         backgroundColor: selectedCourseIndex >= 0 && index === selectedCourseIndex ? '#e3f2fd' : 'transparent',
@@ -753,6 +762,16 @@ function AddClass() {
                     onFocus={() => {
                       if (studentFilters[idx]) {
                         setIsStudentDropdownsOpen(prev => ({ ...prev, [idx]: true }));
+                        // 當聚焦時，如果有過濾結果，預選第一個選項
+                        const filteredStudents = students.filter(s =>
+                          (s.studentId && s.studentId.includes(studentFilters[idx])) ||
+                          (s.nameZh && s.nameZh.includes(studentFilters[idx])) ||
+                          (s.nameEn && s.nameEn.toLowerCase().includes(studentFilters[idx].toLowerCase())) ||
+                          (s.nickname && s.nickname.includes(studentFilters[idx]))
+                        );
+                        if (filteredStudents.length > 0) {
+                          setSelectedStudentIndices(prev => ({ ...prev, [idx]: 0 }));
+                        }
                       }
                     }}
                     onBlur={() => {
@@ -760,7 +779,7 @@ function AddClass() {
                       setTimeout(() => {
                         setIsStudentDropdownsOpen(prev => ({ ...prev, [idx]: false }));
                         setSelectedStudentIndices(prev => ({ ...prev, [idx]: -1 }));
-                      }, 150);
+                      }, 100);
                     }}
                     placeholder={`學生名稱 #${idx + 1}`}
                     autoComplete="off"
@@ -779,6 +798,7 @@ function AddClass() {
                         <li 
                           key={s._id || s.studentId} 
                           onClick={() => handleSelectStudent(idx, s)}
+                          onMouseDown={(e) => e.preventDefault()} // 防止 onBlur 觸發
                           className={studentIndex === selectedStudentIndices[idx] ? 'selected' : ''}
                           style={{
                             backgroundColor: (selectedStudentIndices[idx] || -1) >= 0 && studentIndex === selectedStudentIndices[idx] ? '#e3f2fd' : 'transparent',
@@ -931,14 +951,16 @@ function AddCourse() {
     switch (e.key) {
       case 'ArrowDown':
         e.preventDefault();
-        const nextIndex = selectedTeacherIndex < filteredTeachers.length - 1 ? selectedTeacherIndex + 1 : 0;
+        // 如果當前沒有選中索引，直接選中第一個選項
+        const nextIndex = selectedTeacherIndex < 0 ? 0 : (selectedTeacherIndex < filteredTeachers.length - 1 ? selectedTeacherIndex + 1 : 0);
         setSelectedTeacherIndex(nextIndex);
         // 自動滾動到選中的選項
         setTimeout(() => scrollToSelectedTeacherOption(nextIndex), 0);
         break;
       case 'ArrowUp':
         e.preventDefault();
-        const prevIndex = selectedTeacherIndex > 0 ? selectedTeacherIndex - 1 : filteredTeachers.length - 1;
+        // 如果當前沒有選中索引，直接選中最後一個選項
+        const prevIndex = selectedTeacherIndex < 0 ? filteredTeachers.length - 1 : (selectedTeacherIndex > 0 ? selectedTeacherIndex - 1 : filteredTeachers.length - 1);
         setSelectedTeacherIndex(prevIndex);
         // 自動滾動到選中的選項
         setTimeout(() => scrollToSelectedTeacherOption(prevIndex), 0);
@@ -1183,7 +1205,17 @@ function AddCourse() {
             value={teacherDisplay}
             onChange={handleTeacherInput}
             onKeyDown={handleTeacherKeyDown}
-            onFocus={() => setIsTeacherDropdownOpen(true)}
+            onFocus={() => {
+              setIsTeacherDropdownOpen(true);
+              // 當聚焦時，如果有過濾結果，預選第一個選項
+              const filteredTeachers = teachers.filter(t => 
+                t.teacherId.includes(teacherFilter) || 
+                t.name.includes(teacherFilter)
+              );
+              if (filteredTeachers.length > 0) {
+                setSelectedTeacherIndex(0);
+              }
+            }}
             onBlur={() => {
               // 延遲關閉，讓點擊事件有機會觸發
               setTimeout(() => {
@@ -1193,7 +1225,7 @@ function AddCourse() {
                 }
                 setIsTeacherDropdownOpen(false);
                 setSelectedTeacherIndex(-1);
-              }, 150);
+              }, 100);
             }}
             placeholder="請輸入老師ID或姓名"
             autoComplete="off"
@@ -1207,6 +1239,7 @@ function AddCourse() {
                   <li 
                     key={t.teacherId} 
                     onClick={() => handleSelectTeacherFromDropdown(t.teacherId)}
+                    onMouseDown={(e) => e.preventDefault()} // 防止 onBlur 觸發
                     className={index === selectedTeacherIndex ? 'selected' : ''}
                     style={{
                       backgroundColor: selectedTeacherIndex >= 0 && index === selectedTeacherIndex ? '#e3f2fd' : 'transparent',
