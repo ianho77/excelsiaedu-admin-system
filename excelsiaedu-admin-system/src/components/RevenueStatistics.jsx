@@ -514,27 +514,25 @@ const RevenueStatistics = () => {
 
   // 生成月份選項（包含"全部月份"選項）
   const generateMonthOptionsWithAll = () => {
-    const months = new Set();
+    const monthMap = new Map(); // 使用 Map 來避免重複
     classes.forEach(cls => {
       const date = new Date(cls.date);
       const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
       const monthLabel = `${date.getFullYear()}年${date.getMonth() + 1}月`;
-      months.add({ key: monthKey, label: monthLabel });
+      monthMap.set(monthKey, monthLabel); // 使用 key 作為 Map 的鍵，自動去重
     });
     
-    return Array.from(months)
-      .sort((a, b) => {
-        const aYear = parseInt(a.key.split('-')[0]);
-        const aMonth = parseInt(a.key.split('-')[1]);
-        const bYear = parseInt(b.key.split('-')[0]);
-        const bMonth = parseInt(b.key.split('-')[1]);
+    return Array.from(monthMap.entries())
+      .sort(([aKey], [bKey]) => {
+        const [aYear, aMonth] = aKey.split('-').map(Number);
+        const [bYear, bMonth] = bKey.split('-').map(Number);
         
         if (aYear !== bYear) return aYear - bYear;
         return aMonth - bMonth;
       })
-      .map(month => (
-        <option key={month.key} value={month.key}>
-          {month.label}
+      .map(([key, label]) => (
+        <option key={key} value={key}>
+          {label}
         </option>
       ));
   };
@@ -558,27 +556,25 @@ const RevenueStatistics = () => {
 
   // 生成月份選項（用於教師明細）
   const generateMonthOptions = () => {
-    const months = new Set();
+    const monthMap = new Map(); // 使用 Map 來避免重複
     classes.forEach(cls => {
       const date = new Date(cls.date);
       const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
       const monthLabel = `${date.getFullYear()}年${date.getMonth() + 1}月`;
-      months.add({ key: monthKey, label: monthLabel });
+      monthMap.set(monthKey, monthLabel); // 使用 key 作為 Map 的鍵，自動去重
     });
     
-    return Array.from(months)
-      .sort((a, b) => {
-        const aYear = parseInt(a.key.split('-')[0]);
-        const aMonth = parseInt(a.key.split('-')[1]);
-        const bYear = parseInt(b.key.split('-')[0]);
-        const bMonth = parseInt(b.key.split('-')[1]);
+    return Array.from(monthMap.entries())
+      .sort(([aKey], [bKey]) => {
+        const [aYear, aMonth] = aKey.split('-').map(Number);
+        const [bYear, bMonth] = bKey.split('-').map(Number);
         
         if (aYear !== bYear) return aYear - bYear;
         return aMonth - bMonth;
       })
-      .map(month => (
-        <option key={month.key} value={month.key}>
-          {month.label}
+      .map(([key, label]) => (
+        <option key={key} value={key}>
+          {label}
         </option>
       ));
   };
