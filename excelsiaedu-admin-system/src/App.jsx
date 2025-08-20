@@ -3639,7 +3639,7 @@ function TeacherList() {
               className="filter-input"
               value={searchDisplay}
               onChange={e => { setSearchDisplay(e.target.value); setSearchFilter(e.target.value); }}
-              placeholder="請輸入教師ID或姓名"
+              placeholder="請輸入教師資料"
               autoComplete="off"
             />
             {searchFilter && (
@@ -3652,9 +3652,7 @@ function TeacherList() {
                     setSearchDisplay(`${teacher.teacherId} - ${teacher.name}`); 
                     setSearchFilter(''); 
                   }}>
-                    <span style={{ fontWeight: '600', color: '#0d9488' }}>{teacher.teacherId}</span>
-                    <span style={{ margin: '0 8px', color: '#6b7280' }}>-</span>
-                    <span>{teacher.name}</span>
+                    {teacher.teacherId} - {teacher.name}
                   </li>
                 ))}
                 {searchOptions.length === 0 && <li>無符合選項</li>}
@@ -3688,7 +3686,8 @@ function TeacherList() {
         <table className="course-table">
           <thead>
             <tr>
-              <th>教師資料</th>
+              <th>教師ID</th>
+              <th>姓名</th>
               <th>電話號碼</th>
               <th>操作</th>
             </tr>
@@ -3696,29 +3695,8 @@ function TeacherList() {
           <tbody>
             {filteredTeachers.map(teacher => (
               <tr key={teacher._id}>
-                <td>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <span style={{ 
-                      fontWeight: '600', 
-                      color: '#0d9488',
-                      fontSize: '14px',
-                      padding: '4px 8px',
-                      background: 'linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%)',
-                      borderRadius: '6px',
-                      border: '1px solid #0d9488'
-                    }}>
-                      {teacher.teacherId}
-                    </span>
-                    <span style={{ color: '#6b7280', fontSize: '16px' }}>-</span>
-                    <span style={{ 
-                      fontWeight: '500', 
-                      color: '#1f2937',
-                      fontSize: '16px'
-                    }}>
-                      {teacher.name}
-                    </span>
-                  </div>
-                </td>
+                <td>{teacher.teacherId}</td>
+                <td>{teacher.name}</td>
                 <td>{teacher.phone || '-'}</td>
                 <td>
                   <div className="action-buttons">
