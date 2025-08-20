@@ -246,9 +246,17 @@ function AddClass() {
       arr[idx] = value;
       return arr;
     });
-    // 重置選中索引並根據輸入內容決定是否打開下拉選單
-    setSelectedStudentIndices(prev => ({ ...prev, [idx]: -1 }));
-    setIsStudentDropdownsOpen(prev => ({ ...prev, [idx]: value.trim() !== '' }));
+    
+    const shouldOpen = value.trim() !== '';
+    setIsStudentDropdownsOpen(prev => ({ ...prev, [idx]: shouldOpen }));
+    
+    // 如果輸入為空，關閉下拉選單並重置選中索引
+    if (!shouldOpen) {
+      setSelectedStudentIndices(prev => ({ ...prev, [idx]: -1 }));
+    } else {
+      // 如果有輸入內容，預選第一個選項
+      setSelectedStudentIndices(prev => ({ ...prev, [idx]: 0 }));
+    }
   };
 
   // 選擇學生下拉選單
@@ -284,13 +292,16 @@ function AddClass() {
     setCourseDisplay(e.target.value);
     setCourseFilter(e.target.value);
     setForm(prev => ({ ...prev, courseId: '' }));
-    // 重置選中索引並根據輸入內容決定是否打開下拉選單
-    setSelectedCourseIndex(-1);
+    
     const shouldOpen = e.target.value.trim() !== '';
     setIsCourseDropdownOpen(shouldOpen);
-    // 如果輸入為空，關閉下拉選單
+    
+    // 如果輸入為空，關閉下拉選單並重置選中索引
     if (!shouldOpen) {
       setSelectedCourseIndex(-1);
+    } else {
+      // 如果有輸入內容，預選第一個選項
+      setSelectedCourseIndex(0);
     }
   };
 
@@ -689,6 +700,8 @@ function AddClass() {
                 // 當聚焦時，如果有過濾結果，預選第一個選項
                 if (filteredCourses.length > 0) {
                   setSelectedCourseIndex(0);
+                } else {
+                  setSelectedCourseIndex(-1);
                 }
               }}
               onBlur={() => {
@@ -718,8 +731,8 @@ function AddClass() {
                       onMouseDown={(e) => e.preventDefault()} // 防止 onBlur 觸發
                       className={index === selectedCourseIndex ? 'selected' : ''}
                       style={{
-                        backgroundColor: selectedCourseIndex >= 0 && index === selectedCourseIndex ? '#e3f2fd' : 'transparent',
-                        color: selectedCourseIndex >= 0 && index === selectedCourseIndex ? '#1976d2' : 'inherit'
+                        backgroundColor: selectedCourseIndex === index ? '#e3f2fd' : 'transparent',
+                        color: selectedCourseIndex === index ? '#1976d2' : 'inherit'
                       }}
                     >
                       {c.courseId} - {c.grade}{c.subject} {teacher ? teacher.name : ''}
@@ -801,8 +814,8 @@ function AddClass() {
                           onMouseDown={(e) => e.preventDefault()} // 防止 onBlur 觸發
                           className={studentIndex === selectedStudentIndices[idx] ? 'selected' : ''}
                           style={{
-                            backgroundColor: (selectedStudentIndices[idx] || -1) >= 0 && studentIndex === selectedStudentIndices[idx] ? '#e3f2fd' : 'transparent',
-                            color: (selectedStudentIndices[idx] || -1) >= 0 && studentIndex === selectedStudentIndices[idx] ? '#1976d2' : 'inherit'
+                            backgroundColor: selectedStudentIndices[idx] === studentIndex ? '#e3f2fd' : 'transparent',
+                            color: selectedStudentIndices[idx] === studentIndex ? '#1976d2' : 'inherit'
                           }}
                         >
                           {s.studentId} {s.nameZh}（{s.nameEn}）{s.nickname ? ` [${s.nickname}]` : ''}
@@ -919,13 +932,16 @@ function AddCourse() {
     setTeacherDisplay(e.target.value);
     setTeacherFilter(e.target.value);
     setForm(prev => ({ ...prev, teacherId: '' }));
-    // 重置選中索引並根據輸入內容決定是否打開下拉選單
-    setSelectedTeacherIndex(-1);
+    
     const shouldOpen = e.target.value.trim() !== '';
     setIsTeacherDropdownOpen(shouldOpen);
-    // 如果輸入為空，關閉下拉選單
+    
+    // 如果輸入為空，關閉下拉選單並重置選中索引
     if (!shouldOpen) {
       setSelectedTeacherIndex(-1);
+    } else {
+      // 如果有輸入內容，預選第一個選項
+      setSelectedTeacherIndex(0);
     }
   };
 
@@ -1242,8 +1258,8 @@ function AddCourse() {
                     onMouseDown={(e) => e.preventDefault()} // 防止 onBlur 觸發
                     className={index === selectedTeacherIndex ? 'selected' : ''}
                     style={{
-                      backgroundColor: selectedTeacherIndex >= 0 && index === selectedTeacherIndex ? '#e3f2fd' : 'transparent',
-                      color: selectedTeacherIndex >= 0 && index === selectedTeacherIndex ? '#1976d2' : 'inherit'
+                      backgroundColor: selectedTeacherIndex === index ? '#e3f2fd' : 'transparent',
+                      color: selectedTeacherIndex === index ? '#1976d2' : 'inherit'
                     }}
                   >
                     {t.teacherId}-{t.name}
