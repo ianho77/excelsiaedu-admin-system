@@ -124,13 +124,7 @@ const RevenueStatistics = () => {
             amount: 0
           };
         }
-        const oldAmount = teacherRevenue[teacher.teacherId].amount;
         teacherRevenue[teacher.teacherId].amount += parseFloat(cls.price) || 0;
-      } else if (cls.teacherId) {
-        // 尝试查找可能的匹配
-        const possibleMatches = teachers.filter(t => 
-          String(t.teacherId) === String(cls.teacherId)
-        );
       }
 
       if (course) {
@@ -143,7 +137,6 @@ const RevenueStatistics = () => {
             amount: 0
           };
         }
-        const oldAmount = courseRevenue[course.courseId].amount;
         courseRevenue[course.courseId].amount += parseFloat(cls.price) || 0;
       }
 
