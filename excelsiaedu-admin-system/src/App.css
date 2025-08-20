@@ -1246,7 +1246,7 @@ button[type="submit"]:hover {
   display: flex;
   justify-content: center;
   align-items: center;
-  z-index: 10000;
+  z-index: 99999;
   animation: fadeIn 0.3s ease-out;
 }
 
