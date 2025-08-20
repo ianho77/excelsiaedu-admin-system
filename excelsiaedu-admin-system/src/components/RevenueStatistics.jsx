@@ -98,25 +98,7 @@ const RevenueStatistics = () => {
     filteredClasses.forEach(cls => {
       // 检查必要字段是否存在，但允许teacherId缺失的情况
       if (!cls.courseId || !cls.price) {
-        console.warn('课堂数据缺少必要字段:', {
-          classId: cls.classId || 'unknown',
-          teacherId: cls.teacherId,
-          courseId: cls.courseId,
-          price: cls.price,
-          hasTeacherId: !!cls.teacherId,
-          hasCourseId: !!cls.courseId,
-          hasPrice: !!cls.price
-        });
         return; // 跳过无效数据
-      }
-
-      // 如果teacherId缺失，记录警告但继续处理
-      if (!cls.teacherId || cls.teacherId === '') {
-        console.warn('课堂数据缺少教师ID，将显示为"未知教师":', {
-          classId: cls.classId || 'unknown',
-          courseId: cls.courseId,
-          price: cls.price
-        });
       }
 
              // 直接使用已经关联好的教师信息
@@ -127,37 +109,13 @@ const RevenueStatistics = () => {
            teacherId: cls.teacherId,
            name: cls.teacherName
          };
-         console.log(`使用已关联的教师信息: ${cls.teacherName} (ID: ${cls.teacherId})`);
        } else if (cls.teacherId) {
          // 如果没有教师姓名但有ID，尝试查找
          teacher = teachers.find(t => String(t.teacherId) === String(cls.teacherId));
-         console.log(`查找教师ID ${cls.teacherId}:`, teacher ? '找到' : '未找到');
-       } else {
-         console.warn('课堂数据缺少教师信息:', {
-           classId: cls.classId,
-           courseId: cls.courseId,
-           teacherId: cls.teacherId,
-           teacherName: cls.teacherName
-         });
        }
       const course = courses.find(c => String(c.courseId) === String(cls.courseId));
       
-      // 添加详细的调试信息
-      console.log('处理课堂数据:', {
-        classId: cls.classId || 'unknown',
-        teacherId: cls.teacherId || '缺失',
-        courseId: cls.courseId,
-        price: cls.price,
-        date: cls.date,
-        foundTeacher: !!teacher,
-        foundCourse: !!course,
-        teacherName: teacher ? teacher.name : '未知教師',
-        courseName: course ? `${course.grade}${course.subject}` : '未找到',
-        teacherIdType: typeof cls.teacherId,
-        courseIdType: typeof cls.courseId,
-        teachersAvailable: teachers.length,
-        teacherIdsAvailable: teachers.map(t => t.teacherId).slice(0, 5)
-      });
+
       
       if (teacher) {
         if (!teacherRevenue[teacher.teacherId]) {
@@ -168,16 +126,11 @@ const RevenueStatistics = () => {
         }
         const oldAmount = teacherRevenue[teacher.teacherId].amount;
         teacherRevenue[teacher.teacherId].amount += parseFloat(cls.price) || 0;
-        console.log(`教师 ${teacher.name} 营收更新: ${oldAmount} + ${parseFloat(cls.price) || 0} = ${teacherRevenue[teacher.teacherId].amount}`);
       } else if (cls.teacherId) {
-        console.warn(`未找到教师ID: ${cls.teacherId} 对应的教师数据`);
         // 尝试查找可能的匹配
         const possibleMatches = teachers.filter(t => 
           String(t.teacherId) === String(cls.teacherId)
         );
-        if (possibleMatches.length > 0) {
-          console.log('找到可能的匹配:', possibleMatches);
-        }
       }
 
       if (course) {
@@ -192,9 +145,6 @@ const RevenueStatistics = () => {
         }
         const oldAmount = courseRevenue[course.courseId].amount;
         courseRevenue[course.courseId].amount += parseFloat(cls.price) || 0;
-        console.log(`课程 ${course.courseId} 营收更新: ${oldAmount} + ${parseFloat(cls.price) || 0} = ${courseRevenue[course.courseId].amount}`);
-      } else {
-        console.warn(`未找到课程ID: ${cls.courseId} 对应的课程数据`);
       }
 
       if (course && course.grade) {
@@ -226,13 +176,7 @@ const RevenueStatistics = () => {
     const courseTotal = Object.values(courseRevenue).reduce((sum, item) => sum + (item.amount || 0), 0);
     const total = Math.max(teacherTotal, courseTotal); // 使用较大的值作为总金额
     
-    console.log('营收计算详情:', {
-      teacherTotal,
-      courseTotal,
-      total,
-      teacherRevenueCount: Object.keys(teacherRevenue).length,
-      courseRevenueCount: Object.keys(courseRevenue).length
-    });
+
     
     const sortedMonthlyRevenue = Object.values(monthlyRevenue)
       .sort((a, b) => {
@@ -255,14 +199,7 @@ const RevenueStatistics = () => {
     // 设置总金额
     setTotalAmount(total);
     
-    // 添加调试信息
-    console.log('營運概要數據計算:', {
-      filteredClassesCount: filteredClasses.length,
-      teacherRevenue,
-      total,
-      selectedYear,
-      selectedOverviewMonths
-    });
+
   }, [classes, selectedYear, selectedOverviewMonths, courses, teachers]);
 
   // 将 fetchData 函数定义移到 useEffect 之前
@@ -271,7 +208,7 @@ const RevenueStatistics = () => {
     setError(null);
     
     try {
-      console.log('正在從以下API獲取數據:', config.API_URL);
+
       
       const [studentsRes, teachersRes, classesRes, coursesRes] = await Promise.all([
         fetch(`${config.API_URL}/students`),
@@ -290,31 +227,10 @@ const RevenueStatistics = () => {
       let classesData = await classesRes.json();
       const coursesData = await coursesRes.json();
 
-      // 添加調試信息
-      console.log('獲取到的數據:', {
-        students: studentsData.length,
-        teachers: teachersData.length,
-        classes: classesData.length,
-        courses: coursesData.length,
-        apiUrl: config.API_URL
-      });
 
-      if (classesData.length > 0) {
-        console.log('課堂數據示例:', classesData[0]);
-        console.log('課堂數據中的課程ID:', classesData.map(cls => cls.courseId).slice(0, 10));
-      }
-      if (teachersData.length > 0) {
-        console.log('教師數據示例:', teachersData[0]);
-        console.log('教師數據中的教師ID:', teachersData.map(t => t.teacherId).slice(0, 10));
-      }
-      if (coursesData.length > 0) {
-        console.log('課程數據示例:', coursesData[0]);
-        console.log('課程數據中的教師ID:', coursesData.map(c => c.teacherId).slice(0, 10));
-      }
 
             // 为课堂数据添加教师ID字段（通过课程关联）
       if (classesData.length > 0 && coursesData.length > 0) {
-        console.log('正在为课堂数据添加教师ID字段...');
         // 创建新的数组，完成完整的教师关联（ID + 姓名）
         const enrichedClassesData = classesData.map(cls => {
           const course = coursesData.find(c => c.courseId === cls.courseId);
@@ -322,24 +238,18 @@ const RevenueStatistics = () => {
             // 通过teacherId找到教师信息
             const teacher = teachersData.find(t => String(t.teacherId) === String(course.teacherId));
             if (teacher) {
-                      console.log(`课堂 ${cls.classId} 关联到教师: ${teacher.name} (ID: ${course.teacherId})`);
         return { 
           ...cls, 
           teacherId: course.teacherId,
           teacherName: teacher.name  // 直接添加教师姓名
         };
             } else {
-              console.warn(`课堂 ${cls.classId} 找到课程但未找到对应教师: ${course.teacherId}`);
               return { ...cls, teacherId: course.teacherId, teacherName: '未知教師' };
             }
           } else {
-            console.warn(`课堂 ${cls.classId} 无法找到对应的课程或教师ID`);
             return { ...cls, teacherId: null, teacherName: '未知教師' };
           }
         });
-
-        console.log('课堂数据教师ID关联完成');
-        console.log('课堂数据中的教师ID:', enrichedClassesData.map(cls => cls.teacherId).slice(0, 10));
         
         // 使用更新后的数据
         classesData = enrichedClassesData;
@@ -352,11 +262,7 @@ const RevenueStatistics = () => {
         const missingTeacherIds = Array.from(classTeacherIds).filter(id => !teacherIds.has(id));
         
         if (missingTeacherIds.length > 0) {
-          console.warn('發現未匹配的教師ID:', missingTeacherIds);
-          console.warn('這可能導致顯示"未知教師"的問題');
-          
           // 尝试修复ID类型不匹配的问题
-          console.log('尝试修复ID类型不匹配...');
           classesData.forEach(cls => {
             if (cls.teacherId !== null && cls.teacherId !== undefined) {
               // 尝试转换为数字类型
@@ -364,28 +270,12 @@ const RevenueStatistics = () => {
               if (!isNaN(numericTeacherId)) {
                 const foundTeacher = teachersData.find(t => t.teacherId === numericTeacherId);
                 if (foundTeacher) {
-                  console.log(`修复教师ID类型: ${cls.teacherId} -> ${numericTeacherId}`);
                   cls.teacherId = numericTeacherId;
                 }
               }
             }
           });
-          
-          // 重新检查修复后的数据
-          const fixedClassTeacherIds = new Set(classesData.map(cls => cls.teacherId).filter(id => id !== null));
-          const fixedMissingTeacherIds = Array.from(fixedClassTeacherIds).filter(id => !teacherIds.has(id));
-          if (fixedMissingTeacherIds.length < missingTeacherIds.length) {
-            console.log('✅ ID类型修复成功，未匹配ID数量减少');
-          }
         }
-        
-        console.log('數據關聯檢查:', {
-          classTeacherIds: Array.from(classTeacherIds),
-          teacherIds: Array.from(teacherIds),
-          missingTeacherIds,
-          totalClasses: classesData.length,
-          totalTeachers: teachersData.length
-        });
       }
 
       setStudents(studentsData);
@@ -393,19 +283,11 @@ const RevenueStatistics = () => {
       setClasses(classesData);
       setCourses(coursesData);
       
-      // 添加调试信息，确认数据设置
-      console.log('✅ 数据设置完成:');
-      console.log('- 学生数量:', studentsData.length);
-      console.log('- 教师数量:', teachersData.length);
-      console.log('- 课堂数量:', classesData.length);
-      console.log('- 课程数量:', coursesData.length);
-      console.log('- 课堂数据中的教师ID示例:', classesData.slice(0, 3).map(cls => cls.teacherId));
+
       
 
     } catch (error) {
       console.error('獲取數據失敗:', error);
-      console.error('API URL:', config.API_URL);
-      console.error('錯誤詳情:', error.message);
       
       // 提供更详细的错误信息
       let errorMessage = `獲取數據失敗: ${error.message}`;
@@ -434,9 +316,7 @@ const RevenueStatistics = () => {
   const calculateStudentData = useCallback(() => {
     if (!classes.length || !students.length || !courses.length || !teachers.length) return;
     
-    console.log('🔍 calculateStudentData 开始执行:');
-    console.log('- 接收到的classes数量:', classes.length);
-    console.log('- classes中的teacherId示例:', classes.slice(0, 3).map(cls => cls.teacherId));
+
     
     let filteredData = classes.filter(cls => {
       if (selectedStudent && cls.studentId !== selectedStudent) return false;
@@ -974,6 +854,7 @@ const RevenueStatistics = () => {
                 // 按教師分組數據
                 const groupedByTeacher = {};
                 teacherData.forEach(item => {
+                  // 從教師名稱中提取ID作為分組鍵
                   const teacherId = item.teacherName.split('-')[0]; // 提取教師ID
                   if (!groupedByTeacher[teacherId]) {
                     groupedByTeacher[teacherId] = [];
@@ -981,20 +862,20 @@ const RevenueStatistics = () => {
                   groupedByTeacher[teacherId].push(item);
                 });
 
-                return Object.entries(groupedByTeacher).map(([teacherName, items]) => {
-                  // 从教师名称中提取ID，如果没有ID则使用名称本身
-                  const teacherId = teacherName.includes('-') ? teacherName.split('-')[0] : '';
-                  const displayTeacherName = teacherName.includes('-') ? teacherName.split('-')[1] : teacherName;
+                return Object.entries(groupedByTeacher).map(([teacherId, items]) => {
+                  // 從第一個項目中獲取完整的教師名稱顯示
+                  const firstItem = items[0];
+                  const displayTeacherName = firstItem.teacherName;
                   const teacherTotal = items.reduce((sum, item) => sum + item.amount, 0);
                   
                   return (
-                    <div key={teacherName} className="teacher-section">
+                    <div key={teacherId} className="teacher-section">
                       <div className="compact-table">
                         <table>
                           <thead>
                             <tr className="teacher-header-row">
                               <th colSpan="4" className="teacher-header">
-                                {teacherId ? `${teacherId} - ${displayTeacherName}` : displayTeacherName}
+                                {displayTeacherName}
                               </th>
                             </tr>
                             <tr className="subtitle-row">
@@ -1540,107 +1421,6 @@ const RevenueStatistics = () => {
                   />
                 )}
               </div>
-            </div>
-          </div>
-          
-          {/* 调试信息面板 */}
-          <div className="debug-panel" style={{
-            background: '#f8fafc',
-            padding: '16px',
-            borderRadius: '8px',
-            border: '1px solid #e2e8f0',
-            margin: '20px 0',
-            fontSize: '14px'
-          }}>
-            <h4 style={{ margin: '0 0 12px 0', color: '#374151' }}>🔍 數據調試信息</h4>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '12px' }}>
-              <div>
-                <strong>數據狀態:</strong>
-                <div>課堂數據: {classes.length} 筆</div>
-                <div>教師數據: {teachers.length} 筆</div>
-                <div>課程數據: {courses.length} 筆</div>
-                <div>學生數據: {students.length} 筆</div>
-              </div>
-              <div>
-                <strong>篩選條件:</strong>
-                <div>年份: {selectedYear || '全部'}</div>
-                <div>月份: {selectedOverviewMonths.length > 0 ? selectedOverviewMonths.join(', ') : '全部'}</div>
-              </div>
-              <div>
-                <strong>計算結果:</strong>
-                <div>總金額: {formatCurrency(totalAmount)}</div>
-                <div>教師營收: {overviewData.teacherRevenue.length} 項</div>
-                <div>課程營收: {overviewData.courseRevenue.length} 項</div>
-              </div>
-            </div>
-            
-            {/* 数据关联详细信息 */}
-            <div style={{ marginTop: '16px', padding: '12px', background: 'white', borderRadius: '6px', border: '1px solid #e2e8f0' }}>
-              <strong>🔗 數據關聯分析:</strong>
-              <div style={{ marginTop: '8px', fontSize: '12px' }}>
-                {classes.length > 0 && teachers.length > 0 && (
-                  <>
-                    <div>課堂中的教師ID: {Array.from(new Set(classes.map(cls => cls.teacherId).filter(id => id !== null))).join(', ') || '無數據'}</div>
-                    <div>教師數據中的ID: {teachers.map(t => t.teacherId).join(', ')}</div>
-                    <div>課堂中的課程ID: {Array.from(new Set(classes.map(cls => cls.courseId))).join(', ') || '無數據'}</div>
-                    <div>課程數據中的ID: {courses.map(c => c.courseId).join(', ')}</div>
-                    {(() => {
-                      const classTeacherIds = new Set(classes.map(cls => cls.teacherId).filter(id => id !== null));
-                      const teacherIds = new Set(teachers.map(t => t.teacherId));
-                      const missingTeacherIds = Array.from(classTeacherIds).filter(id => !teacherIds.has(id));
-                      return missingTeacherIds.length > 0 ? (
-                        <div style={{ color: '#dc2626', marginTop: '4px' }}>
-                          ⚠️ 未匹配的教師ID: {missingTeacherIds.join(', ')}
-                        </div>
-                      ) : (
-                        <div style={{ color: '#059669', marginTop: '4px' }}>
-                          ✅ 所有教師ID都能匹配
-                        </div>
-                      );
-                    })()}
-                  </>
-                )}
-              </div>
-              
-              {/* 数据质量检查 */}
-              <div style={{ marginTop: '12px', padding: '8px', background: '#fef3c7', borderRadius: '4px', border: '1px solid #f59e0b' }}>
-                <strong>🔍 數據質量檢查:</strong>
-                <div style={{ marginTop: '6px', fontSize: '11px' }}>
-                  {classes.length > 0 && (
-                    <>
-                      <div>課堂數據總數: {classes.length}</div>
-                      <div>有效教師ID: {classes.filter(cls => cls.teacherId && cls.teacherId !== '').length}</div>
-                      <div>無效教師ID: {classes.filter(cls => !cls.teacherId || cls.teacherId === '').length}</div>
-                      <div>有效課程ID: {classes.filter(cls => cls.courseId && cls.courseId !== '').length}</div>
-                      <div>無效課程ID: {classes.filter(cls => !cls.courseId || cls.courseId === '').length}</div>
-                      <div>有效價格: {classes.filter(cls => cls.price && cls.price > 0).length}</div>
-                      <div>無效價格: {classes.filter(cls => !cls.price || cls.price <= 0).length}</div>
-                    </>
-                  )}
-                </div>
-              </div>
-              
-              {/* 数据修复建议 */}
-              {classes.filter(cls => !cls.teacherId || cls.teacherId === '').length > 0 && (
-                <div style={{ marginTop: '12px', padding: '12px', background: '#fee2e2', borderRadius: '6px', border: '1px solid #ef4444' }}>
-                  <strong>⚠️ 數據修復建議:</strong>
-                  <div style={{ marginTop: '8px', fontSize: '12px', color: '#991b1b' }}>
-                    <div>發現 {classes.filter(cls => !cls.teacherId || cls.teacherId === '').length} 筆課堂數據缺少教師ID</div>
-                    <div style={{ marginTop: '6px' }}>
-                      <strong>解決方法:</strong>
-                      <ul style={{ margin: '4px 0', paddingLeft: '16px' }}>
-                        <li>檢查後端數據庫中的課堂記錄</li>
-                        <li>確保課堂數據包含有效的 teacherId 字段</li>
-                        <li>更新課堂記錄，關聯到正確的教師</li>
-                        <li>或者將這些課堂記錄標記為"未分配教師"</li>
-                      </ul>
-                    </div>
-                    <div style={{ marginTop: '6px', fontSize: '11px', color: '#dc2626' }}>
-                      <strong>影響:</strong> 缺少教師ID的課堂將無法計算教師營收，但課程營收和總金額仍會正常計算
-                    </div>
-                  </div>
-                </div>
-              )}
             </div>
           </div>
           
