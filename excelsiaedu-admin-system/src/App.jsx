@@ -692,7 +692,7 @@ function AddClass() {
                   }
                   setIsCourseDropdownOpen(false);
                   setSelectedCourseIndex(-1);
-                }, 200);
+                }, 150);
               }}
               placeholder="請輸入課程ID、年級、科目或教師姓名"
               autoComplete="off"
@@ -760,7 +760,7 @@ function AddClass() {
                       setTimeout(() => {
                         setIsStudentDropdownsOpen(prev => ({ ...prev, [idx]: false }));
                         setSelectedStudentIndices(prev => ({ ...prev, [idx]: -1 }));
-                      }, 200);
+                      }, 150);
                     }}
                     placeholder={`學生名稱 #${idx + 1}`}
                     autoComplete="off"
@@ -1193,7 +1193,7 @@ function AddCourse() {
                 }
                 setIsTeacherDropdownOpen(false);
                 setSelectedTeacherIndex(-1);
-              }, 200);
+              }, 150);
             }}
             placeholder="請輸入老師ID或姓名"
             autoComplete="off"
@@ -2337,6 +2337,25 @@ function ClassList() {
     });
   };
 
+  // 新增：處理排序變更，自動重置其他列排序
+  const handleSortChange = (column, value) => {
+    setSortConfig(prev => {
+      const newConfig = { ...prev };
+      
+      // 如果選擇了新的排序（不是默認），則重置其他列為默認
+      if (value !== 'default') {
+        Object.keys(newConfig).forEach(key => {
+          if (key !== column) {
+            newConfig[key] = 'default';
+          }
+        });
+      }
+      
+      newConfig[column] = value;
+      return newConfig;
+    });
+  };
+
   // 應用排序
   filteredClasses = sortClasses(filteredClasses);
 
@@ -2513,7 +2532,7 @@ function ClassList() {
                 課堂日期
                 <select 
                   value={sortConfig.date} 
-                  onChange={(e) => setSortConfig(prev => ({ ...prev, date: e.target.value }))}
+                  onChange={(e) => handleSortChange('date', e.target.value)}
                   style={{ 
                     marginLeft: '8px', 
                     padding: '2px 4px', 
@@ -2531,7 +2550,7 @@ function ClassList() {
                 學生資料
                 <select 
                   value={sortConfig.student} 
-                  onChange={(e) => setSortConfig(prev => ({ ...prev, student: e.target.value }))}
+                  onChange={(e) => handleSortChange('student', e.target.value)}
                   style={{ 
                     marginLeft: '8px', 
                     padding: '2px 4px', 
@@ -2549,7 +2568,7 @@ function ClassList() {
                 課程資料
                 <select 
                   value={sortConfig.course} 
-                  onChange={(e) => setSortConfig(prev => ({ ...prev, course: e.target.value }))}
+                  onChange={(e) => handleSortChange('course', e.target.value)}
                   style={{ 
                     marginLeft: '8px', 
                     padding: '2px 4px', 
