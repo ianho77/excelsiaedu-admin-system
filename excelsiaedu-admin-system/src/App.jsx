@@ -329,6 +329,9 @@ function AddClass() {
         setIsCourseDropdownOpen(false);
         setSelectedCourseIndex(-1);
         break;
+      default:
+        // 忽略其他按鍵
+        break;
     }
   };
 
@@ -370,6 +373,9 @@ function AddClass() {
         e.preventDefault();
         setIsStudentDropdownsOpen(prev => ({ ...prev, [idx]: false }));
         setSelectedStudentIndices(prev => ({ ...prev, [idx]: -1 }));
+        break;
+      default:
+        // 忽略其他按鍵
         break;
     }
   };
@@ -899,6 +905,9 @@ function AddCourse() {
         e.preventDefault();
         setIsTeacherDropdownOpen(false);
         setSelectedTeacherIndex(-1);
+        break;
+      default:
+        // 忽略其他按鍵
         break;
     }
   };
