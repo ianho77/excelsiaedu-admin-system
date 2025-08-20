@@ -2572,64 +2572,58 @@ function ClassList() {
           <thead>
             <tr>
               <th>
-                <input
-                  type="checkbox"
-                  checked={selectedClasses.size === filteredClasses.length && filteredClasses.length > 0}
-                  onChange={handleSelectAllClasses}
-                  style={{ marginRight: '8px' }}
-                />
-                課堂日期
-                <select 
-                  value={sortConfig.date} 
-                  onChange={(e) => handleSortChange('date', e.target.value)}
-                  style={{ 
-                    marginLeft: '8px', 
-                    padding: '2px 4px', 
-                    fontSize: '12px',
-                    border: '1px solid #ccc',
-                    borderRadius: '3px'
-                  }}
-                >
-                  <option value="default">默認</option>
-                  <option value="由遠至近">由遠至近</option>
-                  <option value="由近至遠">由近至遠</option>
-                </select>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <input
+                    type="checkbox"
+                    checked={selectedClasses.size === filteredClasses.length && filteredClasses.length > 0}
+                    onChange={handleSelectAllClasses}
+                    style={{ marginRight: '8px' }}
+                  />
+                  <span>課堂日期</span>
+                  <div className="sort-dropdown-container">
+                    <select 
+                      value={sortConfig.date} 
+                      onChange={(e) => handleSortChange('date', e.target.value)}
+                      className="sort-dropdown"
+                    >
+                      <option value="default">默認</option>
+                      <option value="由遠至近">由遠至近</option>
+                      <option value="由近至遠">由近至遠</option>
+                    </select>
+                  </div>
+                </div>
               </th>
               <th>
-                學生資料
-                <select 
-                  value={sortConfig.student} 
-                  onChange={(e) => handleSortChange('student', e.target.value)}
-                  style={{ 
-                    marginLeft: '8px', 
-                    padding: '2px 4px', 
-                    fontSize: '12px',
-                    border: '1px solid #ccc',
-                    borderRadius: '3px'
-                  }}
-                >
-                  <option value="default">默認</option>
-                  <option value="由大至小">由大至小</option>
-                  <option value="由小至大">由小至大</option>
-                </select>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <span>學生資料</span>
+                  <div className="sort-dropdown-container">
+                    <select 
+                      value={sortConfig.student} 
+                      onChange={(e) => handleSortChange('student', e.target.value)}
+                      className="sort-dropdown"
+                    >
+                      <option value="default">默認</option>
+                      <option value="由大至小">由大至小</option>
+                      <option value="由小至大">由小至大</option>
+                    </select>
+                  </div>
+                </div>
               </th>
               <th>
-                課程資料
-                <select 
-                  value={sortConfig.course} 
-                  onChange={(e) => handleSortChange('course', e.target.value)}
-                  style={{ 
-                    marginLeft: '8px', 
-                    padding: '2px 4px', 
-                    fontSize: '12px',
-                    border: '1px solid #ccc',
-                    borderRadius: '3px'
-                  }}
-                >
-                  <option value="default">默認</option>
-                  <option value="由大至小">由大至小</option>
-                  <option value="由小至大">由小至大</option>
-                </select>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <span>課程資料</span>
+                  <div className="sort-dropdown-container">
+                    <select 
+                      value={sortConfig.course} 
+                      onChange={(e) => handleSortChange('course', e.target.value)}
+                      className="sort-dropdown"
+                    >
+                      <option value="default">默認</option>
+                      <option value="由大至小">由大至小</option>
+                      <option value="由小至大">由小至大</option>
+                    </select>
+                  </div>
+                </div>
               </th>
               <th>老師</th>
               <th>價格</th>
