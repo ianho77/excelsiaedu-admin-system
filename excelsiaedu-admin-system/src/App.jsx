@@ -158,6 +158,12 @@ function AddClass() {
     studentCount: '',
     studentNames: []
   });
+  // 新增：課程選擇的鍵盤導航狀態
+  const [selectedCourseIndex, setSelectedCourseIndex] = React.useState(-1);
+  const [isCourseDropdownOpen, setIsCourseDropdownOpen] = React.useState(false);
+  // 新增：學生選擇的鍵盤導航狀態
+  const [selectedStudentIndices, setSelectedStudentIndices] = React.useState({});
+  const [isStudentDropdownsOpen, setIsStudentDropdownsOpen] = React.useState({});
 
   React.useEffect(() => {
     fetchAllData();
@@ -214,6 +220,11 @@ function AddClass() {
         studentNames: count === '' ? [] : Array(Number(count)).fill('').map((v, i) => prev.studentNames[i] || '')
       }));
       setStudentFilters(count === '' ? [] : Array(Number(count)).fill('').map((v, i) => studentFilters[i] || ''));
+      // 重置學生選擇的鍵盤導航狀態
+      if (count === '') {
+        setSelectedStudentIndices({});
+        setIsStudentDropdownsOpen({});
+      }
     } else {
       setForm(prev => ({ ...prev, [name]: value }));
     }
@@ -231,6 +242,9 @@ function AddClass() {
       arr[idx] = value;
       return arr;
     });
+    // 重置選中索引並根據輸入內容決定是否打開下拉選單
+    setSelectedStudentIndices(prev => ({ ...prev, [idx]: -1 }));
+    setIsStudentDropdownsOpen(prev => ({ ...prev, [idx]: value.trim() !== '' }));
   };
 
   // 選擇學生下拉選單
@@ -245,6 +259,9 @@ function AddClass() {
       arr[idx] = '';
       return arr;
     });
+    // 關閉下拉選單並重置選中索引
+    setIsStudentDropdownsOpen(prev => ({ ...prev, [idx]: false }));
+    setSelectedStudentIndices(prev => ({ ...prev, [idx]: -1 }));
   };
 
   const filterValue = courseFilter.trim().toLowerCase();
@@ -263,6 +280,14 @@ function AddClass() {
     setCourseDisplay(e.target.value);
     setCourseFilter(e.target.value);
     setForm(prev => ({ ...prev, courseId: '' }));
+    // 重置選中索引並根據輸入內容決定是否打開下拉選單
+    setSelectedCourseIndex(-1);
+    const shouldOpen = e.target.value.trim() !== '';
+    setIsCourseDropdownOpen(shouldOpen);
+    // 如果輸入為空，關閉下拉選單
+    if (!shouldOpen) {
+      setSelectedCourseIndex(-1);
+    }
   };
 
   const handleSelectCourse = (courseId) => {
@@ -271,6 +296,82 @@ function AddClass() {
     setForm(prev => ({ ...prev, courseId }));
     setCourseDisplay(`${c.courseId} - ${c.grade}${c.subject} ${teacher ? teacher.name : ''}`);
     setCourseFilter('');
+    // 關閉下拉選單並重置選中索引
+    setIsCourseDropdownOpen(false);
+    setSelectedCourseIndex(-1);
+  };
+
+  // 新增：處理課程選擇的鍵盤事件
+  const handleCourseKeyDown = (e) => {
+    if (!isCourseDropdownOpen || filteredCourses.length === 0 || !courseFilter.trim()) return;
+
+    switch (e.key) {
+      case 'ArrowDown':
+        e.preventDefault();
+        setSelectedCourseIndex(prev => 
+          prev < filteredCourses.length - 1 ? prev + 1 : 0
+        );
+        break;
+      case 'ArrowUp':
+        e.preventDefault();
+        setSelectedCourseIndex(prev => 
+          prev > 0 ? prev - 1 : filteredCourses.length - 1
+        );
+        break;
+      case 'Enter':
+        e.preventDefault();
+        if (selectedCourseIndex >= 0 && selectedCourseIndex < filteredCourses.length) {
+          handleSelectCourse(filteredCourses[selectedCourseIndex].courseId);
+        }
+        break;
+      case 'Escape':
+        e.preventDefault();
+        setIsCourseDropdownOpen(false);
+        setSelectedCourseIndex(-1);
+        break;
+    }
+  };
+
+  // 新增：處理學生選擇的鍵盤事件
+  const handleStudentKeyDown = (e, idx) => {
+    const isOpen = isStudentDropdownsOpen[idx];
+    const filteredStudents = students.filter(s =>
+      (s.studentId && s.studentId.includes(studentFilters[idx])) ||
+      (s.nameZh && s.nameZh.includes(studentFilters[idx])) ||
+      (s.nameEn && s.nameEn.toLowerCase().includes(studentFilters[idx].toLowerCase())) ||
+      (s.nickname && s.nickname.includes(studentFilters[idx]))
+    );
+
+    if (!isOpen || filteredStudents.length === 0 || !studentFilters[idx]?.trim()) return;
+
+    switch (e.key) {
+      case 'ArrowDown':
+        e.preventDefault();
+        setSelectedStudentIndices(prev => ({
+          ...prev,
+          [idx]: prev[idx] < filteredStudents.length - 1 ? prev[idx] + 1 : 0
+        }));
+        break;
+      case 'ArrowUp':
+        e.preventDefault();
+        setSelectedStudentIndices(prev => ({
+          ...prev,
+          [idx]: prev[idx] > 0 ? prev[idx] - 1 : filteredStudents.length - 1
+        }));
+        break;
+      case 'Enter':
+        e.preventDefault();
+        const selectedIndex = selectedStudentIndices[idx];
+        if (selectedIndex >= 0 && selectedIndex < filteredStudents.length) {
+          handleSelectStudent(idx, filteredStudents[selectedIndex]);
+        }
+        break;
+      case 'Escape':
+        e.preventDefault();
+        setIsStudentDropdownsOpen(prev => ({ ...prev, [idx]: false }));
+        setSelectedStudentIndices(prev => ({ ...prev, [idx]: -1 }));
+        break;
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -530,17 +631,38 @@ function AddClass() {
               name="courseId"
               value={courseDisplay}
               onChange={handleCourseInput}
+              onKeyDown={handleCourseKeyDown}
+              onFocus={() => setIsCourseDropdownOpen(true)}
+              onBlur={() => {
+                // 延遲關閉，讓點擊事件有機會觸發
+                setTimeout(() => {
+                  // 如果沒有選擇課程，清空顯示
+                  if (!form.courseId) {
+                    setCourseDisplay('');
+                  }
+                  setIsCourseDropdownOpen(false);
+                  setSelectedCourseIndex(-1);
+                }, 200);
+              }}
               placeholder="請輸入課程ID、年級、科目或教師姓名"
               autoComplete="off"
               required
             />
             {formErrors.courseId && <div style={{color: 'red', fontSize: '0.9em', marginTop: 4}}>{formErrors.courseId}</div>}
-            {courseFilter && (
+            {isCourseDropdownOpen && courseFilter && courseFilter.trim() !== '' && (
               <ul className="dropdown">
-                {filteredCourses.map(c => {
+                {filteredCourses.map((c, index) => {
                   const teacher = teachers.find(t => t.teacherId === c.teacherId);
                   return (
-                    <li key={c.courseId} onClick={() => handleSelectCourse(c.courseId)}>
+                    <li 
+                      key={c.courseId} 
+                      onClick={() => handleSelectCourse(c.courseId)}
+                      className={index === selectedCourseIndex ? 'selected' : ''}
+                      style={{
+                        backgroundColor: index === selectedCourseIndex ? '#e3f2fd' : 'transparent',
+                        color: index === selectedCourseIndex ? '#1976d2' : 'inherit'
+                      }}
+                    >
                       {c.courseId} - {c.grade}{c.subject} {teacher ? teacher.name : ''}
                     </li>
                   );
@@ -577,21 +699,42 @@ function AddClass() {
                     type="text"
                     value={form.studentNames[idx] || ''}
                     onChange={e => handleStudentNameChange(idx, e.target.value)}
+                    onKeyDown={e => handleStudentKeyDown(e, idx)}
+                    onFocus={() => {
+                      if (studentFilters[idx]) {
+                        setIsStudentDropdownsOpen(prev => ({ ...prev, [idx]: true }));
+                      }
+                    }}
+                    onBlur={() => {
+                      // 延遲關閉，讓點擊事件有機會觸發
+                      setTimeout(() => {
+                        setIsStudentDropdownsOpen(prev => ({ ...prev, [idx]: false }));
+                        setSelectedStudentIndices(prev => ({ ...prev, [idx]: -1 }));
+                      }, 200);
+                    }}
                     placeholder={`學生名稱 #${idx + 1}`}
                     autoComplete="off"
                     required
                     style={{minWidth: 120}}
                   />
                   {formErrors.studentNames[idx] && <div style={{color: 'red', fontSize: '0.9em', marginTop: 4}}>{formErrors.studentNames[idx]}</div>}
-                  {studentFilters[idx] && (
+                  {isStudentDropdownsOpen[idx] && studentFilters[idx] && studentFilters[idx].trim() !== '' && (
                     <ul className="dropdown">
                       {students.filter(s =>
                         (s.studentId && s.studentId.includes(studentFilters[idx])) ||
                         (s.nameZh && s.nameZh.includes(studentFilters[idx])) ||
                         (s.nameEn && s.nameEn.toLowerCase().includes(studentFilters[idx].toLowerCase())) ||
                         (s.nickname && s.nickname.includes(studentFilters[idx]))
-                      ).map(s => (
-                        <li key={s._id || s.studentId} onClick={() => handleSelectStudent(idx, s)}>
+                      ).map((s, studentIndex) => (
+                        <li 
+                          key={s._id || s.studentId} 
+                          onClick={() => handleSelectStudent(idx, s)}
+                          className={studentIndex === selectedStudentIndices[idx] ? 'selected' : ''}
+                          style={{
+                            backgroundColor: studentIndex === selectedStudentIndices[idx] ? '#e3f2fd' : 'transparent',
+                            color: studentIndex === selectedStudentIndices[idx] ? '#1976d2' : 'inherit'
+                          }}
+                        >
                           {s.studentId} {s.nameZh}（{s.nameEn}）{s.nickname ? ` [${s.nickname}]` : ''}
                         </li>
                       ))}
@@ -662,6 +805,9 @@ function AddCourse() {
   const [confirmData, setConfirmData] = React.useState(null);
   const [teacherFilter, setTeacherFilter] = React.useState('');
   const [teacherDisplay, setTeacherDisplay] = React.useState('');
+  // 新增：教師選擇的鍵盤導航狀態
+  const [selectedTeacherIndex, setSelectedTeacherIndex] = React.useState(-1);
+  const [isTeacherDropdownOpen, setIsTeacherDropdownOpen] = React.useState(false);
 
   React.useEffect(() => {
     fetchTeachers();
@@ -701,6 +847,14 @@ function AddCourse() {
     setTeacherDisplay(e.target.value);
     setTeacherFilter(e.target.value);
     setForm(prev => ({ ...prev, teacherId: '' }));
+    // 重置選中索引並根據輸入內容決定是否打開下拉選單
+    setSelectedTeacherIndex(-1);
+    const shouldOpen = e.target.value.trim() !== '';
+    setIsTeacherDropdownOpen(shouldOpen);
+    // 如果輸入為空，關閉下拉選單
+    if (!shouldOpen) {
+      setSelectedTeacherIndex(-1);
+    }
   };
 
   const handleSelectTeacherFromDropdown = (teacherId) => {
@@ -708,6 +862,45 @@ function AddCourse() {
     setForm(prev => ({ ...prev, teacherId }));
     setTeacherDisplay(`${teacher.teacherId}-${teacher.name}`);
     setTeacherFilter('');
+    // 關閉下拉選單並重置選中索引
+    setIsTeacherDropdownOpen(false);
+    setSelectedTeacherIndex(-1);
+  };
+
+  // 新增：處理教師選擇的鍵盤事件
+  const handleTeacherKeyDown = (e) => {
+    const filteredTeachers = teachers.filter(t => 
+      t.teacherId.includes(teacherFilter) || 
+      t.name.includes(teacherFilter)
+    );
+
+    if (!isTeacherDropdownOpen || filteredTeachers.length === 0 || !teacherFilter.trim()) return;
+
+    switch (e.key) {
+      case 'ArrowDown':
+        e.preventDefault();
+        setSelectedTeacherIndex(prev => 
+          prev < filteredTeachers.length - 1 ? prev + 1 : 0
+        );
+        break;
+      case 'ArrowUp':
+        e.preventDefault();
+        setSelectedTeacherIndex(prev => 
+          prev > 0 ? prev - 1 : filteredTeachers.length - 1
+        );
+        break;
+      case 'Enter':
+        e.preventDefault();
+        if (selectedTeacherIndex >= 0 && selectedTeacherIndex < filteredTeachers.length) {
+          handleSelectTeacherFromDropdown(filteredTeachers[selectedTeacherIndex].teacherId);
+        }
+        break;
+      case 'Escape':
+        e.preventDefault();
+        setIsTeacherDropdownOpen(false);
+        setSelectedTeacherIndex(-1);
+        break;
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -752,6 +945,11 @@ function AddCourse() {
         const data = await res.json();
         setCourses(prev => [...prev, data]);
         setForm({ teacherId: '', grade: '', subject: '' });
+        // 重置教師選擇的狀態
+        setTeacherDisplay('');
+        setTeacherFilter('');
+        setSelectedTeacherIndex(-1);
+        setIsTeacherDropdownOpen(false);
       } else {
         alert('❌ 新增課程時發生錯誤，請重試');
       }
@@ -913,16 +1111,37 @@ function AddCourse() {
             name="teacherId"
             value={teacherDisplay}
             onChange={handleTeacherInput}
+            onKeyDown={handleTeacherKeyDown}
+            onFocus={() => setIsTeacherDropdownOpen(true)}
+            onBlur={() => {
+              // 延遲關閉，讓點擊事件有機會觸發
+              setTimeout(() => {
+                // 如果沒有選擇教師，清空顯示
+                if (!form.teacherId) {
+                  setTeacherDisplay('');
+                }
+                setIsTeacherDropdownOpen(false);
+                setSelectedTeacherIndex(-1);
+              }, 200);
+            }}
             placeholder="請輸入老師ID或姓名"
             autoComplete="off"
           />
-          {teacherFilter && (
+          {isTeacherDropdownOpen && teacherFilter && teacherFilter.trim() !== '' && (
             <ul className="dropdown">
                 {teachers.filter(t => 
                   t.teacherId.includes(teacherFilter) || 
                   t.name.includes(teacherFilter)
-                ).map(t => (
-                  <li key={t.teacherId} onClick={() => handleSelectTeacherFromDropdown(t.teacherId)}>
+                ).map((t, index) => (
+                  <li 
+                    key={t.teacherId} 
+                    onClick={() => handleSelectTeacherFromDropdown(t.teacherId)}
+                    className={index === selectedTeacherIndex ? 'selected' : ''}
+                    style={{
+                      backgroundColor: index === selectedTeacherIndex ? '#e3f2fd' : 'transparent',
+                      color: index === selectedTeacherIndex ? '#1976d2' : 'inherit'
+                    }}
+                  >
                     {t.teacherId}-{t.name}
                   </li>
               ))}
