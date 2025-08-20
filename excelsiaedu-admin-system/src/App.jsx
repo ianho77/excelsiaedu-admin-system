@@ -1984,6 +1984,15 @@ function ClassList() {
   const [showEditModal, setShowEditModal] = React.useState(false);
   const [showDeleteAllModal, setShowDeleteAllModal] = React.useState(false);
   const [deleteConfirmText, setDeleteConfirmText] = React.useState('');
+  // 新增：勾選刪除功能狀態
+  const [selectedClasses, setSelectedClasses] = React.useState(new Set());
+  const [showDeleteSelectedModal, setShowDeleteSelectedModal] = React.useState(false);
+  // 新增：排序功能狀態
+  const [sortConfig, setSortConfig] = React.useState({
+    date: 'default',
+    student: 'default',
+    course: 'default'
+  });
 
   React.useEffect(() => {
     fetchAllData();
@@ -2127,6 +2136,58 @@ function ClassList() {
     setDeleteConfirmText('');
   };
 
+  // 新增：處理勾選刪除功能
+  const handleSelectClass = (classId) => {
+    setSelectedClasses(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(classId)) {
+        newSet.delete(classId);
+      } else {
+        newSet.add(classId);
+      }
+      return newSet;
+    });
+  };
+
+  const handleSelectAllClasses = () => {
+    if (selectedClasses.size === filteredClasses.length) {
+      setSelectedClasses(new Set());
+    } else {
+      setSelectedClasses(new Set(filteredClasses.map(cls => cls._id)));
+    }
+  };
+
+  const handleDeleteSelected = () => {
+    if (selectedClasses.size === 0) {
+      alert('請先勾選要刪除的課堂資料');
+      return;
+    }
+    setShowDeleteSelectedModal(true);
+  };
+
+  const handleConfirmDeleteSelected = async () => {
+    try {
+      const deletePromises = Array.from(selectedClasses).map(classId =>
+        fetch(`${config.API_URL}/classes/${classId}`, {
+          method: 'DELETE'
+        })
+      );
+
+      await Promise.all(deletePromises);
+      
+      setShowDeleteSelectedModal(false);
+      setSelectedClasses(new Set());
+      fetchAllData(); // 重新載入數據
+    } catch (error) {
+      console.error('刪除失敗:', error);
+      alert('刪除失敗，請重試');
+    }
+  };
+
+  const handleCancelDeleteSelected = () => {
+    setShowDeleteSelectedModal(false);
+  };
+
   // 格式化日期顯示
   const formatDate = (dateStr) => {
     if (!dateStr) return '';
@@ -2202,7 +2263,7 @@ function ClassList() {
   );
 
   // 課堂列表篩選條件
-  const filteredClasses = classes.filter(cls => {
+  let filteredClasses = classes.filter(cls => {
     const matchStudent = studentDisplay && studentDisplay !== '全部'
       ? students.some(s => `${s.studentId} - ${s.nameZh}（${s.nameEn}）${s.nickname ? ` [${s.nickname}]` : ''}` === studentDisplay && s.studentId === cls.studentId)
       : true;
@@ -2231,6 +2292,53 @@ function ClassList() {
       : true;
     return matchStudent && matchMonth && matchTeacher && matchCourse;
   });
+
+  // 新增：排序功能
+  const sortClasses = (classesToSort) => {
+    return [...classesToSort].sort((a, b) => {
+      // 課堂日期排序
+      if (sortConfig.date !== 'default') {
+        const dateA = new Date(a.date);
+        const dateB = new Date(b.date);
+        if (sortConfig.date === '由遠至近') {
+          return dateA - dateB;
+        } else if (sortConfig.date === '由近至遠') {
+          return dateB - dateA;
+        }
+      }
+
+      // 學生資料排序（按ID）
+      if (sortConfig.student !== 'default') {
+        const studentA = studentMap[String(a.studentId)] || {};
+        const studentB = studentMap[String(b.studentId)] || {};
+        const idA = parseInt(studentA.studentId) || 0;
+        const idB = parseInt(studentB.studentId) || 0;
+        if (sortConfig.student === '由大至小') {
+          return idB - idA;
+        } else if (sortConfig.student === '由小至大') {
+          return idA - idB;
+        }
+      }
+
+      // 課程資料排序（按ID）
+      if (sortConfig.course !== 'default') {
+        const courseA = courseMap[String(a.courseId)] || {};
+        const courseB = courseMap[String(b.courseId)] || {};
+        const idA = parseInt(courseA.courseId) || 0;
+        const idB = parseInt(courseB.courseId) || 0;
+        if (sortConfig.course === '由大至小') {
+          return idB - idA;
+        } else if (sortConfig.course === '由小至大') {
+          return idA - idB;
+        }
+      }
+
+      return 0;
+    });
+  };
+
+  // 應用排序
+  filteredClasses = sortClasses(filteredClasses);
 
   // 資料未載入時顯示 loading
   if (isLoading) {
@@ -2364,6 +2472,18 @@ function ClassList() {
             >
               一鍵刪除
             </button>
+            <button 
+              className="filter-button delete-selected"
+              onClick={handleDeleteSelected}
+              disabled={selectedClasses.size === 0}
+              style={{ 
+                backgroundColor: selectedClasses.size > 0 ? '#fd7e14' : '#6c757d', 
+                color: 'white',
+                cursor: selectedClasses.size > 0 ? 'pointer' : 'not-allowed'
+              }}
+            >
+              刪除勾選 ({selectedClasses.size})
+            </button>
           </div>
         </div>
       </div>
@@ -2383,23 +2503,88 @@ function ClassList() {
         <table className="course-table">
           <thead>
             <tr>
-              <th>課堂日期</th>
-              <th>學生資料</th>
-              <th>課程資料</th>
+              <th>
+                <input
+                  type="checkbox"
+                  checked={selectedClasses.size === filteredClasses.length && filteredClasses.length > 0}
+                  onChange={handleSelectAllClasses}
+                  style={{ marginRight: '8px' }}
+                />
+                課堂日期
+                <select 
+                  value={sortConfig.date} 
+                  onChange={(e) => setSortConfig(prev => ({ ...prev, date: e.target.value }))}
+                  style={{ 
+                    marginLeft: '8px', 
+                    padding: '2px 4px', 
+                    fontSize: '12px',
+                    border: '1px solid #ccc',
+                    borderRadius: '3px'
+                  }}
+                >
+                  <option value="default">默認</option>
+                  <option value="由遠至近">由遠至近</option>
+                  <option value="由近至遠">由近至遠</option>
+                </select>
+              </th>
+              <th>
+                學生資料
+                <select 
+                  value={sortConfig.student} 
+                  onChange={(e) => setSortConfig(prev => ({ ...prev, student: e.target.value }))}
+                  style={{ 
+                    marginLeft: '8px', 
+                    padding: '2px 4px', 
+                    fontSize: '12px',
+                    border: '1px solid #ccc',
+                    borderRadius: '3px'
+                  }}
+                >
+                  <option value="default">默認</option>
+                  <option value="由大至小">由大至小</option>
+                  <option value="由小至大">由小至大</option>
+                </select>
+              </th>
+              <th>
+                課程資料
+                <select 
+                  value={sortConfig.course} 
+                  onChange={(e) => setSortConfig(prev => ({ ...prev, course: e.target.value }))}
+                  style={{ 
+                    marginLeft: '8px', 
+                    padding: '2px 4px', 
+                    fontSize: '12px',
+                    border: '1px solid #ccc',
+                    borderRadius: '3px'
+                  }}
+                >
+                  <option value="default">默認</option>
+                  <option value="由大至小">由大至小</option>
+                  <option value="由小至大">由小至大</option>
+                </select>
+              </th>
               <th>老師</th>
               <th>價格</th>
               <th>電話號碼</th>
               <th>操作</th>
             </tr>
           </thead>
-          <tbody>
+                      <tbody>
             {filteredClasses.map(cls => {
               const stu = studentMap[String(cls.studentId)] || {};
               const course = courseMap[String(cls.courseId)] || {};
               const teacher = teacherMap[String(course.teacherId)] || {};
               return (
                 <tr key={cls._id}>
-                  <td>{formatDate(cls.date)}</td>
+                  <td>
+                    <input
+                      type="checkbox"
+                      checked={selectedClasses.has(cls._id)}
+                      onChange={() => handleSelectClass(cls._id)}
+                      style={{ marginRight: '8px' }}
+                    />
+                    {formatDate(cls.date)}
+                  </td>
                   <td>
                     {cls.studentId}
                     {stu.nameZh ? ` - ${stu.nameZh}（${stu.nameEn}）${stu.nickname ? ` [${stu.nickname}]` : ''}` : ' - 查無學生'}
@@ -2492,6 +2677,47 @@ function ClassList() {
                   padding: '8px 16px',
                   borderRadius: '4px',
                   cursor: deleteConfirmText === '刪除' ? 'pointer' : 'not-allowed'
+                }}
+              >
+                確認刪除
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 刪除勾選確認彈窗 */}
+      {showDeleteSelectedModal && (
+        <div className="modal-overlay">
+          <div className="modal">
+            <h3>確認刪除勾選資料</h3>
+            <p>確定要刪除已勾選的 {selectedClasses.size} 個課堂資料嗎？</p>
+            <p style={{ color: '#dc3545', fontWeight: 'bold' }}>
+              此操作無法撤銷！
+            </p>
+            <div className="modal-buttons" style={{ marginTop: '20px' }}>
+              <button 
+                onClick={handleCancelDeleteSelected}
+                style={{ 
+                  backgroundColor: '#6c757d', 
+                  color: 'white',
+                  border: 'none',
+                  padding: '8px 16px',
+                  borderRadius: '4px',
+                  marginRight: '10px'
+                }}
+              >
+                取消
+              </button>
+              <button 
+                onClick={handleConfirmDeleteSelected}
+                style={{ 
+                  backgroundColor: '#dc3545', 
+                  color: 'white',
+                  border: 'none',
+                  padding: '8px 16px',
+                  borderRadius: '4px',
+                  cursor: 'pointer'
                 }}
               >
                 確認刪除
