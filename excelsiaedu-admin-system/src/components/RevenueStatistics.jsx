@@ -600,8 +600,11 @@ const RevenueStatistics = () => {
   const getFilteredTeachers = () => {
     if (!teacherSearch) return teachers;
     return teachers.filter(teacher => {
+      const searchText = teacherSearch.toLowerCase();
+      const teacherId = (teacher.teacherId || '').toString();
       const name = (teacher.name || '').toLowerCase();
-      return name.includes(teacherSearch.toLowerCase());
+      
+      return teacherId.includes(searchText) || name.includes(searchText);
     });
   };
 
@@ -813,11 +816,11 @@ const RevenueStatistics = () => {
                         className="dropdown-item"
                         onClick={() => {
                           setSelectedTeacher(teacher.teacherId);
-                          setTeacherSearch(teacher.name);
+                          setTeacherSearch(`${teacher.teacherId} - ${teacher.name}`);
                           setShowTeacherDropdown(false);
                         }}
                       >
-                        {teacher.name}
+                        {teacher.teacherId} - {teacher.name}
                       </div>
                     ))}
                   </div>
