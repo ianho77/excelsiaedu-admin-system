@@ -206,4 +206,11 @@
     margin: 20px;
     min-width: auto;
   }
+}
+
+/* 當彈窗出現時，篩選區域和表格會被虛化 */
+.modal-overlay ~ .filter-section,
+.modal-overlay ~ .users-table {
+  filter: blur(2px) !important;
+  transition: filter 0.3s ease !important;
 } 

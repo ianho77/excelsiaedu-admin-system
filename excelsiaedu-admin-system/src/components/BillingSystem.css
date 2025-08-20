@@ -137,7 +137,7 @@
   border-top: none;
   border-radius: 0 0 8px 8px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-  z-index: 99999;
+  z-index: 1000;
   max-height: 200px;
   overflow-y: auto;
   box-sizing: border-box;
@@ -642,7 +642,7 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  z-index: 99999;
+  z-index: 100000;
 }
 
 .confirm-modal {
@@ -703,4 +703,11 @@
 .cancel-button:hover {
   transform: translateY(-1px);
   box-shadow: 0 4px 15px rgba(229, 62, 62, 0.3);
+}
+
+/* 當彈窗出現時，篩選區域和表格會被虛化 */
+.confirm-modal-overlay ~ .filter-section,
+.confirm-modal-overlay ~ .billing-table-container {
+  filter: blur(2px) !important;
+  transition: filter 0.3s ease !important;
 } 

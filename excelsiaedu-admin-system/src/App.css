@@ -406,7 +406,7 @@ button[type="submit"]:hover {
   border-radius: 12px;
   max-height: 200px;
   overflow-y: auto;
-  z-index: 99999;
+  z-index: 1000;
   box-shadow: 0 8px 25px rgba(13, 148, 136, 0.15);
   margin: 0;
   padding: 8px 0;
@@ -962,7 +962,7 @@ button[type="submit"]:hover {
   margin-bottom: 24px;
   border: 1px solid rgba(0,0,0,0.05);
   position: relative;
-  z-index: 99999;
+  z-index: 1000;
 }
 
 .filter-container {
@@ -977,7 +977,7 @@ button[type="submit"]:hover {
   display: flex;
   flex-direction: column;
   min-width: 180px;
-  z-index: 99999;
+  z-index: 1000;
 }
 
 .filter-group label {
@@ -1091,7 +1091,7 @@ button[type="submit"]:hover {
   border-top: none;
   border-radius: 0 0 8px 8px;
   box-shadow: 0 6px 20px rgba(0,0,0,0.15);
-  z-index: 99999;
+  z-index: 1000;
   max-height: 200px;
   overflow-y: auto;
   margin: 0;
@@ -1246,7 +1246,7 @@ button[type="submit"]:hover {
   display: flex;
   justify-content: center;
   align-items: center;
-  z-index: 99999;
+  z-index: 100000;
   animation: fadeIn 0.3s ease-out;
 }
 
@@ -1358,10 +1358,13 @@ button[type="submit"]:hover {
   transition: filter 0.3s ease !important;
 }
 
-/* 當彈窗出現時，表格容器會被虛化 */
+/* 當彈窗出現時，表格容器和篩選區域會被虛化 */
 .modal-overlay ~ .course-list-scroll,
 .confirm-delete-modal-overlay ~ .course-list-scroll,
-.edit-modal-overlay ~ .course-list-scroll {
+.edit-modal-overlay ~ .course-list-scroll,
+.modal-overlay ~ .filter-section,
+.confirm-delete-modal-overlay ~ .filter-section,
+.edit-modal-overlay ~ .filter-section {
   filter: blur(2px) !important;
   transition: filter 0.3s ease !important;
 }
