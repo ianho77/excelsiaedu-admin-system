@@ -3,3 +3,8 @@
 [33mb198d74[m Simplify Vercel configuration and add test API endpoint
 [33m7851ce9[m Fix Vercel deployment: add API package.json and fix build configuration
 [33med13c54[m Fix API configuration: update API_URL to relative path and fix Vercel routing
+[33mb3d95ec[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m)[m Add cost management API endpoints
+[33m830d400[m Add debugging logs for cost management
+[33mbfc5f88[m Fix ESLint error in CostManagement component
+[33md22d148[m Add comprehensive cost management system
+[33mc41ed2f[m Update BillingSystem.jsx PDF generation with new format
