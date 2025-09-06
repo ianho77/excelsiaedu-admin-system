@@ -107,6 +107,21 @@ const TeacherBillingStatusSchema = new mongoose.Schema({
   updatedAt: { type: Date, default: Date.now }
 });
 
+// 成本管理Schema
+const CostSchema = new mongoose.Schema({
+  category: { 
+    type: String, 
+    required: true, 
+    enum: ['薪金', '租金', '電費', '雜費', '影印費'] 
+  },
+  date: { type: String, required: true }, // 格式: "2024-01-15"
+  amount: { type: Number, required: true, min: 0 },
+  notes: { type: String, default: '' },
+  month: { type: String, required: true }, // 格式: "2024-01" 用於快速查詢
+  createdAt: { type: Date, default: Date.now },
+  updatedAt: { type: Date, default: Date.now }
+});
+
 // 創建模型
 const User = mongoose.model('User', UserSchema);
 const Student = mongoose.model('Student', StudentSchema);
@@ -115,6 +130,7 @@ const Class = mongoose.model('Class', ClassSchema);
 const Teacher = mongoose.model('Teacher', TeacherSchema);
 const StudentBillingStatus = mongoose.model('StudentBillingStatus', StudentBillingStatusSchema);
 const TeacherBillingStatus = mongoose.model('TeacherBillingStatus', TeacherBillingStatusSchema);
+const Cost = mongoose.model('Cost', CostSchema);
 
 // ==================== 用戶認證API ====================
 
@@ -554,6 +570,134 @@ app.put('/teacher-billing-status/:id', async (req, res) => {
     res.json(status);
   } catch (error) {
     res.status(500).json({ message: '更新失敗', error: error.message });
+  }
+});
+
+// ==================== 成本管理API ====================
+
+// 獲取所有成本記錄
+app.get('/costs', async (req, res) => {
+  try {
+    const { month } = req.query;
+    let query = {};
+    if (month) query.month = month;
+    
+    const costs = await Cost.find(query).sort({ date: -1 });
+    res.json(costs);
+  } catch (error) {
+    res.status(500).json({ message: '獲取成本記錄失敗', error: error.message });
+  }
+});
+
+// 創建成本記錄
+app.post('/costs', async (req, res) => {
+  try {
+    const { category, date, amount, notes } = req.body;
+    
+    // 從日期中提取月份
+    const month = date.substring(0, 7); // "2024-01-15" -> "2024-01"
+    
+    const cost = new Cost({
+      category,
+      date,
+      amount,
+      notes,
+      month
+    });
+    
+    await cost.save();
+    res.status(201).json(cost);
+  } catch (error) {
+    res.status(500).json({ message: '創建成本記錄失敗', error: error.message });
+  }
+});
+
+// 更新成本記錄
+app.put('/costs/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { category, date, amount, notes } = req.body;
+    
+    // 從日期中提取月份
+    const month = date.substring(0, 7);
+    
+    const cost = await Cost.findByIdAndUpdate(id, {
+      category,
+      date,
+      amount,
+      notes,
+      month,
+      updatedAt: new Date()
+    }, { new: true });
+    
+    if (!cost) {
+      return res.status(404).json({ message: '成本記錄不存在' });
+    }
+    
+    res.json(cost);
+  } catch (error) {
+    res.status(500).json({ message: '更新成本記錄失敗', error: error.message });
+  }
+});
+
+// 刪除成本記錄
+app.delete('/costs/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const cost = await Cost.findByIdAndDelete(id);
+    
+    if (!cost) {
+      return res.status(404).json({ message: '成本記錄不存在' });
+    }
+    
+    res.json({ message: '成本記錄已刪除' });
+  } catch (error) {
+    res.status(500).json({ message: '刪除成本記錄失敗', error: error.message });
+  }
+});
+
+// 獲取利潤統計
+app.get('/profit/statistics', async (req, res) => {
+  try {
+    const { month } = req.query;
+    
+    // 獲取所有月份的成本和收入數據
+    const costs = await Cost.find(month ? { month } : {}).sort({ month: -1 });
+    const classes = await Class.find().sort({ date: -1 });
+    
+    // 按月份分組計算
+    const monthlyStats = {};
+    
+    // 計算成本
+    costs.forEach(cost => {
+      if (!monthlyStats[cost.month]) {
+        monthlyStats[cost.month] = { month: cost.month, income: 0, expense: 0, profit: 0 };
+      }
+      monthlyStats[cost.month].expense += cost.amount;
+    });
+    
+    // 計算收入
+    classes.forEach(cls => {
+      const classDate = new Date(cls.date);
+      const classMonth = `${classDate.getFullYear()}-${String(classDate.getMonth() + 1).padStart(2, '0')}`;
+      
+      if (!monthlyStats[classMonth]) {
+        monthlyStats[classMonth] = { month: classMonth, income: 0, expense: 0, profit: 0 };
+      }
+      monthlyStats[classMonth].income += cls.price || 0;
+    });
+    
+    // 計算利潤
+    Object.values(monthlyStats).forEach(stat => {
+      stat.profit = stat.income - stat.expense;
+    });
+    
+    // 轉換為數組並排序
+    const statistics = Object.values(monthlyStats).sort((a, b) => b.month.localeCompare(a.month));
+    
+    res.json(statistics);
+  } catch (error) {
+    res.status(500).json({ message: '獲取利潤統計失敗', error: error.message });
   }
 });
 
