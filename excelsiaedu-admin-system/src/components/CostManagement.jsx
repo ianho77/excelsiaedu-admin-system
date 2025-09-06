@@ -14,6 +14,8 @@ const CostManagement = () => {
     return `${year}-${month}`;
   });
   const [loading, setLoading] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [deleteCostId, setDeleteCostId] = useState(null);
 
   // 新增成本表單狀態
   const [newCost, setNewCost] = useState({
@@ -94,8 +96,6 @@ const CostManagement = () => {
       // 重新獲取數據
       fetchCosts();
       fetchProfitStats();
-      
-      alert('成本記錄已成功新增');
     } catch (error) {
       console.error('新增成本失敗:', error);
       console.error('錯誤詳情:', error.message);
@@ -112,19 +112,30 @@ const CostManagement = () => {
 
   // 處理刪除成本
   const handleDeleteCost = async (id) => {
-    if (!window.confirm('確定要刪除此成本記錄嗎？')) {
-      return;
-    }
+    setDeleteCostId(id);
+    setShowDeleteModal(true);
+  };
+
+  // 確認刪除
+  const confirmDelete = async () => {
+    if (!deleteCostId) return;
 
     try {
-      await api.costs.delete(id);
+      await api.costs.delete(deleteCostId);
       fetchCosts();
       fetchProfitStats();
-      alert('成本記錄已刪除');
+      setShowDeleteModal(false);
+      setDeleteCostId(null);
     } catch (error) {
       console.error('刪除成本失敗:', error);
       alert('刪除成本失敗，請重試');
     }
+  };
+
+  // 取消刪除
+  const cancelDelete = () => {
+    setShowDeleteModal(false);
+    setDeleteCostId(null);
   };
 
   // 計算當月總成本
@@ -347,6 +358,30 @@ const CostManagement = () => {
                 )}
               </tbody>
             </table>
+          </div>
+        </div>
+      )}
+
+      {/* 刪除確認彈窗 */}
+      {showDeleteModal && (
+        <div className="delete-modal-overlay">
+          <div className="delete-modal">
+            <h3>確認刪除</h3>
+            <p>確定要刪除此成本記錄嗎？此操作無法復原。</p>
+            <div className="delete-modal-buttons">
+              <button 
+                className="cancel-button"
+                onClick={cancelDelete}
+              >
+                取消
+              </button>
+              <button 
+                className="confirm-delete-button"
+                onClick={confirmDelete}
+              >
+                確認刪除
+              </button>
+            </div>
           </div>
         </div>
       )}
