@@ -6,6 +6,7 @@ const CostManagement = () => {
   // 狀態管理
   const [activeTab, setActiveTab] = useState('addCost');
   const [costs, setCosts] = useState([]);
+  const [allCosts, setAllCosts] = useState([]); // 用於生成月份選項
   const [profitStats, setProfitStats] = useState([]);
   const [selectedMonth, setSelectedMonth] = useState(() => {
     const now = new Date();
@@ -47,6 +48,16 @@ const CostManagement = () => {
     }
   }, [selectedMonth]);
 
+  // 獲取所有成本記錄（用於生成月份選項）
+  const fetchAllCosts = useCallback(async () => {
+    try {
+      const data = await api.costs.getAll();
+      setAllCosts(data);
+    } catch (error) {
+      console.error('獲取所有成本數據失敗:', error);
+    }
+  }, []);
+
   // 獲取利潤統計
   const fetchProfitStats = useCallback(async () => {
     try {
@@ -61,7 +72,8 @@ const CostManagement = () => {
   useEffect(() => {
     fetchCosts();
     fetchProfitStats();
-  }, [selectedMonth, fetchCosts, fetchProfitStats]);
+    fetchAllCosts();
+  }, [selectedMonth, fetchCosts, fetchProfitStats, fetchAllCosts]);
 
   // 處理新增成本
   const handleAddCost = async (e) => {
@@ -96,6 +108,7 @@ const CostManagement = () => {
       // 重新獲取數據
       fetchCosts();
       fetchProfitStats();
+      fetchAllCosts();
     } catch (error) {
       console.error('新增成本失敗:', error);
       console.error('錯誤詳情:', error.message);
@@ -124,6 +137,7 @@ const CostManagement = () => {
       await api.costs.delete(deleteCostId);
       fetchCosts();
       fetchProfitStats();
+      fetchAllCosts();
       setShowDeleteModal(false);
       setDeleteCostId(null);
     } catch (error) {
@@ -143,20 +157,30 @@ const CostManagement = () => {
     return costs.reduce((total, cost) => total + (cost.amount || 0), 0);
   };
 
-  // 生成月份選項
+  // 生成月份選項 - 只顯示有成本記錄的月份
   const generateMonthOptions = () => {
     const options = [];
-    const currentDate = new Date();
+    const monthSet = new Set();
     
-    // 生成過去12個月的選項
-    for (let i = 0; i < 12; i++) {
-      const date = new Date(currentDate.getFullYear(), currentDate.getMonth() - i, 1);
-      const year = date.getFullYear();
-      const month = String(date.getMonth() + 1).padStart(2, '0');
-      const value = `${year}-${month}`;
+    // 從所有成本數據中提取有數據的月份
+    allCosts.forEach(cost => {
+      if (cost.date) {
+        const costDate = new Date(cost.date);
+        const year = costDate.getFullYear();
+        const month = String(costDate.getMonth() + 1).padStart(2, '0');
+        const value = `${year}-${month}`;
+        monthSet.add(value);
+      }
+    });
+    
+    // 轉換為選項數組並排序（最新的月份在前）
+    const sortedMonths = Array.from(monthSet).sort((a, b) => b.localeCompare(a));
+    
+    sortedMonths.forEach(value => {
+      const [year, month] = value.split('-');
       const label = `${year}年${parseInt(month)}月`;
       options.push({ value, label });
-    }
+    });
     
     return options;
   };
