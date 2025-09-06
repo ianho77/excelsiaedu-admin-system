@@ -135,9 +135,44 @@ const CostManagement = () => {
 
     try {
       await api.costs.delete(deleteCostId);
+      
+      // 先重新獲取所有成本記錄
+      const updatedAllCosts = await api.costs.getAll();
+      setAllCosts(updatedAllCosts);
+      
+      // 檢查當前選中的月份是否還有資料
+      const currentMonthCosts = updatedAllCosts.filter(cost => {
+        if (!cost.date) return false;
+        const costDate = new Date(cost.date);
+        const year = costDate.getFullYear();
+        const month = String(costDate.getMonth() + 1).padStart(2, '0');
+        const costMonth = `${year}-${month}`;
+        return costMonth === selectedMonth;
+      });
+      
+      // 如果當前月份沒有資料了，切換到最新的有資料的月份
+      if (currentMonthCosts.length === 0) {
+        const monthSet = new Set();
+        updatedAllCosts.forEach(cost => {
+          if (cost.date) {
+            const costDate = new Date(cost.date);
+            const year = costDate.getFullYear();
+            const month = String(costDate.getMonth() + 1).padStart(2, '0');
+            const value = `${year}-${month}`;
+            monthSet.add(value);
+          }
+        });
+        
+        const sortedMonths = Array.from(monthSet).sort((a, b) => b.localeCompare(a));
+        if (sortedMonths.length > 0) {
+          setSelectedMonth(sortedMonths[0]);
+        }
+      }
+      
+      // 重新獲取當前月份的資料
       fetchCosts();
       fetchProfitStats();
-      fetchAllCosts();
+      
       setShowDeleteModal(false);
       setDeleteCostId(null);
     } catch (error) {
