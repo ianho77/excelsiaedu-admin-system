@@ -412,6 +412,13 @@ const BillingSystem = () => {
     const student = students.find(s => s.studentId === studentId);
     if (!student) return;
 
+    // 獲取月份信息用於標題和文件名
+    const selectedDate = new Date(month);
+    const monthNum = selectedDate.getMonth() + 1;
+    const year = selectedDate.getFullYear();
+    const currentDate = new Date();
+    const issueDate = currentDate.toISOString().split('T')[0]; // yyyy-mm-dd format
+
     // 對課堂資料進行排序：教師ID（小到大）-> 課程ID（小到大）-> 日期（遠到近）
     const sortedClasses = studentClasses.sort((a, b) => {
       const courseA = courses.find(c => c.courseId === a.courseId);
@@ -474,13 +481,16 @@ const BillingSystem = () => {
           </div>
         </div>
         
-        <h2 style="text-align: center; color: #333; margin: 30px 0; font-size: 28px;">學費通知單</h2>
+        <h2 style="text-align: center; color: #333; margin: 30px 0; font-size: 28px;">${monthNum}月學費通知單</h2>
         
         <hr style="border: 1px solid #ddd; margin: 20px 0;">
         
         <div style="margin-bottom: 30px;">
           <p style="margin: 10px 0; font-size: 14px;">
             <strong>學生名稱:</strong> ${student.studentId} - ${student.nameZh} (${student.nameEn})
+          </p>
+          <p style="margin: 10px 0; font-size: 14px;">
+            <strong>發出日期:</strong> ${issueDate}
           </p>
         </div>
         
@@ -510,13 +520,16 @@ const BillingSystem = () => {
           <p><strong>轉數快快速支付系統識別碼:</strong> 164089138</p>
           <p><strong>公司抬頭:</strong> Excelsia Education Centre</p>
           <p style="margin-top: 20px;">如閣下已經入了款項,請將資料/存根receipt whatsapp給予我們留檔,多謝合作,謝謝!</p>
+          <p style="margin-top: 15px;">如閣下核對學費明細有誤，請聯絡我們作出修訂。</p>
+          <p>如需更改時間或取消課堂，請於上課前24小時通知導師</p>
+          <p>否則我們可能會收取該課堂的費用</p>
         </div>
       </div>
     `;
 
     const opt = {
       margin: 1,
-      filename: `${month}_${student.nameZh}_月結單.pdf`,
+      filename: `${year}年${monthNum}月-${student.studentId}-${student.nameZh}_月結單.pdf`,
       image: { type: 'jpeg', quality: 0.98 },
       html2canvas: { scale: 2 },
       jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' }
@@ -529,7 +542,7 @@ const BillingSystem = () => {
     // 使用html2pdf.js生成PDF並添加到ZIP
     try {
       const pdfBlob = await html2pdf().set(opt).from(element).outputPdf('blob');
-      const fileName = `${month}_${student.nameZh}_月結單.pdf`;
+      const fileName = `${year}年${monthNum}月-${student.studentId}-${student.nameZh}_月結單.pdf`;
       zip.file(fileName, pdfBlob);
       document.body.removeChild(element);
     } catch (error) {
@@ -543,6 +556,13 @@ const BillingSystem = () => {
     const student = students.find(s => s.studentId === studentId);
     if (!student) return;
 
+    // 獲取月份信息用於標題和文件名
+    const selectedDate = new Date(month);
+    const monthNum = selectedDate.getMonth() + 1;
+    const year = selectedDate.getFullYear();
+    const currentDate = new Date();
+    const issueDate = currentDate.toISOString().split('T')[0]; // yyyy-mm-dd format
+
     // 對課堂資料進行排序：教師ID（小到大）-> 課程ID（小到大）-> 日期（遠到近）
     const sortedClasses = studentClasses.sort((a, b) => {
       const courseA = courses.find(c => c.courseId === a.courseId);
@@ -605,13 +625,16 @@ const BillingSystem = () => {
           </div>
         </div>
         
-        <h2 style="text-align: center; color: #333; margin: 30px 0; font-size: 28px;">學費通知單</h2>
+        <h2 style="text-align: center; color: #333; margin: 30px 0; font-size: 28px;">${monthNum}月學費通知單</h2>
         
         <hr style="border: 1px solid #ddd; margin: 20px 0;">
         
         <div style="margin-bottom: 30px;">
           <p style="margin: 10px 0; font-size: 14px;">
             <strong>學生名稱:</strong> ${student.studentId} - ${student.nameZh} (${student.nameEn})
+          </p>
+          <p style="margin: 10px 0; font-size: 14px;">
+            <strong>發出日期:</strong> ${issueDate}
           </p>
         </div>
         
@@ -641,13 +664,16 @@ const BillingSystem = () => {
           <p><strong>轉數快快速支付系統識別碼:</strong> 164089138</p>
           <p><strong>公司抬頭:</strong> Excelsia Education Centre</p>
           <p style="margin-top: 20px;">如閣下已經入了款項,請將資料/存根receipt whatsapp給予我們留檔,多謝合作,謝謝!</p>
+          <p style="margin-top: 15px;">如閣下核對學費明細有誤，請聯絡我們作出修訂。</p>
+          <p>如需更改時間或取消課堂，請於上課前24小時通知導師</p>
+          <p>否則我們可能會收取該課堂的費用</p>
         </div>
       </div>
     `;
 
     const opt = {
       margin: 1,
-      filename: `${month}_${student.nameZh}_月結單.pdf`,
+      filename: `${year}年${monthNum}月-${student.studentId}-${student.nameZh}_月結單.pdf`,
       image: { type: 'jpeg', quality: 0.98 },
       html2canvas: { scale: 2 },
       jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' }
