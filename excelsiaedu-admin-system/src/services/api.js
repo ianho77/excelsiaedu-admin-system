@@ -6,6 +6,9 @@ const API_BASE_URL = config.API_URL;
 const apiRequest = async (endpoint, options = {}) => {
   const url = `${API_BASE_URL}${endpoint}`;
   
+  console.log(`API請求: ${url}`);
+  console.log('請求選項:', options);
+  
   const defaultOptions = {
     headers: {
       'Content-Type': 'application/json',
@@ -17,11 +20,17 @@ const apiRequest = async (endpoint, options = {}) => {
   try {
     const response = await fetch(url, defaultOptions);
     
+    console.log(`響應狀態: ${response.status}`);
+    
     if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
+      const errorText = await response.text();
+      console.error(`HTTP錯誤響應: ${errorText}`);
+      throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
     }
     
-    return await response.json();
+    const result = await response.json();
+    console.log('API響應成功:', result);
+    return result;
   } catch (error) {
     console.error(`API request failed for ${endpoint}:`, error);
     throw error;

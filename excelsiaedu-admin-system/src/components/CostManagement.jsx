@@ -71,10 +71,17 @@ const CostManagement = () => {
     }
 
     try {
-      await api.costs.create({
+      console.log('正在新增成本記錄:', newCost);
+      
+      const costData = {
         ...newCost,
         amount: parseFloat(newCost.amount)
-      });
+      };
+      
+      console.log('發送數據:', costData);
+      
+      const result = await api.costs.create(costData);
+      console.log('新增成功:', result);
       
       // 重置表單
       setNewCost({
@@ -91,7 +98,15 @@ const CostManagement = () => {
       alert('成本記錄已成功新增');
     } catch (error) {
       console.error('新增成本失敗:', error);
-      alert('新增成本失敗，請重試');
+      console.error('錯誤詳情:', error.message);
+      console.error('錯誤響應:', error.response);
+      
+      let errorMessage = '新增成本失敗，請重試';
+      if (error.message) {
+        errorMessage += `\n錯誤信息: ${error.message}`;
+      }
+      
+      alert(errorMessage);
     }
   };
 
