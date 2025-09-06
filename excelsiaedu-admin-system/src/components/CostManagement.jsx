@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import './CostManagement.css';
 import api from '../services/api';
 
@@ -33,7 +33,7 @@ const CostManagement = () => {
   ];
 
   // 獲取成本數據
-  const fetchCosts = async () => {
+  const fetchCosts = useCallback(async () => {
     try {
       setLoading(true);
       const data = await api.costs.getByMonth(selectedMonth);
@@ -43,23 +43,23 @@ const CostManagement = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [selectedMonth]);
 
   // 獲取利潤統計
-  const fetchProfitStats = async () => {
+  const fetchProfitStats = useCallback(async () => {
     try {
       const data = await api.profit.getStatistics();
       setProfitStats(data);
     } catch (error) {
       console.error('獲取利潤統計失敗:', error);
     }
-  };
+  }, []);
 
   // 組件載入時獲取數據
   useEffect(() => {
     fetchCosts();
     fetchProfitStats();
-  }, [selectedMonth]);
+  }, [selectedMonth, fetchCosts, fetchProfitStats]);
 
   // 處理新增成本
   const handleAddCost = async (e) => {
