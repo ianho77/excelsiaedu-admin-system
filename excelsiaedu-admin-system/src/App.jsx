@@ -12,6 +12,7 @@ import LoginPage from './components/LoginPage';
 // import MonthlyStatement from './components/MonthlyStatement';
 import UserManagement from './components/UserManagement';
 import LoginManagement from './components/LoginManagement';
+import CostManagement from './components/CostManagement';
 import './App.css';
 
 function Sidebar({ userType }) {
@@ -114,6 +115,15 @@ function Sidebar({ userType }) {
                 </ul>
               )}
             </div>
+          </li>
+        )}
+
+        {/* 只有管理員可以看到營運成本管理 */}
+        {userType === 'admin' && (
+          <li>
+            <Link to="/cost-management" className="nav-link">
+              營運成本管理
+            </Link>
           </li>
         )}
 
@@ -3809,6 +3819,7 @@ function App() {
               <Route path="/revenue-daily" element={<RevenueStatistics />} />
               <Route path="/billing-student" element={<BillingSystem />} />
               <Route path="/billing-teacher" element={<TeacherBillingSystem />} />
+              <Route path="/cost-management" element={<CostManagement />} />
             </>
           )}
 

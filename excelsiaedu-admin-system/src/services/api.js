@@ -139,6 +139,29 @@ export const api = {
       body: JSON.stringify(statusData),
     }),
   },
+
+  // 成本管理
+  costs: {
+    getAll: () => apiRequest('/costs'),
+    getByMonth: (month) => apiRequest(`/costs?month=${month}`),
+    create: (costData) => apiRequest('/costs', {
+      method: 'POST',
+      body: JSON.stringify(costData),
+    }),
+    update: (id, costData) => apiRequest(`/costs/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(costData),
+    }),
+    delete: (id) => apiRequest(`/costs/${id}`, {
+      method: 'DELETE',
+    }),
+  },
+
+  // 利潤統計
+  profit: {
+    getStatistics: () => apiRequest('/profit/statistics'),
+    getByMonth: (month) => apiRequest(`/profit/statistics?month=${month}`),
+  },
 };
 
 export default api;
