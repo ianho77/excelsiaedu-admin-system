@@ -2920,7 +2920,7 @@ function StudentList() {
 
   const studentFields = [
     { name: 'nameZh', label: '中文姓名', type: 'text', required: true },
-    { name: 'nameEn', label: '英文姓名', type: 'text', required: true },
+    { name: 'nameEn', label: '英文姓名', type: 'text', required: false },
     { name: 'nickname', label: '暱稱', type: 'text' },
     { 
       name: 'grade', 
