@@ -527,15 +527,33 @@ const BillingSystem = () => {
       </div>
     `;
 
+    // 優化PDF生成選項，減少內存使用
     const opt = {
       margin: 1,
       filename: `${year}年${monthNum}月-${student.studentId}-${student.nameZh}_月結單.pdf`,
-      image: { type: 'jpeg', quality: 0.98 },
-      html2canvas: { scale: 2 },
-      jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' }
+      image: { type: 'jpeg', quality: 0.85 }, // 降低圖片質量以減少內存使用
+      html2canvas: { 
+        scale: 1.5, // 降低縮放比例
+        useCORS: true,
+        allowTaint: true,
+        backgroundColor: '#ffffff'
+      },
+      jsPDF: { 
+        unit: 'in', 
+        format: 'a4', 
+        orientation: 'portrait',
+        compress: true // 啟用PDF壓縮
+      }
     };
 
+    // 創建隱藏元素避免影響頁面佈局
     const element = document.createElement('div');
+    element.style.cssText = `
+      position: absolute;
+      left: -9999px;
+      top: -9999px;
+      visibility: hidden;
+    `;
     element.innerHTML = html;
     document.body.appendChild(element);
 
@@ -544,10 +562,19 @@ const BillingSystem = () => {
       const pdfBlob = await html2pdf().set(opt).from(element).outputPdf('blob');
       const fileName = `${year}年${monthNum}月-${student.studentId}-${student.nameZh}_月結單.pdf`;
       zip.file(fileName, pdfBlob);
+      
+      // 立即清理DOM元素
       document.body.removeChild(element);
+      
+      // 強制垃圾回收（如果可用）
+      if (window.gc) {
+        window.gc();
+      }
     } catch (error) {
       console.error('PDF生成錯誤:', error);
-      document.body.removeChild(element);
+      if (document.body.contains(element)) {
+        document.body.removeChild(element);
+      }
       throw error;
     }
   };
@@ -698,29 +725,114 @@ const BillingSystem = () => {
       return;
     }
     
-    const zip = new JSZip();
-    const pdfPromises = [];
+    // 創建進度指示器
+    const progressModal = document.createElement('div');
+    progressModal.style.cssText = `
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.7);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 10000;
+      font-family: Arial, sans-serif;
+    `;
     
-    billingData.forEach((item, index) => {
+    const progressContent = document.createElement('div');
+    progressContent.style.cssText = `
+      background: white;
+      padding: 30px;
+      border-radius: 10px;
+      text-align: center;
+      min-width: 300px;
+    `;
+    
+    const progressTitle = document.createElement('h3');
+    progressTitle.textContent = '正在生成月結單...';
+    progressTitle.style.cssText = 'margin-bottom: 20px; color: #333;';
+    
+    const progressBar = document.createElement('div');
+    progressBar.style.cssText = `
+      width: 100%;
+      height: 20px;
+      background: #f0f0f0;
+      border-radius: 10px;
+      overflow: hidden;
+      margin-bottom: 10px;
+    `;
+    
+    const progressFill = document.createElement('div');
+    progressFill.style.cssText = `
+      height: 100%;
+      background: #0F766E;
+      width: 0%;
+      transition: width 0.3s ease;
+    `;
+    
+    const progressText = document.createElement('div');
+    progressText.style.cssText = 'color: #666; font-size: 14px;';
+    
+    progressBar.appendChild(progressFill);
+    progressContent.appendChild(progressTitle);
+    progressContent.appendChild(progressBar);
+    progressContent.appendChild(progressText);
+    progressModal.appendChild(progressContent);
+    document.body.appendChild(progressModal);
+    
+    const zip = new JSZip();
+    const batchSize = 5; // 每批處理5個學生
+    let processedCount = 0;
+    const totalStudents = billingData.filter(item => {
       const studentClasses = classes.filter(cls => 
         cls.studentId === item.studentId && 
         new Date(cls.date).getFullYear() === parseInt(selectedMonth.split('-')[0]) &&
         new Date(cls.date).getMonth() === parseInt(selectedMonth.split('-')[1]) - 1
       );
-      
-      if (studentClasses.length > 0) {
-        const pdfPromise = generatePDFForZip(item.studentId, studentClasses, selectedMonth, zip);
-        pdfPromises.push(pdfPromise);
-      }
-    });
+      return studentClasses.length > 0;
+    }).length;
     
-    if (pdfPromises.length === 0) {
+    if (totalStudents === 0) {
+      document.body.removeChild(progressModal);
       alert('該月份沒有學生課堂數據');
       return;
     }
     
     try {
-      await Promise.all(pdfPromises);
+      // 分批處理學生
+      for (let i = 0; i < billingData.length; i += batchSize) {
+        const batch = billingData.slice(i, i + batchSize);
+        const batchPromises = [];
+        
+        for (const item of batch) {
+          const studentClasses = classes.filter(cls => 
+            cls.studentId === item.studentId && 
+            new Date(cls.date).getFullYear() === parseInt(selectedMonth.split('-')[0]) &&
+            new Date(cls.date).getMonth() === parseInt(selectedMonth.split('-')[1]) - 1
+          );
+          
+          if (studentClasses.length > 0) {
+            batchPromises.push(generatePDFForZip(item.studentId, studentClasses, selectedMonth, zip));
+          }
+        }
+        
+        // 處理當前批次
+        await Promise.all(batchPromises);
+        processedCount += batchPromises.length;
+        
+        // 更新進度
+        const progress = Math.round((processedCount / totalStudents) * 100);
+        progressFill.style.width = `${progress}%`;
+        progressText.textContent = `已處理 ${processedCount}/${totalStudents} 個學生 (${progress}%)`;
+        
+        // 讓瀏覽器有時間更新UI
+        await new Promise(resolve => setTimeout(resolve, 100));
+      }
+      
+      // 生成ZIP文件
+      progressText.textContent = '正在打包文件...';
       const zipBlob = await zip.generateAsync({ type: 'blob' });
       
       // 下載ZIP文件
@@ -731,9 +843,12 @@ const BillingSystem = () => {
       link.click();
       document.body.removeChild(link);
       
-
+      // 移除進度指示器
+      document.body.removeChild(progressModal);
+      
     } catch (error) {
       console.error('生成ZIP文件時發生錯誤:', error);
+      document.body.removeChild(progressModal);
       alert('生成ZIP文件時發生錯誤，請重試');
     }
   };
