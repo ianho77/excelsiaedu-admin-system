@@ -546,22 +546,40 @@ const BillingSystem = () => {
       }
     };
 
-    // 創建隱藏元素避免影響頁面佈局
+    // 創建離屏元素避免影響頁面佈局，但保持可見以便html2pdf渲染
     const element = document.createElement('div');
     element.style.cssText = `
       position: absolute;
       left: -9999px;
       top: -9999px;
-      visibility: hidden;
+      width: 800px;
+      height: auto;
+      overflow: visible;
     `;
     element.innerHTML = html;
     document.body.appendChild(element);
 
     // 使用html2pdf.js生成PDF並添加到ZIP
     try {
+      // 等待元素完全渲染
+      await new Promise(resolve => setTimeout(resolve, 100));
+      
+      // 檢查元素是否有內容
+      if (!element.innerHTML || element.innerHTML.trim() === '') {
+        throw new Error('PDF內容為空');
+      }
+      
       const pdfBlob = await html2pdf().set(opt).from(element).outputPdf('blob');
+      
+      // 檢查PDF blob是否有效
+      if (!pdfBlob || pdfBlob.size === 0) {
+        throw new Error('生成的PDF文件為空');
+      }
+      
       const fileName = `${year}年${monthNum}月-${student.studentId}-${student.nameZh}_月結單.pdf`;
       zip.file(fileName, pdfBlob);
+      
+      console.log(`成功生成PDF: ${fileName}, 大小: ${pdfBlob.size} bytes`);
       
       // 立即清理DOM元素
       document.body.removeChild(element);
@@ -572,6 +590,10 @@ const BillingSystem = () => {
       }
     } catch (error) {
       console.error('PDF生成錯誤:', error);
+      console.error('學生ID:', studentId);
+      console.error('課堂數量:', studentClasses.length);
+      console.error('HTML內容長度:', element.innerHTML.length);
+      
       if (document.body.contains(element)) {
         document.body.removeChild(element);
       }
