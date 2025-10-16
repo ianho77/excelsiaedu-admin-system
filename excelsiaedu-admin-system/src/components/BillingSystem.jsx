@@ -528,7 +528,7 @@ const BillingSystem = () => {
     `;
 
 
-    // 創建臨時容器元素
+    // 創建臨時容器元素 - 確保html2canvas能正確渲染
     const element = document.createElement('div');
     element.style.cssText = `
       position: fixed;
@@ -537,9 +537,10 @@ const BillingSystem = () => {
       width: 800px;
       height: auto;
       background: white;
-      z-index: -1;
-      opacity: 0;
+      z-index: 9999;
+      opacity: 1;
       pointer-events: none;
+      overflow: visible;
     `;
     element.innerHTML = html;
     document.body.appendChild(element);
@@ -551,6 +552,9 @@ const BillingSystem = () => {
       
       // 等待元素完全渲染
       await new Promise(resolve => setTimeout(resolve, 200));
+      
+      // 立即隱藏元素避免用戶看到
+      element.style.opacity = '0';
       
       // 檢查元素是否有內容
       if (!element.innerHTML || element.innerHTML.trim() === '') {
