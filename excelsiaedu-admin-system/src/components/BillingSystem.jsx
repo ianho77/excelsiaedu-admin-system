@@ -546,30 +546,69 @@ const BillingSystem = () => {
       }
     };
 
-    // 創建離屏元素避免影響頁面佈局，但保持可見以便html2pdf渲染
+    // 創建臨時容器元素
     const element = document.createElement('div');
     element.style.cssText = `
-      position: absolute;
-      left: -9999px;
-      top: -9999px;
+      position: fixed;
+      top: 0;
+      left: 0;
       width: 800px;
       height: auto;
-      overflow: visible;
+      background: white;
+      z-index: -1;
+      opacity: 0;
+      pointer-events: none;
     `;
     element.innerHTML = html;
     document.body.appendChild(element);
 
     // 使用html2pdf.js生成PDF並添加到ZIP
     try {
+      console.log(`開始生成PDF - 學生: ${student.studentId}, 課堂數: ${studentClasses.length}`);
+      console.log('HTML內容預覽:', element.innerHTML.substring(0, 200) + '...');
+      
       // 等待元素完全渲染
-      await new Promise(resolve => setTimeout(resolve, 100));
+      await new Promise(resolve => setTimeout(resolve, 200));
       
       // 檢查元素是否有內容
       if (!element.innerHTML || element.innerHTML.trim() === '') {
         throw new Error('PDF內容為空');
       }
       
-      const pdfBlob = await html2pdf().set(opt).from(element).outputPdf('blob');
+      // 檢查元素是否在DOM中
+      if (!document.body.contains(element)) {
+        throw new Error('元素不在DOM中');
+      }
+      
+      // 檢查元素是否可見
+      const computedStyle = window.getComputedStyle(element);
+      console.log('元素樣式檢查:', {
+        display: computedStyle.display,
+        visibility: computedStyle.visibility,
+        position: computedStyle.position,
+        width: computedStyle.width,
+        height: computedStyle.height
+      });
+      
+      // 使用最簡單的html2pdf配置
+      const pdfBlob = await html2pdf()
+        .from(element)
+        .set({
+          margin: 1,
+          filename: `${year}年${monthNum}月-${student.studentId}-${student.nameZh}_月結單.pdf`,
+          image: { type: 'jpeg', quality: 0.98 },
+          html2canvas: { 
+            scale: 2,
+            useCORS: true,
+            allowTaint: true
+          },
+          jsPDF: { 
+            unit: 'in', 
+            format: 'a4', 
+            orientation: 'portrait'
+          }
+        })
+        .outputPdf('blob');
       
       // 檢查PDF blob是否有效
       if (!pdfBlob || pdfBlob.size === 0) {
@@ -593,6 +632,7 @@ const BillingSystem = () => {
       console.error('學生ID:', studentId);
       console.error('課堂數量:', studentClasses.length);
       console.error('HTML內容長度:', element.innerHTML.length);
+      console.error('元素在DOM中:', document.body.contains(element));
       
       if (document.body.contains(element)) {
         document.body.removeChild(element);
