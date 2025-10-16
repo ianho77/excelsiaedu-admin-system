@@ -528,57 +528,57 @@ const BillingSystem = () => {
     `;
 
 
-    // 創建臨時容器元素 - 確保html2canvas能正確渲染
-    const element = document.createElement('div');
-    element.style.cssText = `
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 800px;
-      height: auto;
-      background: white;
-      z-index: 9999;
-      opacity: 1;
-      pointer-events: none;
-      overflow: visible;
-    `;
-    element.innerHTML = html;
-    document.body.appendChild(element);
-
-    // 使用html2pdf.js生成PDF並添加到ZIP
+    // 使用iframe方法生成PDF - 更可靠
     try {
       console.log(`開始生成PDF - 學生: ${student.studentId}, 課堂數: ${studentClasses.length}`);
-      console.log('HTML內容預覽:', element.innerHTML.substring(0, 200) + '...');
       
-      // 等待元素完全渲染
-      await new Promise(resolve => setTimeout(resolve, 200));
+      // 創建iframe
+      const iframe = document.createElement('iframe');
+      iframe.style.cssText = `
+        position: fixed;
+        top: -9999px;
+        left: -9999px;
+        width: 800px;
+        height: 1000px;
+        border: none;
+        z-index: -1;
+      `;
+      document.body.appendChild(iframe);
       
-      // 立即隱藏元素避免用戶看到
-      element.style.opacity = '0';
-      
-      // 檢查元素是否有內容
-      if (!element.innerHTML || element.innerHTML.trim() === '') {
-        throw new Error('PDF內容為空');
-      }
-      
-      // 檢查元素是否在DOM中
-      if (!document.body.contains(element)) {
-        throw new Error('元素不在DOM中');
-      }
-      
-      // 檢查元素是否可見
-      const computedStyle = window.getComputedStyle(element);
-      console.log('元素樣式檢查:', {
-        display: computedStyle.display,
-        visibility: computedStyle.visibility,
-        position: computedStyle.position,
-        width: computedStyle.width,
-        height: computedStyle.height
+      // 等待iframe加載
+      await new Promise(resolve => {
+        iframe.onload = resolve;
+        iframe.src = 'about:blank';
       });
       
-      // 使用最簡單的html2pdf配置
+      // 將HTML寫入iframe
+      const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
+      iframeDoc.open();
+      iframeDoc.write(`
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <meta charset="utf-8">
+          <style>
+            body { margin: 0; padding: 0; font-family: Arial, sans-serif; }
+            img { max-width: 100%; height: auto; }
+          </style>
+        </head>
+        <body>
+          ${html}
+        </body>
+        </html>
+      `);
+      iframeDoc.close();
+      
+      // 等待內容渲染
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
+      // 使用iframe的body元素生成PDF
+      const bodyElement = iframeDoc.body;
+      
       const pdfBlob = await html2pdf()
-        .from(element)
+        .from(bodyElement)
         .set({
           margin: 1,
           filename: `${year}年${monthNum}月-${student.studentId}-${student.nameZh}_月結單.pdf`,
@@ -586,7 +586,8 @@ const BillingSystem = () => {
           html2canvas: { 
             scale: 2,
             useCORS: true,
-            allowTaint: true
+            allowTaint: true,
+            logging: false
           },
           jsPDF: { 
             unit: 'in', 
@@ -606,23 +607,22 @@ const BillingSystem = () => {
       
       console.log(`成功生成PDF: ${fileName}, 大小: ${pdfBlob.size} bytes`);
       
-      // 立即清理DOM元素
-      document.body.removeChild(element);
+      // 清理iframe
+      document.body.removeChild(iframe);
       
-      // 強制垃圾回收（如果可用）
-      if (window.gc) {
-        window.gc();
-      }
     } catch (error) {
       console.error('PDF生成錯誤:', error);
       console.error('學生ID:', studentId);
       console.error('課堂數量:', studentClasses.length);
-      console.error('HTML內容長度:', element.innerHTML.length);
-      console.error('元素在DOM中:', document.body.contains(element));
       
-      if (document.body.contains(element)) {
-        document.body.removeChild(element);
-      }
+      // 清理可能殘留的iframe
+      const iframes = document.querySelectorAll('iframe');
+      iframes.forEach(iframe => {
+        if (iframe.style.position === 'fixed' && iframe.style.top === '-9999px') {
+          document.body.removeChild(iframe);
+        }
+      });
+      
       throw error;
     }
   };
