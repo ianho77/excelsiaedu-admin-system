@@ -527,24 +527,6 @@ const BillingSystem = () => {
       </div>
     `;
 
-    // 優化PDF生成選項，減少內存使用
-    const opt = {
-      margin: 1,
-      filename: `${year}年${monthNum}月-${student.studentId}-${student.nameZh}_月結單.pdf`,
-      image: { type: 'jpeg', quality: 0.85 }, // 降低圖片質量以減少內存使用
-      html2canvas: { 
-        scale: 1.5, // 降低縮放比例
-        useCORS: true,
-        allowTaint: true,
-        backgroundColor: '#ffffff'
-      },
-      jsPDF: { 
-        unit: 'in', 
-        format: 'a4', 
-        orientation: 'portrait',
-        compress: true // 啟用PDF壓縮
-      }
-    };
 
     // 創建臨時容器元素
     const element = document.createElement('div');
