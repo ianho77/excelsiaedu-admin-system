@@ -710,4 +710,29 @@
 .confirm-modal-overlay ~ .billing-table-container {
   filter: blur(2px) !important;
   transition: filter 0.3s ease !important;
+}
+
+/* 生成月結單按鈕樣式 */
+.generate-statement-button {
+  padding: 8px 16px;
+  background: linear-gradient(135deg, #0f766e 0%, #0d9488 50%, #0d5a52 100%);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 4px rgba(15, 118, 110, 0.2);
+}
+
+.generate-statement-button:hover {
+  background: linear-gradient(135deg, #0d5a52 0%, #0f766e 50%, #0a3d38 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(15, 118, 110, 0.4);
+}
+
+.generate-statement-button:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 4px rgba(15, 118, 110, 0.2);
 } 

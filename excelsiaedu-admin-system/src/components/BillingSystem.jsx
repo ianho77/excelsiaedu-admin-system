@@ -1099,6 +1099,7 @@ const BillingSystem = () => {
                 </th>
                 <th>繳費狀態</th>
                 <th>付費方式</th>
+                <th>操作</th>
               </tr>
             </thead>
             <tbody>
@@ -1161,6 +1162,28 @@ const BillingSystem = () => {
                         <option value="轉數快">轉數快</option>
                         <option value="信用卡/微信/支付寶">信用卡/微信/支付寶</option>
                       </select>
+                    </td>
+                    <td>
+                      <button
+                        className="generate-statement-button"
+                        onClick={() => {
+                          const studentClasses = classes.filter(cls => 
+                            cls.studentId === item.studentId && 
+                            new Date(cls.date).getFullYear() === parseInt(selectedMonth.split('-')[0]) &&
+                            new Date(cls.date).getMonth() === parseInt(selectedMonth.split('-')[1]) - 1
+                          );
+                          
+                          if (studentClasses.length === 0) {
+                            alert('該學生在指定月份沒有課堂記錄');
+                            return;
+                          }
+                          
+                          generatePDF(item.studentId, studentClasses, selectedMonth);
+                        }}
+                        title="生成該學生的月結單"
+                      >
+                        生成
+                      </button>
                     </td>
                   </tr>
                 ));
