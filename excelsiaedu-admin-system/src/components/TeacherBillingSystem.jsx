@@ -837,6 +837,7 @@ const TeacherBillingSystem = () => {
                         ✓
                       </button>
                     </th>
+                    <th>操作</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -866,6 +867,34 @@ const TeacherBillingSystem = () => {
                           <option value="未發放">未發放</option>
                           <option value="已發放">已發放</option>
                         </select>
+                      </td>
+                      <td>
+                        <button
+                          className="generate-statement-button"
+                          onClick={() => {
+                            if (teacher.classes.length === 0) {
+                              alert('該教師在指定月份沒有課堂記錄');
+                              return;
+                            }
+                            
+                            const teacherClasses = teacher.classes.map(cls => {
+                              const course = courses.find(c => c.courseId === cls.courseId);
+                              const student = students.find(s => s.studentId === cls.studentId);
+                              return {
+                                courseName: course ? course.subject : '未知課程',
+                                studentName: student ? `${student.nameZh} (${student.nameEn})` : '未知學生',
+                                date: cls.date,
+                                amount: cls.price || 0,
+                                teacherName: teacher.teacherName
+                              };
+                            });
+                            
+                            generatePDF(teacherClasses, teacher.teacherName);
+                          }}
+                          title="生成該教師的月結單"
+                        >
+                          生成
+                        </button>
                       </td>
                     </tr>
                   ))}
