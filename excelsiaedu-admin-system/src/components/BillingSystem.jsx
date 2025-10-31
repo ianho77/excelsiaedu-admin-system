@@ -527,7 +527,7 @@ const BillingSystem = () => {
         
         <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #ddd; font-size: 13px; color: #333; page-break-inside: avoid;">
           <p style="margin: 0; font-weight: bold; color: #d32f2f; line-height: 1.6;">
-            任何未能在學費單發出後14天內繳交費用的學生，將會被徵收賬單費用5%的手續費，敬請留意。
+            **任何未能在學費單發出後14天內繳交費用的學生，將會被徵收賬單費用5%的手續費，敬請留意。**
           </p>
         </div>
       </div>
