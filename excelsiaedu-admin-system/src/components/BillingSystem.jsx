@@ -523,6 +523,7 @@ const BillingSystem = () => {
           <p style="margin-top: 15px;">如閣下核對學費明細有誤，請聯絡我們作出修訂。</p>
           <p>如需更改時間或取消課堂，請於上課前24小時通知導師</p>
           <p>否則我們可能會收取該課堂的費用</p>
+          <p style="margin-top: 20px; font-weight: bold; color: #333;">任何未能在學費單發出後14天內繳交費用的學生，將會被徵收賬單費用5%的手續費，敬請留意。</p>
         </div>
       </div>
     `;
@@ -742,6 +743,7 @@ const BillingSystem = () => {
           <p style="margin-top: 15px;">如閣下核對學費明細有誤，請聯絡我們作出修訂。</p>
           <p>如需更改時間或取消課堂，請於上課前24小時通知導師</p>
           <p>否則我們可能會收取該課堂的費用</p>
+          <p style="margin-top: 20px; font-weight: bold; color: #333;">任何未能在學費單發出後14天內繳交費用的學生，將會被徵收賬單費用5%的手續費，敬請留意。</p>
         </div>
       </div>
     `;
