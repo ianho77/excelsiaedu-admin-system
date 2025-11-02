@@ -3253,6 +3253,8 @@ function CourseList() {
       type: 'select', 
       required: true,
       options: [
+        { value: '初中', label: '初中' },
+        { value: '高中', label: '高中' },
         { value: '中一', label: '中一' },
         { value: '中二', label: '中二' },
         { value: '中三', label: '中三' },
