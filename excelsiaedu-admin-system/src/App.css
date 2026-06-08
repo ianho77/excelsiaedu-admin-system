@@ -134,6 +134,10 @@
   .welcome-section {
     padding: 20px;
   }
+
+  .student-add-form {
+    grid-template-columns: 1fr;
+  }
 }
 .sidebar {
   width: 220px;
@@ -356,6 +360,28 @@
   padding: 24px;
   border-radius: 8px;
   box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+}
+.student-add-form {
+  width: 100%;
+  max-width: 1100px;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(260px, 1fr));
+  gap: 16px 24px;
+}
+.student-add-form .form-group {
+  margin-bottom: 0;
+}
+.student-add-form textarea {
+  min-height: 38px;
+  line-height: 1.2;
+}
+.student-notes-field,
+.student-submit-row {
+  grid-column: 1 / -1;
+}
+.student-submit-row {
+  display: flex;
+  justify-content: flex-start;
 }
 .form-group {
   margin-bottom: 20px;
@@ -741,24 +767,25 @@ button[type="submit"]:hover {
 }
 .class-main-flex {
   display: flex;
-  gap: 40px;
+  gap: 24px;
   align-items: flex-start;
+  flex-wrap: wrap;
 }
 .class-main-flex .class-form-left {
-  flex: 1;
+  flex: 1 1 300px;
   min-width: 320px;
-  max-width: 400px;
+  max-width: 360px;
 }
 .class-main-flex .class-form-right {
-  flex: 2;
-  min-width: 400px;
+  flex: 1 1 280px;
+  min-width: 280px;
   background: #fff;
   border-radius: 8px;
   box-shadow: 0 2px 8px rgba(0,0,0,0.06);
   padding: 24px 20px;
   display: flex;
   flex-direction: column;
-  min-height: 320px;
+  min-height: 520px;
   max-height: none;
 }
 
@@ -797,7 +824,7 @@ button[type="submit"]:hover {
   flex: 1;
   overflow-y: auto;
   overflow-x: hidden;
-  max-height: 220px;
+  max-height: 420px;
   padding-right: 4px;
 }
 .student-names-wrap {
@@ -962,7 +989,8 @@ button[type="submit"]:hover {
   margin-bottom: 24px;
   border: 1px solid rgba(0,0,0,0.05);
   position: relative;
-  z-index: 1000;
+  z-index: 2000;
+  overflow: visible;
 }
 
 .filter-container {
@@ -970,6 +998,7 @@ button[type="submit"]:hover {
   gap: 20px;
   align-items: end;
   flex-wrap: wrap;
+  overflow: visible;
 }
 
 .filter-group {
@@ -977,7 +1006,13 @@ button[type="submit"]:hover {
   display: flex;
   flex-direction: column;
   min-width: 180px;
-  z-index: 1000;
+  z-index: 2001;
+}
+
+.filter-group .dropdown {
+  top: 100%;
+  margin-top: 6px;
+  z-index: 3000;
 }
 
 .filter-group label {
@@ -1060,6 +1095,104 @@ button[type="submit"]:hover {
 
 .filter-button.clear:hover {
   background: linear-gradient(135deg, #5a6268 0%, #343a40 100%);
+}
+
+.mode-toggle {
+  display: inline-flex;
+  padding: 4px;
+  background: #e9ecef;
+  border-radius: 10px;
+  gap: 4px;
+}
+
+.mode-toggle button {
+  border: none;
+  border-radius: 8px;
+  padding: 8px 16px;
+  background: transparent;
+  color: #495057;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.mode-toggle button.active {
+  background: #0f766e;
+  color: white;
+  box-shadow: 0 2px 8px rgba(15, 118, 110, 0.25);
+}
+
+.mode-toggle button:hover:not(.active) {
+  background: #dee2e6;
+}
+
+.page-tab-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-bottom: 20px;
+}
+
+.page-tab-header h1 {
+  margin: 0;
+}
+
+.pagination-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+  padding: 12px 16px;
+  background: #ffffff;
+  border: 1px solid #e1e8ed;
+  border-radius: 10px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.pagination-info {
+  color: #495057;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.pagination-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.pagination-controls span {
+  color: #0f766e;
+  font-size: 14px;
+  font-weight: 700;
+  padding: 0 8px;
+}
+
+.pagination-controls button {
+  padding: 8px 12px;
+  border: none;
+  border-radius: 6px;
+  background: #0f766e;
+  color: white;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.pagination-controls button:hover:not(:disabled) {
+  background: #0d5a52;
+  transform: translateY(-1px);
+}
+
+.pagination-controls button:disabled {
+  background: #adb5bd;
+  cursor: not-allowed;
 }
 
 .filter-button.generate-all {

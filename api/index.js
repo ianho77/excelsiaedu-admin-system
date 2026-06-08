@@ -26,8 +26,12 @@ app.use(express.json());
 // 添加預檢請求處理
 app.options('*', cors(corsOptions));
 
-// 连接MongoDB Atlas
-const MONGODB_URI = process.env.MONGODB_URI || 'mongodb+srv://ian20051102:LxMgTBnGVt3ygblv@excelsiaedu.xxjs6v7.mongodb.net/?retryWrites=true&w=majority&appName=excelsiaedu';
+// 線上環境請在部署平台設定 MONGODB_URI，避免把 Atlas 密碼提交到 GitHub。
+const MONGODB_URI = process.env.MONGODB_URI;
+
+if (!MONGODB_URI) {
+  throw new Error('MONGODB_URI is required for the API server');
+}
 
 mongoose.connect(MONGODB_URI, {
   useNewUrlParser: true,
@@ -56,6 +60,7 @@ const StudentSchema = new mongoose.Schema({
   nickname: String,
   phone: String,
   wechat: String,
+  contactMethod: String,
   school: String,
   notes: String,
 });
@@ -73,6 +78,14 @@ const ClassSchema = new mongoose.Schema({
   date: String,
   price: Number,
   studentId: String,
+});
+
+const GroupSchema = new mongoose.Schema({
+  groupName: { type: String, required: true },
+  studentCount: Number,
+  studentIds: [String],
+  createdAt: { type: Date, default: Date.now },
+  updatedAt: { type: Date, default: Date.now }
 });
 
 const TeacherSchema = new mongoose.Schema({
@@ -105,6 +118,7 @@ const User = mongoose.model('User', UserSchema);
 const Student = mongoose.model('Student', StudentSchema);
 const Course = mongoose.model('Course', CourseSchema);
 const Class = mongoose.model('Class', ClassSchema);
+const Group = mongoose.model('Group', GroupSchema);
 const Teacher = mongoose.model('Teacher', TeacherSchema);
 const StudentBillingStatus = mongoose.model('StudentBillingStatus', StudentBillingStatusSchema);
 const TeacherBillingStatus = mongoose.model('TeacherBillingStatus', TeacherBillingStatusSchema);
@@ -151,6 +165,68 @@ app.post('/students', async (req, res) => {
     const student = new Student(req.body);
     await student.save();
     res.json({ success: true, student });
+  } catch (error) {
+    res.status(500).json({ success: false, error: '服务器错误' });
+  }
+});
+
+// 群組API
+app.get('/groups', async (req, res) => {
+  try {
+    const groups = await Group.find().sort({ createdAt: -1 });
+    res.json(groups);
+  } catch (error) {
+    res.status(500).json({ success: false, error: '服务器错误' });
+  }
+});
+
+app.post('/groups', async (req, res) => {
+  try {
+    const { groupName, studentIds = [] } = req.body;
+    if (!groupName || !Array.isArray(studentIds) || studentIds.length === 0) {
+      return res.status(400).json({ success: false, error: '群組資料不完整' });
+    }
+
+    const group = new Group({
+      groupName: groupName.trim(),
+      studentCount: studentIds.length,
+      studentIds,
+      updatedAt: new Date()
+    });
+    await group.save();
+    res.json({ success: true, group });
+  } catch (error) {
+    res.status(500).json({ success: false, error: '服务器错误' });
+  }
+});
+
+app.put('/groups/:id', async (req, res) => {
+  try {
+    const { groupName, studentIds = [] } = req.body;
+    if (!groupName || !Array.isArray(studentIds) || studentIds.length === 0) {
+      return res.status(400).json({ success: false, error: '群組資料不完整' });
+    }
+
+    const group = await Group.findByIdAndUpdate(
+      req.params.id,
+      {
+        groupName: groupName.trim(),
+        studentCount: studentIds.length,
+        studentIds,
+        updatedAt: new Date()
+      },
+      { new: true }
+    );
+    res.json({ success: true, group });
+  } catch (error) {
+    res.status(500).json({ success: false, error: '服务器错误' });
+  }
+});
+
+app.delete('/groups/:id', async (req, res) => {
+  try {
+    await Group.findByIdAndDelete(req.params.id);
+    res.json({ success: true });
   } catch (error) {
     res.status(500).json({ success: false, error: '服务器错误' });
   }

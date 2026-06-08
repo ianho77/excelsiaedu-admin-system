@@ -87,7 +87,7 @@ const exportToExcel = async (billingData, statistics, selectedMonth, setExportin
   }
 };
 
-const BillingSystem = () => {
+const BillingSystem = ({ tabSwitch = null }) => {
   const [selectedMonth, setSelectedMonth] = useState(() => {
     // 从 localStorage 获取保存的月份，如果没有则返回前一个月
     const savedMonth = localStorage.getItem('studentSelectedMonth');
@@ -110,6 +110,14 @@ const BillingSystem = () => {
   const [courses, setCourses] = useState([]);
   // const [loading, setLoading] = useState(false);
   const [exporting, setExporting] = useState(false);
+
+  const sanitizeFileNamePart = (value) => (
+    String(value || '').trim().replace(/[\\/:*?"<>|]/g, '_') || '未知'
+  );
+
+  const getStudentStatementFileName = (student, year, monthNum) => (
+    `${sanitizeFileNamePart(student.studentId)}-${sanitizeFileNamePart(student.nameZh)}-${year}-${monthNum}.pdf`
+  );
   const [studentFilter, setStudentFilter] = useState('');
   const [showStudentDropdown, setShowStudentDropdown] = useState(false);
   const [filteredStudents, setFilteredStudents] = useState([]);
@@ -418,6 +426,7 @@ const BillingSystem = () => {
     const year = selectedDate.getFullYear();
     const currentDate = new Date();
     const issueDate = currentDate.toISOString().split('T')[0]; // yyyy-mm-dd format
+    const statementFileName = getStudentStatementFileName(student, year, monthNum);
 
     // 對課堂資料進行排序：教師ID（小到大）-> 課程ID（小到大）-> 日期（遠到近）
     const sortedClasses = studentClasses.sort((a, b) => {
@@ -587,7 +596,7 @@ const BillingSystem = () => {
         .from(bodyElement)
         .set({
           margin: 1,
-          filename: `${year}年${monthNum}月-${student.studentId}-${student.nameZh}_月結單.pdf`,
+          filename: statementFileName,
           image: { type: 'jpeg', quality: 0.98 },
           html2canvas: { 
             scale: 2,
@@ -608,10 +617,9 @@ const BillingSystem = () => {
         throw new Error('生成的PDF文件為空');
       }
       
-      const fileName = `${year}年${monthNum}月-${student.studentId}-${student.nameZh}_月結單.pdf`;
-      zip.file(fileName, pdfBlob);
+      zip.file(statementFileName, pdfBlob);
       
-      console.log(`成功生成PDF: ${fileName}, 大小: ${pdfBlob.size} bytes`);
+      console.log(`成功生成PDF: ${statementFileName}, 大小: ${pdfBlob.size} bytes`);
       
       // 清理iframe
       document.body.removeChild(iframe);
@@ -643,6 +651,7 @@ const BillingSystem = () => {
     const year = selectedDate.getFullYear();
     const currentDate = new Date();
     const issueDate = currentDate.toISOString().split('T')[0]; // yyyy-mm-dd format
+    const statementFileName = getStudentStatementFileName(student, year, monthNum);
 
     // 對課堂資料進行排序：教師ID（小到大）-> 課程ID（小到大）-> 日期（遠到近）
     const sortedClasses = studentClasses.sort((a, b) => {
@@ -760,7 +769,7 @@ const BillingSystem = () => {
 
     const opt = {
       margin: 1,
-      filename: `${year}年${monthNum}月-${student.studentId}-${student.nameZh}_月結單.pdf`,
+      filename: statementFileName,
       image: { type: 'jpeg', quality: 0.98 },
       html2canvas: { scale: 2 },
       jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' }
@@ -976,6 +985,7 @@ const BillingSystem = () => {
               ))}
             </select>
           </div>
+          {tabSwitch}
           {selectedMonth && billingData.length > 0 && (
             <button
               className="export-button"

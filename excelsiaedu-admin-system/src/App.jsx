@@ -11,72 +11,33 @@ import RevenueStatistics from './components/RevenueStatistics';
 import LoginPage from './components/LoginPage';
 // import MonthlyStatement from './components/MonthlyStatement';
 import UserManagement from './components/UserManagement';
-import LoginManagement from './components/LoginManagement';
 import CostManagement from './components/CostManagement';
 import './App.css';
 
 function Sidebar({ userType }) {
   // const location = useLocation();
-  const [isAddDropdownOpen, setIsAddDropdownOpen] = React.useState(false);
-  const [isManageDropdownOpen, setIsManageDropdownOpen] = React.useState(false);
   const [isRevenueDropdownOpen, setIsRevenueDropdownOpen] = React.useState(false);
-  const [isBillingDropdownOpen, setIsBillingDropdownOpen] = React.useState(false);
-
-  const toggleAddDropdown = () => {
-    setIsAddDropdownOpen(!isAddDropdownOpen);
-  };
-
-  const toggleManageDropdown = () => {
-    setIsManageDropdownOpen(!isManageDropdownOpen);
-  };
 
   const toggleRevenueDropdown = () => {
     setIsRevenueDropdownOpen(!isRevenueDropdownOpen);
   };
 
-  const toggleBillingDropdown = () => {
-    setIsBillingDropdownOpen(!isBillingDropdownOpen);
-  };
-
   return (
     <nav>
       <ul>
-        {/* 教師和管理員都可以看到新增功能 */}
-        <li>
-          <div className="dropdown-container">
-            <button className="dropdown-button" onClick={toggleAddDropdown}>
-              新增資料
-              <span className={`dropdown-arrow ${isAddDropdownOpen ? 'rotated' : ''}`}>▶</span>
-            </button>
-            {isAddDropdownOpen && (
-              <ul className="dropdown-menu">
-                <li><Link to="/add-class">新增課堂</Link></li>
-                <li><Link to="/add-course">新增課程</Link></li>
-                <li><Link to="/add-student">新增學生</Link></li>
-                <li><Link to="/add-teacher">新增教師</Link></li>
-              </ul>
-            )}
-          </div>
-        </li>
+        {/* 教師和管理員都可以看到主要資料頁面 */}
+        <li><Link to="/classes" className="nav-link">課堂</Link></li>
+        <li><Link to="/add-group" className="nav-link">群組</Link></li>
+        <li><Link to="/courses" className="nav-link">課程</Link></li>
+        <li><Link to="/students" className="nav-link">學生</Link></li>
+        <li><Link to="/teachers" className="nav-link">教師</Link></li>
 
-        {/* 只有管理員可以看到管理功能 */}
+        {/* 只有管理員可以看到賬單系統 */}
         {userType === 'admin' && (
           <li>
-            <div className="dropdown-container">
-              <button className="dropdown-button" onClick={toggleManageDropdown}>
-                資料管理
-                <span className={`dropdown-arrow ${isManageDropdownOpen ? 'rotated' : ''}`}>▶</span>
-              </button>
-              {isManageDropdownOpen && (
-                <ul className="dropdown-menu">
-                  <li><Link to="/manage-classes">課堂管理</Link></li>
-                  <li><Link to="/manage-students">學生管理</Link></li>
-                  <li><Link to="/manage-courses">課程管理</Link></li>
-                  <li><Link to="/manage-teachers">教師管理</Link></li>
-                  <li><Link to="/user-management">用戶管理</Link></li>
-                </ul>
-              )}
-            </div>
+            <Link to="/billing-system" className="nav-link">
+              賬單系統
+            </Link>
           </li>
         )}
 
@@ -100,24 +61,6 @@ function Sidebar({ userType }) {
           </li>
         )}
 
-        {/* 只有管理員可以看到賬單系統 */}
-        {userType === 'admin' && (
-          <li>
-            <div className="dropdown-container">
-              <button className="dropdown-button" onClick={toggleBillingDropdown}>
-                賬單系統
-                <span className={`dropdown-arrow ${isBillingDropdownOpen ? 'rotated' : ''}`}>▶</span>
-              </button>
-              {isBillingDropdownOpen && (
-                <ul className="dropdown-menu">
-                  <li><Link to="/billing-student">學生賬單</Link></li>
-                  <li><Link to="/billing-teacher">教師賬單</Link></li>
-                </ul>
-              )}
-            </div>
-          </li>
-        )}
-
         {/* 只有管理員可以看到營運成本管理 */}
         {userType === 'admin' && (
           <li>
@@ -127,30 +70,93 @@ function Sidebar({ userType }) {
           </li>
         )}
 
-        {/* 只有管理員可以看到登入管理 */}
+        {/* 只有管理員可以看到用戶管理 */}
         {userType === 'admin' && (
           <li>
-            <Link to="/login-management" className="nav-link">
-              登入管理
+            <Link to="/user-management" className="nav-link">
+              用戶管理
             </Link>
           </li>
         )}
+
       </ul>
     </nav>
   );
 }
 
-function AddClass() {
+function BillingPage({ initialTab = 'student' }) {
+  const [activeTab, setActiveTab] = React.useState(initialTab);
+
+  const billingTabSwitch = (
+    <div className="mode-toggle">
+      <button
+        type="button"
+        className={activeTab === 'student' ? 'active' : ''}
+        onClick={() => setActiveTab('student')}
+      >
+        學生
+      </button>
+      <button
+        type="button"
+        className={activeTab === 'teacher' ? 'active' : ''}
+        onClick={() => setActiveTab('teacher')}
+      >
+        教師
+      </button>
+    </div>
+  );
+
+  return (
+    <div>
+      {activeTab === 'student'
+        ? <BillingSystem tabSwitch={billingTabSwitch} />
+        : <TeacherBillingSystem tabSwitch={billingTabSwitch} />}
+    </div>
+  );
+}
+
+function ClassPage({ initialTab = 'add' }) {
+  const [activeTab, setActiveTab] = React.useState(initialTab);
+
+  return (
+    <div>
+      <div className="page-tab-header">
+        <h1>課堂</h1>
+        <div className="mode-toggle">
+          <button
+            type="button"
+            className={activeTab === 'add' ? 'active' : ''}
+            onClick={() => setActiveTab('add')}
+          >
+            新增
+          </button>
+          <button
+            type="button"
+            className={activeTab === 'manage' ? 'active' : ''}
+            onClick={() => setActiveTab('manage')}
+          >
+            管理
+          </button>
+        </div>
+      </div>
+      {activeTab === 'add' ? <AddClass embedded /> : <ClassList embedded />}
+    </div>
+  );
+}
+
+function AddClass({ embedded = false }) {
   const [form, setForm] = React.useState({
     courseId: '',
-    date: '',
     price: '',
     studentCount: '',
-    studentNames: []
+    studentNames: [],
+    dateCount: '',
+    dates: []
   });
   const [students, setStudents] = React.useState([]);
   const [courses, setCourses] = React.useState([]);
   const [teachers, setTeachers] = React.useState([]);
+  const [groups, setGroups] = React.useState([]);
   // const [classes, setClasses] = React.useState([]);
   const [studentFilters, setStudentFilters] = React.useState([]);
   const [studentCountError, setStudentCountError] = React.useState('');
@@ -163,10 +169,11 @@ function AddClass() {
   const [confirmData, setConfirmData] = React.useState(null);
   const [formErrors, setFormErrors] = React.useState({
     courseId: '',
-    date: '',
     price: '',
     studentCount: '',
-    studentNames: []
+    studentNames: [],
+    dateCount: '',
+    dates: []
   });
   // 新增：課程選擇的鍵盤導航狀態
   const [selectedCourseIndex, setSelectedCourseIndex] = React.useState(-1);
@@ -185,19 +192,22 @@ function AddClass() {
 
   const fetchAllData = async () => {
     try {
-      const [studentsRes, coursesRes, teachersRes] = await Promise.all([
+      const [studentsRes, coursesRes, teachersRes, groupsRes] = await Promise.all([
         fetch(`${config.API_URL}/students`),
         fetch(`${config.API_URL}/courses`),
-        fetch(`${config.API_URL}/teachers`)
+        fetch(`${config.API_URL}/teachers`),
+        fetch(`${config.API_URL}/groups`)
       ]);
 
       const studentsData = await studentsRes.json();
       const coursesData = await coursesRes.json();
       const teachersData = await teachersRes.json();
+      const groupsData = await groupsRes.json();
 
       setStudents(studentsData);
       setCourses(coursesData);
       setTeachers(teachersData);
+      setGroups(groupsData);
     } catch (error) {
       console.error('獲取數據失敗:', error);
     }
@@ -216,7 +226,6 @@ function AddClass() {
   //   );
   // };
 
-  // 處理表單欄位變更
   const handleChange = (e) => {
     const { name, value } = e.target;
     if (name === 'studentCount') {
@@ -231,14 +240,32 @@ function AddClass() {
       setForm(prev => ({
         ...prev,
         studentCount: count,
-        studentNames: count === '' ? [] : Array(Number(count)).fill('').map((v, i) => prev.studentNames[i] || '')
+        studentNames: count === ''
+          ? prev.studentNames
+          : Array.from({ length: Number(count) }, (_, i) => prev.studentNames[i] || '')
       }));
-      setStudentFilters(count === '' ? [] : Array(Number(count)).fill('').map((v, i) => studentFilters[i] || ''));
+      setStudentFilters(prev => (
+        count === ''
+          ? prev
+          : Array.from({ length: Number(count) }, (_, i) => prev[i] || '')
+      ));
       // 重置學生選擇的鍵盤導航狀態
       if (count === '') {
         setSelectedStudentIndices({});
         setIsStudentDropdownsOpen({});
       }
+    } else if (name === 'dateCount') {
+      let count = value === '' ? '' : value.replace(/[^0-9]/g, '');
+      if (count !== '' && Number(count) > 50) {
+        count = '50';
+      }
+      setForm(prev => ({
+        ...prev,
+        dateCount: count,
+        dates: count === ''
+          ? prev.dates
+          : Array.from({ length: Number(count) }, (_, i) => prev.dates[i] || '')
+      }));
     } else {
       setForm(prev => ({ ...prev, [name]: value }));
     }
@@ -286,6 +313,49 @@ function AddClass() {
     setSelectedStudentIndices(prev => ({ ...prev, [idx]: -1 }));
   };
 
+  const removeStudentField = (idx) => {
+    setForm(prev => {
+      const nextStudentNames = prev.studentNames.filter((_, i) => i !== idx);
+      return {
+        ...prev,
+        studentCount: nextStudentNames.length === 0 ? '' : String(nextStudentNames.length),
+        studentNames: nextStudentNames
+      };
+    });
+    setStudentFilters(prev => prev.filter((_, i) => i !== idx));
+    setFormErrors(prev => ({
+      ...prev,
+      studentCount: prev.studentCount && form.studentNames.length <= 1 ? '' : prev.studentCount,
+      studentNames: prev.studentNames.filter((_, i) => i !== idx)
+    }));
+    setSelectedStudentIndices({});
+    setIsStudentDropdownsOpen({});
+  };
+
+  const handleClassDateChange = (idx, value) => {
+    setForm(prev => {
+      const nextDates = [...prev.dates];
+      nextDates[idx] = value;
+      return { ...prev, dates: nextDates };
+    });
+  };
+
+  const removeDateField = (idx) => {
+    setForm(prev => {
+      const nextDates = prev.dates.filter((_, i) => i !== idx);
+      return {
+        ...prev,
+        dateCount: nextDates.length === 0 ? '' : String(nextDates.length),
+        dates: nextDates
+      };
+    });
+    setFormErrors(prev => ({
+      ...prev,
+      dateCount: prev.dateCount && form.dates.length <= 1 ? '' : prev.dateCount,
+      dates: prev.dates.filter((_, i) => i !== idx)
+    }));
+  };
+
   const filterValue = courseFilter.trim().toLowerCase();
   const filteredCourses = courses.filter(c => {
     const teacher = teachers.find(t => t.teacherId === c.teacherId);
@@ -324,6 +394,28 @@ function AddClass() {
     // 關閉下拉選單並重置選中索引
     setIsCourseDropdownOpen(false);
     setSelectedCourseIndex(-1);
+  };
+
+  const handleSelectGroup = (groupId) => {
+    if (!groupId) return;
+    const group = groups.find(item => item._id === groupId);
+    if (!group) return;
+
+    const groupStudentNames = (group.studentIds || []).map(studentId => {
+      const student = students.find(item => item.studentId === studentId);
+      return student
+        ? `${student.studentId} ${student.nameZh || ''}（${student.nameEn || ''}）`
+        : studentId;
+    });
+
+    setForm(prev => ({
+      ...prev,
+      studentCount: String(groupStudentNames.length),
+      studentNames: groupStudentNames
+    }));
+    setStudentFilters(Array(groupStudentNames.length).fill(''));
+    setSelectedStudentIndices({});
+    setIsStudentDropdownsOpen({});
   };
 
   // 新增：處理課程選擇的鍵盤事件
@@ -453,24 +545,29 @@ function AddClass() {
     // 重置錯誤狀態
     const newErrors = {
       courseId: '',
-      date: '',
       price: '',
       studentCount: '',
-      studentNames: []
+      studentNames: [],
+      dateCount: '',
+      dates: []
     };
     
     // 驗證必填欄位
     if (!form.courseId) {
       newErrors.courseId = '請選擇課程';
     }
-    if (!form.date) {
-      newErrors.date = '請選擇日期';
-    }
     if (!form.price) {
       newErrors.price = '請輸入價格';
     }
     if (!form.studentCount) {
       newErrors.studentCount = '請輸入學生人數';
+    } else if (Number(form.studentCount) < 1) {
+      newErrors.studentCount = '學生人數最少為1';
+    }
+    if (!form.dateCount) {
+      newErrors.dateCount = '請輸入日期數量';
+    } else if (Number(form.dateCount) < 1) {
+      newErrors.dateCount = '日期數量最少為1';
     }
     
     // 驗證學生名稱是否都已填寫
@@ -481,11 +578,26 @@ function AddClass() {
       }
     });
     newErrors.studentNames = studentNameErrors;
+
+    const dateErrors = [];
+    form.dates.forEach((date, index) => {
+      if (!date) {
+        dateErrors[index] = '請選擇日期';
+      }
+    });
+    newErrors.dates = dateErrors;
     
     setFormErrors(newErrors);
     
     // 如果有錯誤，不繼續提交
-    if (newErrors.courseId || newErrors.date || newErrors.price || newErrors.studentCount || studentNameErrors.some(error => error)) {
+    if (
+      newErrors.courseId ||
+      newErrors.price ||
+      newErrors.studentCount ||
+      newErrors.dateCount ||
+      studentNameErrors.some(error => error) ||
+      dateErrors.some(error => error)
+    ) {
       return;
     }
     
@@ -505,14 +617,16 @@ function AddClass() {
       const student = students.find(s => s.studentId === studentId);
       return student ? `${student.studentId} - ${student.nameZh}（${student.nameEn}）${student.nickname ? ` [${student.nickname}]` : ''}` : name;
     });
+    const dateInfo = form.dates.map(formatDate);
     
     // 設置確認數據並顯示彈窗
     setConfirmData({
       courseInfo,
-      date: formatDate(form.date),
+      dateInfo,
       price: form.price,
-      studentCount: form.studentNames.length,
-      studentInfo
+      studentCount: studentInfo.length,
+      studentInfo,
+      recordCount: form.dates.length * form.studentNames.length
     });
     setShowConfirmModal(true);
   };
@@ -523,23 +637,25 @@ function AddClass() {
     setShowConfirmModal(false);
     
     try {
-      for (const name of form.studentNames) {
-        const idMatch = name.match(/^([\w\d]+)/);
-        const studentId = idMatch ? idMatch[1] : '';
-        await fetch(`${config.API_URL}/classes`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            courseId: form.courseId,
-            date: confirmData.date,
-            price: Number(form.price),
-            studentId
-          })
-        });
+      for (const date of form.dates) {
+        for (const name of form.studentNames) {
+          const idMatch = name.match(/^([\w\d]+)/);
+          const studentId = idMatch ? idMatch[1] : '';
+          await fetch(`${config.API_URL}/classes`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              courseId: form.courseId,
+              date,
+              price: Number(form.price),
+              studentId
+            })
+          });
+        }
       }
       
       // 重置表單
-      setForm({ courseId: '', date: '', price: '', studentCount: '', studentNames: [] });
+      setForm({ courseId: '', price: '', studentCount: '', studentNames: [], dateCount: '', dates: [] });
       setCourseDisplay('');
       setStudentFilters([]);
     } catch (error) {
@@ -641,7 +757,7 @@ function AddClass() {
   return (
     <div className="content">
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-        <h1>新增課堂資料</h1>
+        {!embedded && <h1>新增課堂資料</h1>}
         <div style={{ position: 'relative' }}>
           <input
             type="file"
@@ -754,61 +870,143 @@ function AddClass() {
             )}
           </div>
           <div className="form-group">
-            <label>日期</label>
-            <input type="date" name="date" value={form.date} onChange={handleChange} required />
-            {formErrors.date && <div style={{color: 'red', fontSize: '0.9em', marginTop: 4}}>{formErrors.date}</div>}
-          </div>
-          <div className="form-group">
             <label>價格</label>
             <input type="number" name="price" value={form.price} onChange={handleChange} step="1" placeholder="請輸入價格" required />
             {formErrors.price && <div style={{color: 'red', fontSize: '0.9em', marginTop: 4}}>{formErrors.price}</div>}
           </div>
           <div className="form-group">
+            <label>日期數量</label>
+            <input
+              type="number"
+              name="dateCount"
+              value={form.dateCount}
+              onChange={handleChange}
+              min="1"
+              max="50"
+              step="1"
+              placeholder="請輸入日期數量"
+              required
+            />
+            {formErrors.dateCount && <div style={{color: 'red', fontSize: '0.9em', marginTop: 4}}>{formErrors.dateCount}</div>}
+          </div>
+          <div className="form-group">
             <label>學生人數</label>
-            <input type="text" name="studentCount" value={form.studentCount} onChange={handleChange} pattern="^[1-9][0-9]*$" placeholder="請輸入學生人數" required />
+            <input
+              type="number"
+              name="studentCount"
+              value={form.studentCount}
+              onChange={handleChange}
+              min="1"
+              max="20"
+              step="1"
+              placeholder="請輸入學生人數"
+              required
+            />
             {formErrors.studentCount && <div style={{color: 'red', fontSize: '0.9em', marginTop: 4}}>{formErrors.studentCount}</div>}
             {studentCountError && <div style={{color: 'red', fontSize: '0.95em', marginTop: 4}}>{studentCountError}</div>}
           </div>
+          <div className="form-group">
+            <label>選擇群組</label>
+            <select onChange={e => handleSelectGroup(e.target.value)} defaultValue="">
+              <option value="">不使用群組</option>
+              {groups.map(group => (
+                <option key={group._id} value={group._id}>
+                  {group.groupName}（{group.studentCount || group.studentIds?.length || 0}人）
+                </option>
+              ))}
+            </select>
+          </div>
           <button type="submit" disabled={loading}>{loading ? '新增中...' : '新增課堂'}</button>
         </form>
+        <div className="class-form-right">
+          <div className="class-form-right-title">課堂日期</div>
+          <div className="student-names-scroll">
+            <div className="student-names-wrap">
+              {form.dateCount !== '' && Array.from({ length: Number(form.dateCount) }).map((_, idx) => (
+                <div className="form-group" key={`date-${idx}`}>
+                  <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                    <input
+                      type="date"
+                      value={form.dates[idx] || ''}
+                      onChange={e => handleClassDateChange(idx, e.target.value)}
+                      required
+                      style={{ minWidth: 120, flex: 1 }}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => removeDateField(idx)}
+                      style={{
+                        padding: '8px 10px',
+                        background: '#dc3545',
+                        color: 'white',
+                        border: 'none',
+                        borderRadius: '6px',
+                        cursor: 'pointer',
+                        whiteSpace: 'nowrap'
+                      }}
+                    >
+                      刪除
+                    </button>
+                  </div>
+                  {formErrors.dates[idx] && <div style={{color: 'red', fontSize: '0.9em', marginTop: 4}}>{formErrors.dates[idx]}</div>}
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
         <div className="class-form-right">
           <div className="class-form-right-title">學生名稱</div>
           <div className="student-names-scroll">
             <div className="student-names-wrap">
               {form.studentCount !== '' && Array.from({ length: Number(form.studentCount) }).map((_, idx) => (
                 <div className="form-group" key={idx} style={{position:'relative'}}>
-                  <input
-                    type="text"
-                    value={form.studentNames[idx] || ''}
-                    onChange={e => handleStudentNameChange(idx, e.target.value)}
-                    onKeyDown={e => handleStudentKeyDown(e, idx)}
-                    onFocus={() => {
-                      if (studentFilters[idx]) {
-                        setIsStudentDropdownsOpen(prev => ({ ...prev, [idx]: true }));
-                        // 當聚焦時，如果有過濾結果，預選第一個選項
-                        const filteredStudents = students.filter(s =>
-                          (s.studentId && s.studentId.includes(studentFilters[idx])) ||
-                          (s.nameZh && s.nameZh.includes(studentFilters[idx])) ||
-                          (s.nameEn && s.nameEn.toLowerCase().includes(studentFilters[idx].toLowerCase())) ||
-                          (s.nickname && s.nickname.includes(studentFilters[idx]))
-                        );
-                        if (filteredStudents.length > 0) {
-                          setSelectedStudentIndices(prev => ({ ...prev, [idx]: 0 }));
+                  <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                    <input
+                      type="text"
+                      value={form.studentNames[idx] || ''}
+                      onChange={e => handleStudentNameChange(idx, e.target.value)}
+                      onKeyDown={e => handleStudentKeyDown(e, idx)}
+                      onFocus={() => {
+                        if (studentFilters[idx]) {
+                          setIsStudentDropdownsOpen(prev => ({ ...prev, [idx]: true }));
+                          const filteredStudents = students.filter(s =>
+                            (s.studentId && s.studentId.includes(studentFilters[idx])) ||
+                            (s.nameZh && s.nameZh.includes(studentFilters[idx])) ||
+                            (s.nameEn && s.nameEn.toLowerCase().includes(studentFilters[idx].toLowerCase())) ||
+                            (s.nickname && s.nickname.includes(studentFilters[idx]))
+                          );
+                          if (filteredStudents.length > 0) {
+                            setSelectedStudentIndices(prev => ({ ...prev, [idx]: 0 }));
+                          }
                         }
-                      }
-                    }}
-                    onBlur={() => {
-                      // 延遲關閉，讓點擊事件有機會觸發
-                      setTimeout(() => {
-                        setIsStudentDropdownsOpen(prev => ({ ...prev, [idx]: false }));
-                        setSelectedStudentIndices(prev => ({ ...prev, [idx]: -1 }));
-                      }, 100);
-                    }}
-                    placeholder={`學生名稱 #${idx + 1}`}
-                    autoComplete="off"
-                    required
-                    style={{minWidth: 120}}
-                  />
+                      }}
+                      onBlur={() => {
+                        setTimeout(() => {
+                          setIsStudentDropdownsOpen(prev => ({ ...prev, [idx]: false }));
+                          setSelectedStudentIndices(prev => ({ ...prev, [idx]: -1 }));
+                        }, 100);
+                      }}
+                      placeholder={`學生名稱 #${idx + 1}`}
+                      autoComplete="off"
+                      required
+                      style={{minWidth: 120, flex: 1}}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => removeStudentField(idx)}
+                      style={{
+                        padding: '8px 10px',
+                        background: '#dc3545',
+                        color: 'white',
+                        border: 'none',
+                        borderRadius: '6px',
+                        cursor: 'pointer',
+                        whiteSpace: 'nowrap'
+                      }}
+                    >
+                      刪除
+                    </button>
+                  </div>
                   {formErrors.studentNames[idx] && <div style={{color: 'red', fontSize: '0.9em', marginTop: 4}}>{formErrors.studentNames[idx]}</div>}
                   {isStudentDropdownsOpen[idx] && studentFilters[idx] && studentFilters[idx].trim() !== '' && (
                     <ul className="dropdown" ref={el => studentDropdownRefs.current[idx] = el}>
@@ -818,10 +1016,10 @@ function AddClass() {
                         (s.nameEn && s.nameEn.toLowerCase().includes(studentFilters[idx].toLowerCase())) ||
                         (s.nickname && s.nickname.includes(studentFilters[idx]))
                       ).map((s, studentIndex) => (
-                        <li 
-                          key={s._id || s.studentId} 
+                        <li
+                          key={s._id || s.studentId}
                           onClick={() => handleSelectStudent(idx, s)}
-                          onMouseDown={(e) => e.preventDefault()} // 防止 onBlur 觸發
+                          onMouseDown={(e) => e.preventDefault()}
                           className={studentIndex === selectedStudentIndices[idx] ? 'selected' : ''}
                           style={{
                             backgroundColor: selectedStudentIndices[idx] === studentIndex ? '#e3f2fd' : 'transparent',
@@ -855,10 +1053,13 @@ function AddClass() {
             <strong>課程：</strong>${confirmData.courseInfo}
           </div>
           <div style="margin-bottom: 16px;">
-            <strong>日期：</strong>${confirmData.date}
+            <strong>價格：</strong>$${confirmData.price}
           </div>
           <div style="margin-bottom: 16px;">
-            <strong>價格：</strong>$${confirmData.price}
+            <strong>日期名單：</strong>
+          </div>
+          <div style="margin-bottom: 20px; padding-left: 16px;">
+            ${confirmData.dateInfo.map(date => `<div style="margin-bottom: 4px;">${date}</div>`).join('')}
           </div>
           <div style="margin-bottom: 16px;">
             <strong>學生人數：</strong>${confirmData.studentCount}人
@@ -870,7 +1071,7 @@ function AddClass() {
             ${confirmData.studentInfo.map(student => `<div style="margin-bottom: 4px;">${student}</div>`).join('')}
           </div>
           <div style="margin-top: 20px; text-align: center; font-weight: 600; color: #495057;">
-            確定要新增這${confirmData.studentCount}筆課堂記錄嗎？
+            確定要新增這${confirmData.recordCount}筆課堂記錄嗎？
           </div>
         ` : ''}
         onConfirm={handleConfirmSubmit}
@@ -881,7 +1082,572 @@ function AddClass() {
     </div>
   );
 }
-function AddCourse() {
+
+function AddGroup({ initialTab = 'add' }) {
+  const [activeTab, setActiveTab] = React.useState(initialTab);
+  const [form, setForm] = React.useState({
+    groupName: '',
+    studentCount: '',
+    studentNames: []
+  });
+  const [editForm, setEditForm] = React.useState({
+    groupName: '',
+    studentCount: '',
+    studentNames: []
+  });
+  const [students, setStudents] = React.useState([]);
+  const [groups, setGroups] = React.useState([]);
+  const [studentFilters, setStudentFilters] = React.useState([]);
+  const [editStudentFilters, setEditStudentFilters] = React.useState([]);
+  const [selectedStudentIndices, setSelectedStudentIndices] = React.useState({});
+  const [editSelectedStudentIndices, setEditSelectedStudentIndices] = React.useState({});
+  const [isStudentDropdownsOpen, setIsStudentDropdownsOpen] = React.useState({});
+  const [isEditStudentDropdownsOpen, setIsEditStudentDropdownsOpen] = React.useState({});
+  const studentDropdownRefs = React.useRef({});
+  const editStudentDropdownRefs = React.useRef({});
+  const [studentCountError, setStudentCountError] = React.useState('');
+  const [editStudentCountError, setEditStudentCountError] = React.useState('');
+  const [loading, setLoading] = React.useState(false);
+  const [editLoading, setEditLoading] = React.useState(false);
+  const [editingGroup, setEditingGroup] = React.useState(null);
+  const [showEditModal, setShowEditModal] = React.useState(false);
+  const [deleteTarget, setDeleteTarget] = React.useState(null);
+  const [showDeleteModal, setShowDeleteModal] = React.useState(false);
+
+  React.useEffect(() => {
+    fetchAllData();
+  }, []);
+
+  const fetchAllData = async () => {
+    try {
+      const [studentsRes, groupsRes] = await Promise.all([
+        fetch(`${config.API_URL}/students`),
+        fetch(`${config.API_URL}/groups`)
+      ]);
+      setStudents(await studentsRes.json());
+      setGroups(await groupsRes.json());
+    } catch (error) {
+      console.error('獲取群組資料失敗:', error);
+    }
+  };
+
+  const updateStudentCount = (value, setTargetForm, setTargetFilters, setError) => {
+    let count = value === '' ? '' : value.replace(/[^0-9]/g, '');
+    if (count !== '' && Number(count) > 50) {
+      count = '50';
+      setError('學生人數上限為50');
+    } else {
+      setError('');
+    }
+
+    setTargetForm(prev => ({
+      ...prev,
+      studentCount: count,
+      studentNames: count === ''
+        ? prev.studentNames
+        : Array.from({ length: Number(count) }, (_, i) => prev.studentNames[i] || '')
+    }));
+    setTargetFilters(prev => (
+      count === '' ? prev : Array.from({ length: Number(count) }, (_, i) => prev[i] || '')
+    ));
+  };
+
+  const handleStudentCountChange = (e) => {
+    updateStudentCount(e.target.value, setForm, setStudentFilters, setStudentCountError);
+  };
+
+  const handleEditStudentCountChange = (e) => {
+    updateStudentCount(e.target.value, setEditForm, setEditStudentFilters, setEditStudentCountError);
+  };
+
+  const updateStudentName = (idx, value, setTargetForm, setTargetFilters, setTargetOpen, setTargetSelected) => {
+    setTargetForm(prev => {
+      const next = [...prev.studentNames];
+      next[idx] = value;
+      return { ...prev, studentNames: next };
+    });
+    setTargetFilters(prev => {
+      const next = [...prev];
+      next[idx] = value;
+      return next;
+    });
+    const shouldOpen = value.trim() !== '';
+    setTargetOpen(prev => ({ ...prev, [idx]: shouldOpen }));
+    setTargetSelected(prev => ({ ...prev, [idx]: shouldOpen ? 0 : -1 }));
+  };
+
+  const handleStudentNameChange = (idx, value) => {
+    updateStudentName(idx, value, setForm, setStudentFilters, setIsStudentDropdownsOpen, setSelectedStudentIndices);
+  };
+
+  const handleEditStudentNameChange = (idx, value) => {
+    updateStudentName(idx, value, setEditForm, setEditStudentFilters, setIsEditStudentDropdownsOpen, setEditSelectedStudentIndices);
+  };
+
+  const selectStudent = (idx, student, setTargetForm, setTargetFilters, setTargetOpen, setTargetSelected) => {
+    setTargetForm(prev => {
+      const next = [...prev.studentNames];
+      next[idx] = `${student.studentId} ${student.nameZh || ''}（${student.nameEn || ''}）`;
+      return { ...prev, studentNames: next };
+    });
+    setTargetFilters(prev => {
+      const next = [...prev];
+      next[idx] = '';
+      return next;
+    });
+    setTargetOpen(prev => ({ ...prev, [idx]: false }));
+    setTargetSelected(prev => ({ ...prev, [idx]: -1 }));
+  };
+
+  const handleSelectStudent = (idx, student) => {
+    selectStudent(idx, student, setForm, setStudentFilters, setIsStudentDropdownsOpen, setSelectedStudentIndices);
+  };
+
+  const handleEditSelectStudent = (idx, student) => {
+    selectStudent(idx, student, setEditForm, setEditStudentFilters, setIsEditStudentDropdownsOpen, setEditSelectedStudentIndices);
+  };
+
+  const removeStudentField = (idx) => {
+    setForm(prev => {
+      const next = prev.studentNames.filter((_, i) => i !== idx);
+      return {
+        ...prev,
+        studentCount: next.length === 0 ? '' : String(next.length),
+        studentNames: next
+      };
+    });
+    setStudentFilters(prev => prev.filter((_, i) => i !== idx));
+    setSelectedStudentIndices({});
+    setIsStudentDropdownsOpen({});
+  };
+
+  const removeEditStudentField = (idx) => {
+    setEditForm(prev => {
+      const next = prev.studentNames.filter((_, i) => i !== idx);
+      return {
+        ...prev,
+        studentCount: next.length === 0 ? '' : String(next.length),
+        studentNames: next
+      };
+    });
+    setEditStudentFilters(prev => prev.filter((_, i) => i !== idx));
+    setEditSelectedStudentIndices({});
+    setIsEditStudentDropdownsOpen({});
+  };
+
+  const getFilteredStudents = (idx, filters = studentFilters) => {
+    const filter = filters[idx] || '';
+    return students.filter(s =>
+      (s.studentId && s.studentId.includes(filter)) ||
+      (s.nameZh && s.nameZh.includes(filter)) ||
+      (s.nameEn && s.nameEn.toLowerCase().includes(filter.toLowerCase())) ||
+      (s.nickname && s.nickname.includes(filter))
+    );
+  };
+
+  const getGroupStudentIds = (targetForm) => {
+    if (!targetForm.groupName.trim()) {
+      alert('請輸入群組名稱');
+      return null;
+    }
+    if (!targetForm.studentCount || Number(targetForm.studentCount) < 1) {
+      alert('請輸入學生人數');
+      return null;
+    }
+
+    const studentIds = targetForm.studentNames.map(name => {
+      const idMatch = name.match(/^([\w\d]+)/);
+      return idMatch ? idMatch[1] : '';
+    }).filter(Boolean);
+
+    if (studentIds.length !== Number(targetForm.studentCount)) {
+      alert('請填寫所有學生名稱');
+      return null;
+    }
+
+    return studentIds;
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    const studentIds = getGroupStudentIds(form);
+    if (!studentIds) return;
+
+    setLoading(true);
+    try {
+      const res = await fetch(`${config.API_URL}/groups`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          groupName: form.groupName,
+          studentIds
+        })
+      });
+      if (!res.ok) {
+        const errorData = await res.json();
+        throw new Error(errorData.message || '新增群組失敗');
+      }
+      setForm({ groupName: '', studentCount: '', studentNames: [] });
+      setStudentFilters([]);
+      fetchAllData();
+    } catch (error) {
+      alert(error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleEditGroup = (group) => {
+    const groupStudentNames = (group.studentIds || []).map(studentId => {
+      const student = students.find(item => item.studentId === studentId);
+      return student
+        ? `${student.studentId} ${student.nameZh || ''}（${student.nameEn || ''}）`
+        : studentId;
+    });
+
+    setEditingGroup(group);
+    setEditForm({
+      groupName: group.groupName || '',
+      studentCount: String(groupStudentNames.length),
+      studentNames: groupStudentNames
+    });
+    setEditStudentFilters(Array(groupStudentNames.length).fill(''));
+    setEditSelectedStudentIndices({});
+    setIsEditStudentDropdownsOpen({});
+    setEditStudentCountError('');
+    setShowEditModal(true);
+  };
+
+  const handleSaveEditGroup = async (e) => {
+    e.preventDefault();
+    if (!editingGroup) return;
+
+    const studentIds = getGroupStudentIds(editForm);
+    if (!studentIds) return;
+
+    setEditLoading(true);
+    try {
+      const res = await fetch(`${config.API_URL}/groups/${editingGroup._id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          groupName: editForm.groupName,
+          studentIds
+        })
+      });
+      if (!res.ok) {
+        const errorData = await res.json();
+        throw new Error(errorData.message || '更新群組失敗');
+      }
+      handleCancelEditGroup();
+      fetchAllData();
+    } catch (error) {
+      alert(error.message);
+    } finally {
+      setEditLoading(false);
+    }
+  };
+
+  const handleCancelEditGroup = () => {
+    setEditingGroup(null);
+    setShowEditModal(false);
+    setEditForm({ groupName: '', studentCount: '', studentNames: [] });
+    setEditStudentFilters([]);
+    setEditSelectedStudentIndices({});
+    setIsEditStudentDropdownsOpen({});
+    setEditStudentCountError('');
+  };
+
+  const handleDeleteGroup = (groupId) => {
+    setDeleteTarget(groupId);
+    setShowDeleteModal(true);
+  };
+
+  const handleConfirmDeleteGroup = async () => {
+    try {
+      const res = await fetch(`${config.API_URL}/groups/${deleteTarget}`, {
+        method: 'DELETE'
+      });
+      if (!res.ok) {
+        throw new Error('刪除群組失敗');
+      }
+      setShowDeleteModal(false);
+      setDeleteTarget(null);
+      if (editingGroup?._id === deleteTarget) {
+        handleCancelEditGroup();
+      }
+      fetchAllData();
+    } catch (error) {
+      alert(error.message);
+    }
+  };
+
+  const handleCancelDeleteGroup = () => {
+    setShowDeleteModal(false);
+    setDeleteTarget(null);
+  };
+
+  const renderStudentFields = ({
+    targetForm,
+    filters,
+    openDropdowns,
+    selectedIndices,
+    refs,
+    onNameChange,
+    onSelectStudent,
+    onRemoveStudent,
+    setOpenDropdowns,
+    setSelectedIndices
+  }) => (
+    <div className="student-names-scroll">
+      <div className="student-names-wrap">
+        {targetForm.studentCount !== '' && Array.from({ length: Number(targetForm.studentCount) }).map((_, idx) => {
+          const filteredStudents = getFilteredStudents(idx, filters);
+          return (
+            <div className="form-group" key={idx} style={{position:'relative'}}>
+              <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                <input
+                  type="text"
+                  value={targetForm.studentNames[idx] || ''}
+                  onChange={e => onNameChange(idx, e.target.value)}
+                  onBlur={() => {
+                    setTimeout(() => {
+                      setOpenDropdowns(prev => ({ ...prev, [idx]: false }));
+                      setSelectedIndices(prev => ({ ...prev, [idx]: -1 }));
+                    }, 100);
+                  }}
+                  placeholder={`學生名稱 #${idx + 1}`}
+                  autoComplete="off"
+                  required
+                  style={{ minWidth: 120, flex: 1 }}
+                />
+                <button type="button" className="action-button delete" onClick={() => onRemoveStudent(idx)}>
+                  刪除
+                </button>
+              </div>
+              {openDropdowns[idx] && filters[idx] && filters[idx].trim() !== '' && (
+                <ul className="dropdown" ref={el => refs.current[idx] = el}>
+                  {filteredStudents.map((student, studentIndex) => (
+                    <li
+                      key={student._id || student.studentId}
+                      onClick={() => onSelectStudent(idx, student)}
+                      onMouseDown={(event) => event.preventDefault()}
+                      className={studentIndex === selectedIndices[idx] ? 'selected' : ''}
+                    >
+                      {student.studentId} {student.nameZh}（{student.nameEn}）{student.nickname ? ` [${student.nickname}]` : ''}
+                    </li>
+                  ))}
+                  {filteredStudents.length === 0 && <li>無符合選項</li>}
+                </ul>
+              )}
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+
+  return (
+    <div>
+      <div className="page-tab-header">
+        <h1>群組</h1>
+        <div className="mode-toggle">
+          <button
+            type="button"
+            className={activeTab === 'add' ? 'active' : ''}
+            onClick={() => setActiveTab('add')}
+          >
+            新增
+          </button>
+          <button
+            type="button"
+            className={activeTab === 'manage' ? 'active' : ''}
+            onClick={() => setActiveTab('manage')}
+          >
+            管理
+          </button>
+        </div>
+      </div>
+      <div className="content">
+        {activeTab === 'add' ? (
+          <div className="class-main-flex">
+            <form onSubmit={handleSubmit} className="course-form class-form-left">
+              <div className="form-group">
+                <label>群組名稱</label>
+                <input
+                  type="text"
+                  value={form.groupName}
+                  onChange={e => setForm(prev => ({ ...prev, groupName: e.target.value }))}
+                  placeholder="請輸入群組名稱"
+                  required
+                />
+              </div>
+              <div className="form-group">
+                <label>學生人數</label>
+                <input
+                  type="number"
+                  value={form.studentCount}
+                  onChange={handleStudentCountChange}
+                  min="1"
+                  max="50"
+                  step="1"
+                  placeholder="請輸入學生人數"
+                  required
+                />
+                {studentCountError && <div style={{color: 'red', fontSize: '0.95em', marginTop: 4}}>{studentCountError}</div>}
+              </div>
+              <button type="submit" disabled={loading}>
+                {loading ? '儲存中...' : '新增群組'}
+              </button>
+            </form>
+
+            <div className="class-form-right">
+              <div className="class-form-right-title">學生名稱</div>
+              {renderStudentFields({
+                targetForm: form,
+                filters: studentFilters,
+                openDropdowns: isStudentDropdownsOpen,
+                selectedIndices: selectedStudentIndices,
+                refs: studentDropdownRefs,
+                onNameChange: handleStudentNameChange,
+                onSelectStudent: handleSelectStudent,
+                onRemoveStudent: removeStudentField,
+                setOpenDropdowns: setIsStudentDropdownsOpen,
+                setSelectedIndices: setSelectedStudentIndices
+              })}
+            </div>
+          </div>
+        ) : (
+          <div className="class-form-right">
+            <div className="class-form-right-title">群組列表</div>
+            <div className="course-list-scroll">
+              <table className="course-table">
+                <thead>
+                  <tr>
+                    <th>群組名稱</th>
+                    <th>學生人數</th>
+                    <th>操作</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {groups.map(group => (
+                    <tr key={group._id}>
+                      <td>{group.groupName}</td>
+                      <td>{group.studentCount || group.studentIds?.length || 0}</td>
+                      <td>
+                        <div className="action-buttons">
+                          <button className="action-button edit" onClick={() => handleEditGroup(group)}>編輯</button>
+                          <button className="action-button delete" onClick={() => handleDeleteGroup(group._id)}>刪除</button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
+      </div>
+      {showEditModal && (
+        <div className="edit-modal-overlay">
+          <div className="edit-modal-container">
+            <div className="edit-modal-header">
+              <h3>編輯群組</h3>
+              <button className="close-button" onClick={handleCancelEditGroup}>×</button>
+            </div>
+            <form onSubmit={handleSaveEditGroup} className="edit-modal-form">
+              <div className="edit-modal-content">
+                <div className="form-group">
+                  <label>群組名稱</label>
+                  <input
+                    type="text"
+                    value={editForm.groupName}
+                    onChange={e => setEditForm(prev => ({ ...prev, groupName: e.target.value }))}
+                    placeholder="請輸入群組名稱"
+                    required
+                  />
+                </div>
+                <div className="form-group">
+                  <label>學生人數</label>
+                  <input
+                    type="number"
+                    value={editForm.studentCount}
+                    onChange={handleEditStudentCountChange}
+                    min="1"
+                    max="50"
+                    step="1"
+                    placeholder="請輸入學生人數"
+                    required
+                  />
+                  {editStudentCountError && <div style={{color: 'red', fontSize: '0.95em', marginTop: 4}}>{editStudentCountError}</div>}
+                </div>
+                <div className="class-form-right-title">學生名稱</div>
+                {renderStudentFields({
+                  targetForm: editForm,
+                  filters: editStudentFilters,
+                  openDropdowns: isEditStudentDropdownsOpen,
+                  selectedIndices: editSelectedStudentIndices,
+                  refs: editStudentDropdownRefs,
+                  onNameChange: handleEditStudentNameChange,
+                  onSelectStudent: handleEditSelectStudent,
+                  onRemoveStudent: removeEditStudentField,
+                  setOpenDropdowns: setIsEditStudentDropdownsOpen,
+                  setSelectedIndices: setEditSelectedStudentIndices
+                })}
+              </div>
+              <div className="edit-modal-footer">
+                <button type="button" className="cancel-button" onClick={handleCancelEditGroup}>
+                  取消
+                </button>
+                <button type="submit" className="save-button" disabled={editLoading}>
+                  {editLoading ? '儲存中...' : '保存'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+      <ConfirmDeleteModal
+        isOpen={showDeleteModal}
+        onClose={handleCancelDeleteGroup}
+        onConfirm={handleConfirmDeleteGroup}
+        title="確認刪除"
+        message="確定要刪除這個群組嗎？"
+      />
+    </div>
+  );
+}
+
+function CoursePage({ initialTab = 'add' }) {
+  const [activeTab, setActiveTab] = React.useState(initialTab);
+
+  return (
+    <div>
+      <div className="page-tab-header">
+        <h1>課程</h1>
+        <div className="mode-toggle">
+          <button
+            type="button"
+            className={activeTab === 'add' ? 'active' : ''}
+            onClick={() => setActiveTab('add')}
+          >
+            新增
+          </button>
+          <button
+            type="button"
+            className={activeTab === 'manage' ? 'active' : ''}
+            onClick={() => setActiveTab('manage')}
+          >
+            管理
+          </button>
+        </div>
+      </div>
+      {activeTab === 'add' ? <AddCourse embedded /> : <CourseList embedded />}
+    </div>
+  );
+}
+
+function AddCourse({ embedded = false }) {
   const [form, setForm] = React.useState({
     teacherId: '',
     grade: '',
@@ -1162,7 +1928,7 @@ function AddCourse() {
   return (
     <div className="content">
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-      <h1>新增課程資料</h1>
+      {!embedded && <h1>新增課程資料</h1>}
         <div style={{ position: 'relative' }}>
           <input
             type="file"
@@ -1364,7 +2130,36 @@ function AddCourse() {
     </div>
   );
 }
-function AddStudent() {
+function StudentPage({ initialTab = 'add' }) {
+  const [activeTab, setActiveTab] = React.useState(initialTab);
+
+  return (
+    <div>
+      <div className="page-tab-header">
+        <h1>學生</h1>
+        <div className="mode-toggle">
+          <button
+            type="button"
+            className={activeTab === 'add' ? 'active' : ''}
+            onClick={() => setActiveTab('add')}
+          >
+            新增
+          </button>
+          <button
+            type="button"
+            className={activeTab === 'manage' ? 'active' : ''}
+            onClick={() => setActiveTab('manage')}
+          >
+            管理
+          </button>
+        </div>
+      </div>
+      {activeTab === 'add' ? <AddStudent embedded /> : <StudentList embedded />}
+    </div>
+  );
+}
+
+function AddStudent({ embedded = false }) {
   const [form, setForm] = React.useState({
     nameZh: '',
     nameEn: '',
@@ -1372,6 +2167,7 @@ function AddStudent() {
     nickname: '',
     phone: '',
     wechat: '',
+    contactMethod: '',
     school: '',
     notes: ''
   });
@@ -1421,6 +2217,7 @@ function AddStudent() {
       nickname: form.nickname || '無',
       phone: form.phone || '無',
       wechat: form.wechat || '無',
+      contactMethod: form.contactMethod || '無',
       school: form.school || '無',
       notes: form.notes || '無'
     });
@@ -1440,7 +2237,7 @@ function AddStudent() {
       });
       const data = await res.json();
       setStudents(prev => [...prev, data]);
-      setForm({ nameZh: '', nameEn: '', grade: '', nickname: '', phone: '', wechat: '', school: '', notes: '' });
+      setForm({ nameZh: '', nameEn: '', grade: '', nickname: '', phone: '', wechat: '', contactMethod: '', school: '', notes: '' });
     } catch (error) {
       console.error('新增學生時發生錯誤:', error);
       alert('❌ 新增學生時發生錯誤，請重試');
@@ -1499,6 +2296,7 @@ function AddStudent() {
                   nickname: student.nickname || '',
                   phone: student.phone || '',
                   wechat: student.wechat || '',
+                  contactMethod: student.contactMethod || '',
                   school: student.school || '',
                   notes: student.notes || ''
                 })
@@ -1550,7 +2348,7 @@ function AddStudent() {
   return (
     <div className="content">
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-        <h1>新增學生資料</h1>
+        {!embedded && <h1>新增學生資料</h1>}
         <div style={{ position: 'relative' }}>
           <input
             type="file"
@@ -1604,146 +2402,120 @@ function AddStudent() {
           {csvMessage}
         </div>
       )}
-      <div className="class-main-flex">
-        <form onSubmit={handleSubmit} className="course-form class-form-left">
-          <div className="form-group">
-            <label>學生ID</label>
-            <input type="text" value={(() => {
-              if (students.length === 0) return '1';
-              const maxId = Math.max(...students.map(s => parseInt(s.studentId.replace(/\D/g, '')) || 0));
-              return (maxId + 1).toString();
-            })()} disabled />
-          </div>
-          <div className="form-group">
-            <label>學生姓名（中文）</label>
-            <input
-              type="text"
-              name="nameZh"
-              value={form.nameZh}
-              onChange={handleChange}
-              placeholder="請輸入中文姓名"
-              required
-            />
-          </div>
-          <div className="form-group">
-            <label>學生姓名（英文）</label>
-            <input
-              type="text"
-              name="nameEn"
-              value={form.nameEn}
-              onChange={handleChange}
-              placeholder="請輸入英文姓名"
-            />
-          </div>
-          <div className="form-group">
-            <label>暱稱</label>
-            <input
-              type="text"
-              name="nickname"
-              value={form.nickname}
-              onChange={handleChange}
-              placeholder="請輸入暱稱"
-            />
-          </div>
-          <div className="form-group">
-            <label>電話號碼</label>
-            <input
-              type="text"
-              name="phone"
-              value={form.phone}
-              onChange={handleChange}
-              placeholder="請輸入電話號碼"
-            />
-          </div>
-          <div className="form-group">
-            <label>微信號碼</label>
-            <input
-              type="text"
-              name="wechat"
-              value={form.wechat}
-              onChange={handleChange}
-              placeholder="請輸入微信號碼"
-            />
-          </div>
-          <div className="form-group">
-            <label>年級</label>
-            <select name="grade" value={form.grade} onChange={handleChange} required>
-              <option value="">請選擇年級</option>
-              <option value="中一">中一</option>
-              <option value="中二">中二</option>
-              <option value="中三">中三</option>
-              <option value="中四">中四</option>
-              <option value="中五">中五</option>
-              <option value="中六">中六</option>
-            </select>
-          </div>
-          <div className="form-group">
-            <label>學校</label>
-            <input
-              type="text"
-              name="school"
-              value={form.school}
-              onChange={handleChange}
-              placeholder="請輸入學校名稱"
-            />
-          </div>
-          <div className="form-group">
-            <label>備註</label>
-            <textarea
-              name="notes"
-              value={form.notes}
-              onChange={handleChange}
-              placeholder="請輸入備註"
-              rows="3"
-              style={{
-                width: '100%',
-                padding: '8px 12px',
-                border: '1px solid #ddd',
-                borderRadius: '4px',
-                fontSize: '14px',
-                fontFamily: 'inherit',
-                resize: 'vertical'
-              }}
-            />
-          </div>
-          <button type="submit" disabled={loading}>{loading ? '新增中...' : '新增學生'}</button>
-        </form>
-        <div className="class-form-right">
-          <div className="class-form-right-title">學生列表</div>
-          <div className="course-list-scroll">
-            <table className="course-table">
-              <thead>
-                <tr>
-                  <th>學生ID</th>
-                  <th>姓名（中文）</th>
-                  <th>姓名（英文）</th>
-                  <th>暱稱</th>
-                  <th>電話號碼</th>
-                  <th>微信號碼</th>
-                  <th>年級</th>
-                  <th>學校</th>
-                  <th>備註</th>
-                </tr>
-              </thead>
-              <tbody>
-                {students.map(student => (
-                  <tr key={student._id || student.studentId}>
-                    <td>{student.studentId}</td>
-                    <td>{student.nameZh}</td>
-                    <td>{student.nameEn}</td>
-                    <td>{student.nickname}</td>
-                    <td>{student.phone}</td>
-                    <td>{student.wechat}</td>
-                    <td>{student.grade}</td>
-                    <td>{student.school}</td>
-                    <td>{student.notes}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+      <form onSubmit={handleSubmit} className="course-form student-add-form">
+        <div className="form-group">
+          <label>學生ID</label>
+          <input type="text" value={(() => {
+            if (students.length === 0) return '1';
+            const maxId = Math.max(...students.map(s => parseInt(s.studentId.replace(/\D/g, '')) || 0));
+            return (maxId + 1).toString();
+          })()} disabled />
         </div>
-      </div>
+        <div className="form-group">
+          <label>學生姓名（中文）</label>
+          <input
+            type="text"
+            name="nameZh"
+            value={form.nameZh}
+            onChange={handleChange}
+            placeholder="請輸入中文姓名"
+            required
+          />
+        </div>
+        <div className="form-group">
+          <label>學生姓名（英文）</label>
+          <input
+            type="text"
+            name="nameEn"
+            value={form.nameEn}
+            onChange={handleChange}
+            placeholder="請輸入英文姓名"
+          />
+        </div>
+        <div className="form-group">
+          <label>暱稱</label>
+          <input
+            type="text"
+            name="nickname"
+            value={form.nickname}
+            onChange={handleChange}
+            placeholder="請輸入暱稱"
+          />
+        </div>
+        <div className="form-group">
+          <label>電話號碼</label>
+          <input
+            type="text"
+            name="phone"
+            value={form.phone}
+            onChange={handleChange}
+            placeholder="請輸入電話號碼"
+          />
+        </div>
+        <div className="form-group">
+          <label>微信號碼</label>
+          <input
+            type="text"
+            name="wechat"
+            value={form.wechat}
+            onChange={handleChange}
+            placeholder="請輸入微信號碼"
+          />
+        </div>
+        <div className="form-group">
+          <label>聯絡方式</label>
+          <select name="contactMethod" value={form.contactMethod} onChange={handleChange}>
+            <option value="">請選擇聯絡方式</option>
+            <option value="WhatsApp">WhatsApp</option>
+            <option value="微信">微信</option>
+          </select>
+        </div>
+        <div className="form-group">
+          <label>年級</label>
+          <select name="grade" value={form.grade} onChange={handleChange} required>
+            <option value="">請選擇年級</option>
+            <option value="中一">中一</option>
+            <option value="中二">中二</option>
+            <option value="中三">中三</option>
+            <option value="中四">中四</option>
+            <option value="中五">中五</option>
+            <option value="中六">中六</option>
+          </select>
+        </div>
+        <div className="form-group">
+          <label>學校</label>
+          <input
+            type="text"
+            name="school"
+            value={form.school}
+            onChange={handleChange}
+            placeholder="請輸入學校名稱"
+          />
+        </div>
+        <div className="form-group student-notes-field">
+          <label>備註</label>
+          <textarea
+            name="notes"
+            value={form.notes}
+            onChange={handleChange}
+            placeholder="請輸入備註"
+            rows="1"
+            style={{
+              width: '100%',
+              padding: '8px 12px',
+              border: '1px solid #ddd',
+              borderRadius: '4px',
+              fontSize: '14px',
+              fontFamily: 'inherit',
+              resize: 'none',
+              boxSizing: 'border-box'
+            }}
+          />
+        </div>
+        <div className="student-submit-row">
+          <button type="submit" disabled={loading}>{loading ? '新增中...' : '新增學生'}</button>
+        </div>
+      </form>
       
       {/* 確認彈窗 */}
       <ConfirmModal
@@ -1757,6 +2529,7 @@ function AddStudent() {
             <p><strong>暱稱：</strong>${confirmData.nickname}</p>
             <p><strong>電話號碼：</strong>${confirmData.phone}</p>
             <p><strong>微信號碼：</strong>${confirmData.wechat}</p>
+            <p><strong>聯絡方式：</strong>${confirmData.contactMethod}</p>
             <p><strong>學校：</strong>${confirmData.school}</p>
             <p><strong>備註：</strong>${confirmData.notes}</p>
             <p style="margin-top: 16px; color: #666; font-size: 14px;">
@@ -1773,7 +2546,36 @@ function AddStudent() {
   );
 }
 
-function AddTeacher() {
+function TeacherPage({ initialTab = 'add' }) {
+  const [activeTab, setActiveTab] = React.useState(initialTab);
+
+  return (
+    <div>
+      <div className="page-tab-header">
+        <h1>教師</h1>
+        <div className="mode-toggle">
+          <button
+            type="button"
+            className={activeTab === 'add' ? 'active' : ''}
+            onClick={() => setActiveTab('add')}
+          >
+            新增
+          </button>
+          <button
+            type="button"
+            className={activeTab === 'manage' ? 'active' : ''}
+            onClick={() => setActiveTab('manage')}
+          >
+            管理
+          </button>
+        </div>
+      </div>
+      {activeTab === 'add' ? <AddTeacher embedded /> : <TeacherList embedded />}
+    </div>
+  );
+}
+
+function AddTeacher({ embedded = false }) {
   const [form, setForm] = React.useState({
     name: '',
     phone: ''
@@ -1914,7 +2716,7 @@ function AddTeacher() {
   return (
     <div className="content">
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-        <h1>新增教師資料</h1>
+        {!embedded && <h1>新增教師資料</h1>}
         <div style={{ position: 'relative' }}>
           <input
             type="file"
@@ -2031,7 +2833,7 @@ function AddTeacher() {
   );
 }
 
-function ClassList() {
+function ClassList({ embedded = false }) {
   const [classes, setClasses] = React.useState([]);
   const [students, setStudents] = React.useState([]);
   const [courses, setCourses] = React.useState([]);
@@ -2041,8 +2843,6 @@ function ClassList() {
   const [showDeleteModal, setShowDeleteModal] = React.useState(false);
   const [editingClass, setEditingClass] = React.useState(null);
   const [showEditModal, setShowEditModal] = React.useState(false);
-  const [showDeleteAllModal, setShowDeleteAllModal] = React.useState(false);
-  const [deleteConfirmText, setDeleteConfirmText] = React.useState('');
   // 新增：勾選刪除功能狀態
   const [selectedClasses, setSelectedClasses] = React.useState(new Set());
   const [showDeleteSelectedModal, setShowDeleteSelectedModal] = React.useState(false);
@@ -2052,6 +2852,8 @@ function ClassList() {
     student: 'default',
     course: 'default'
   });
+  const pageSize = 100;
+  const [currentPage, setCurrentPage] = React.useState(1);
 
   React.useEffect(() => {
     fetchAllData();
@@ -2109,11 +2911,28 @@ function ClassList() {
     setDeleteTarget(null);
   };
 
+  const toDateInputValue = (dateStr) => {
+    if (!dateStr) return '';
+    const text = String(dateStr).trim();
+    const dateMatch = text.match(/^(\d{4})[/-](\d{1,2})[/-](\d{1,2})/);
+    if (dateMatch) {
+      const [, year, month, day] = dateMatch;
+      return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+    }
+
+    const date = new Date(text);
+    if (Number.isNaN(date.getTime())) return '';
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  };
+
   const handleEdit = (cls) => {
-    // 將日期格式從 YYYY/MM/DD 轉換為 YYYY-MM-DD 以適應 date input
+    // 將各種日期格式轉換為 YYYY-MM-DD，以適應 date input。
     const formattedClass = {
       ...cls,
-      date: cls.date ? cls.date.replace(/\//g, '-') : cls.date
+      date: toDateInputValue(cls.date)
     };
     setEditingClass(formattedClass);
     setShowEditModal(true);
@@ -2150,51 +2969,6 @@ function ClassList() {
     setEditingClass(null);
   };
 
-  // 一鍵刪除功能
-  const handleDeleteAll = () => {
-    setShowDeleteAllModal(true);
-  };
-
-  const handleConfirmDeleteAll = async () => {
-    if (deleteConfirmText !== '刪除') {
-      alert('請輸入"刪除"以確認操作');
-      return;
-    }
-
-    try {
-      // 獲取當前篩選後顯示的課堂ID列表
-      const classIdsToDelete = filteredClasses.map(cls => cls._id);
-      
-      if (classIdsToDelete.length === 0) {
-        alert('沒有可刪除的課堂資料');
-        setShowDeleteAllModal(false);
-        setDeleteConfirmText('');
-        return;
-      }
-
-      // 並行刪除所有課堂
-      const deletePromises = classIdsToDelete.map(classId =>
-        fetch(`${config.API_URL}/classes/${classId}`, {
-          method: 'DELETE'
-        })
-      );
-
-      await Promise.all(deletePromises);
-      
-      setShowDeleteAllModal(false);
-      setDeleteConfirmText('');
-      fetchAllData(); // 重新載入數據
-    } catch (error) {
-      console.error('刪除失敗:', error);
-      alert('刪除失敗，請重試');
-    }
-  };
-
-  const handleCancelDeleteAll = () => {
-    setShowDeleteAllModal(false);
-    setDeleteConfirmText('');
-  };
-
   // 新增：處理勾選刪除功能
   const handleSelectClass = (classId) => {
     setSelectedClasses(prev => {
@@ -2209,11 +2983,18 @@ function ClassList() {
   };
 
   const handleSelectAllClasses = () => {
-    if (selectedClasses.size === filteredClasses.length) {
-      setSelectedClasses(new Set());
-    } else {
-      setSelectedClasses(new Set(filteredClasses.map(cls => cls._id)));
-    }
+    const currentPageIds = paginatedClasses.map(cls => cls._id);
+    const isCurrentPageSelected = currentPageIds.length > 0 && currentPageIds.every(id => selectedClasses.has(id));
+
+    setSelectedClasses(prev => {
+      const next = new Set(prev);
+      if (isCurrentPageSelected) {
+        currentPageIds.forEach(id => next.delete(id));
+      } else {
+        currentPageIds.forEach(id => next.add(id));
+      }
+      return next;
+    });
   };
 
   const handleDeleteSelected = () => {
@@ -2280,9 +3061,18 @@ function ClassList() {
   ];
 
 
-  const studentMap = Object.fromEntries(students.map(s => [s.studentId, s]));
-  const courseMap = Object.fromEntries(courses.map(c => [c.courseId, c]));
-  const teacherMap = Object.fromEntries(teachers.map(t => [t.teacherId, t]));
+  const studentMap = React.useMemo(
+    () => Object.fromEntries(students.map(s => [s.studentId, s])),
+    [students]
+  );
+  const courseMap = React.useMemo(
+    () => Object.fromEntries(courses.map(c => [c.courseId, c])),
+    [courses]
+  );
+  const teacherMap = React.useMemo(
+    () => Object.fromEntries(teachers.map(t => [t.teacherId, t])),
+    [teachers]
+  );
 
   const [studentFilter, setStudentFilter] = React.useState('');
   const [studentDisplay, setStudentDisplay] = React.useState('');
@@ -2292,13 +3082,15 @@ function ClassList() {
   const [teacherDisplay, setTeacherDisplay] = React.useState('');
   const [courseFilter, setCourseFilter] = React.useState('');
   const [courseDisplay, setCourseDisplay] = React.useState('');
-  const allMonths = Array.from(new Set(classes.map(cls => {
-    if (!cls.date) return null;
-    const date = new Date(cls.date);
-    const year = date.getFullYear();
-    const month = date.getMonth() + 1; // getMonth() 返回 0-11，所以 +1
-    return `${year}/${month}`;
-  }))).filter(Boolean);
+  const allMonths = React.useMemo(() => (
+    Array.from(new Set(classes.map(cls => {
+      if (!cls.date) return null;
+      const date = new Date(cls.date);
+      const year = date.getFullYear();
+      const month = date.getMonth() + 1; // getMonth() 返回 0-11，所以 +1
+      return `${year}/${month}`;
+    }))).filter(Boolean)
+  ), [classes]);
 
   // 學生選項過濾
   const filteredStudents = students.filter(s =>
@@ -2321,39 +3113,16 @@ function ClassList() {
     (c.grade && c.grade.includes(courseFilter))
   );
 
-  // 課堂列表篩選條件
-  let filteredClasses = classes.filter(cls => {
-    const matchStudent = studentDisplay && studentDisplay !== '全部'
-      ? students.some(s => `${s.studentId} - ${s.nameZh}（${s.nameEn}）${s.nickname ? ` [${s.nickname}]` : ''}` === studentDisplay && s.studentId === cls.studentId)
-      : true;
-    const matchMonth = monthDisplay && monthDisplay !== '全部'
-      ? (() => {
-          if (!cls.date) return false;
-          const date = new Date(cls.date);
-          const year = date.getFullYear();
-          const month = date.getMonth() + 1;
-          const classMonthStr = `${year}/${month}`;
-          return classMonthStr === monthDisplay;
-        })()
-      : true;
-    const matchTeacher = teacherDisplay && teacherDisplay !== '全部'
-      ? (() => {
-          const course = courseMap[String(cls.courseId)] || {};
-          const teacher = teacherMap[String(course.teacherId)] || {};
-          return `${teacher.teacherId} - ${teacher.name}` === teacherDisplay;
-        })()
-      : true;
-    const matchCourse = courseDisplay && courseDisplay !== '全部'
-      ? (() => {
-          const course = courseMap[String(cls.courseId)] || {};
-          return `${course.courseId} ${course.grade}${course.subject}` === courseDisplay;
-        })()
-      : true;
-    return matchStudent && matchMonth && matchTeacher && matchCourse;
-  });
-
   // 新增：排序功能
-  const sortClasses = (classesToSort) => {
+  const sortClasses = React.useCallback((classesToSort) => {
+    if (
+      sortConfig.date === 'default' &&
+      sortConfig.student === 'default' &&
+      sortConfig.course === 'default'
+    ) {
+      return [...classesToSort].reverse();
+    }
+
     return [...classesToSort].sort((a, b) => {
       // 課堂日期排序
       if (sortConfig.date !== 'default') {
@@ -2394,7 +3163,76 @@ function ClassList() {
 
       return 0;
     });
-  };
+  }, [sortConfig, studentMap, courseMap]);
+
+  const selectedStudentId = React.useMemo(() => {
+    if (!studentDisplay || studentDisplay === '全部') return '';
+    const student = students.find(s => `${s.studentId} - ${s.nameZh}（${s.nameEn}）${s.nickname ? ` [${s.nickname}]` : ''}` === studentDisplay);
+    return student?.studentId || '';
+  }, [studentDisplay, students]);
+
+  const selectedTeacherId = React.useMemo(() => {
+    if (!teacherDisplay || teacherDisplay === '全部') return '';
+    const teacher = teachers.find(t => `${t.teacherId} - ${t.name}` === teacherDisplay);
+    return teacher?.teacherId || '';
+  }, [teacherDisplay, teachers]);
+
+  const selectedCourseId = React.useMemo(() => {
+    if (!courseDisplay || courseDisplay === '全部') return '';
+    const course = courses.find(c => `${c.courseId} ${c.grade}${c.subject}` === courseDisplay);
+    return course?.courseId || '';
+  }, [courseDisplay, courses]);
+
+  const selectedMonth = allMonths.includes(monthDisplay) ? monthDisplay : '';
+
+  const filteredClasses = React.useMemo(() => {
+    const classesToFilter = classes.filter(cls => {
+      const matchStudent = selectedStudentId ? cls.studentId === selectedStudentId : true;
+      const matchMonth = selectedMonth
+        ? (() => {
+            if (!cls.date) return false;
+            const date = new Date(cls.date);
+            const year = date.getFullYear();
+            const month = date.getMonth() + 1;
+            return `${year}/${month}` === selectedMonth;
+          })()
+        : true;
+      const matchTeacher = selectedTeacherId
+        ? (() => {
+            const course = courseMap[String(cls.courseId)] || {};
+            return String(course.teacherId) === String(selectedTeacherId);
+          })()
+        : true;
+      const matchCourse = selectedCourseId ? cls.courseId === selectedCourseId : true;
+      return matchStudent && matchMonth && matchTeacher && matchCourse;
+    });
+
+    return sortClasses(classesToFilter);
+  }, [
+    classes,
+    selectedStudentId,
+    selectedMonth,
+    selectedTeacherId,
+    selectedCourseId,
+    courseMap,
+    sortClasses
+  ]);
+
+  const totalPages = Math.max(1, Math.ceil(filteredClasses.length / pageSize));
+  const pageStartIndex = (currentPage - 1) * pageSize;
+  const pageEndIndex = Math.min(pageStartIndex + pageSize, filteredClasses.length);
+  const paginatedClasses = React.useMemo(
+    () => filteredClasses.slice(pageStartIndex, pageEndIndex),
+    [filteredClasses, pageStartIndex, pageEndIndex]
+  );
+
+  React.useEffect(() => {
+    setCurrentPage(1);
+  }, [selectedStudentId, selectedMonth, selectedTeacherId, selectedCourseId, sortConfig]);
+
+  React.useEffect(() => {
+    setCurrentPage(prev => Math.min(prev, totalPages));
+  }, [totalPages]);
 
   // 新增：處理排序變更，自動重置其他列排序
   const handleSortChange = (column, value) => {
@@ -2415,9 +3253,6 @@ function ClassList() {
     });
   };
 
-  // 應用排序
-  filteredClasses = sortClasses(filteredClasses);
-
   // 資料未載入時顯示 loading
   if (isLoading) {
     return <div>資料載入中...</div>;
@@ -2425,7 +3260,7 @@ function ClassList() {
 
   return (
     <div className="content">
-      <h1>課堂列表</h1>
+      {!embedded && <h1>課堂列表</h1>}
       
       <div className="filter-section">
         <div className="filter-container">
@@ -2544,13 +3379,6 @@ function ClassList() {
               清除篩選
             </button>
             <button 
-              className="filter-button delete-all"
-              onClick={handleDeleteAll}
-              style={{ backgroundColor: '#dc3545', color: 'white' }}
-            >
-              一鍵刪除
-            </button>
-            <button 
               className="filter-button delete-selected"
               onClick={handleDeleteSelected}
               disabled={selectedClasses.size === 0}
@@ -2577,6 +3405,46 @@ function ClassList() {
         </div>
       )}
       
+      <div className="pagination-bar">
+        <div className="pagination-info">
+          共 {filteredClasses.length} 筆資料，
+          目前顯示 {filteredClasses.length === 0 ? 0 : pageStartIndex + 1}-{pageEndIndex} 筆
+        </div>
+        <div className="pagination-controls">
+          <button
+            type="button"
+            onClick={() => setCurrentPage(1)}
+            disabled={currentPage === 1}
+          >
+            第一頁
+          </button>
+          <button
+            type="button"
+            onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+            disabled={currentPage === 1}
+          >
+            上一頁
+          </button>
+          <span>
+            第 {currentPage} / {totalPages} 頁
+          </span>
+          <button
+            type="button"
+            onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+            disabled={currentPage === totalPages}
+          >
+            下一頁
+          </button>
+          <button
+            type="button"
+            onClick={() => setCurrentPage(totalPages)}
+            disabled={currentPage === totalPages}
+          >
+            最後一頁
+          </button>
+        </div>
+      </div>
+
       <div className="course-list-scroll">
         <table className="course-table">
           <thead>
@@ -2585,7 +3453,7 @@ function ClassList() {
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                   <input
                     type="checkbox"
-                    checked={selectedClasses.size === filteredClasses.length && filteredClasses.length > 0}
+                    checked={paginatedClasses.length > 0 && paginatedClasses.every(cls => selectedClasses.has(cls._id))}
                     onChange={handleSelectAllClasses}
                     style={{ marginRight: '8px' }}
                   />
@@ -2642,7 +3510,7 @@ function ClassList() {
             </tr>
           </thead>
                       <tbody>
-            {filteredClasses.map(cls => {
+            {paginatedClasses.map(cls => {
               const stu = studentMap[String(cls.studentId)] || {};
               const course = courseMap[String(cls.courseId)] || {};
               const teacher = teacherMap[String(course.teacherId)] || {};
@@ -2700,64 +3568,6 @@ function ClassList() {
         message="確定要刪除這個課堂嗎？"
       />
 
-      {/* 一鍵刪除確認彈窗 */}
-      {showDeleteAllModal && (
-        <div className="modal-overlay">
-          <div className="modal">
-            <h3>確認一鍵刪除</h3>
-            <p>確定要刪除當前顯示的所有課堂資料嗎？</p>
-            <p style={{ color: '#dc3545', fontWeight: 'bold' }}>
-              此操作將刪除 {filteredClasses.length} 個課堂資料，無法撤銷！
-            </p>
-            <div style={{ marginTop: '20px' }}>
-              <label>請輸入"刪除"以確認操作：</label>
-              <input
-                type="text"
-                value={deleteConfirmText}
-                onChange={(e) => setDeleteConfirmText(e.target.value)}
-                placeholder="請輸入：刪除"
-                style={{ 
-                  width: '100%', 
-                  padding: '8px', 
-                  marginTop: '5px',
-                  border: '1px solid #ccc',
-                  borderRadius: '4px'
-                }}
-              />
-            </div>
-            <div className="modal-buttons" style={{ marginTop: '20px' }}>
-              <button 
-                onClick={handleCancelDeleteAll}
-                style={{ 
-                  backgroundColor: '#6c757d', 
-                  color: 'white',
-                  border: 'none',
-                  padding: '8px 16px',
-                  borderRadius: '4px',
-                  marginRight: '10px'
-                }}
-              >
-                取消
-              </button>
-              <button 
-                onClick={handleConfirmDeleteAll}
-                disabled={deleteConfirmText !== '刪除'}
-                style={{ 
-                  backgroundColor: deleteConfirmText === '刪除' ? '#dc3545' : '#6c757d', 
-                  color: 'white',
-                  border: 'none',
-                  padding: '8px 16px',
-                  borderRadius: '4px',
-                  cursor: deleteConfirmText === '刪除' ? 'pointer' : 'not-allowed'
-                }}
-              >
-                確認刪除
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
       {/* 刪除勾選確認彈窗 */}
       {showDeleteSelectedModal && (
         <div className="modal-overlay">
@@ -2802,7 +3612,7 @@ function ClassList() {
   );
 }
 
-function StudentList() {
+function StudentList({ embedded = false }) {
   const [students, setStudents] = React.useState([]);
   const [isLoading, setIsLoading] = React.useState(true);
   const [deleteTarget, setDeleteTarget] = React.useState(null);
@@ -2859,7 +3669,10 @@ function StudentList() {
   };
 
   const handleEdit = (student) => {
-    setEditingStudent(student);
+    setEditingStudent({
+      ...student,
+      contactMethod: student.contactMethod || ''
+    });
     setShowEditModal(true);
   };
 
@@ -2906,6 +3719,7 @@ function StudentList() {
            (student.nameZh && student.nameZh.includes(searchDisplay)) ||
            (student.nameEn && student.nameEn.toLowerCase().includes(searchDisplay.toLowerCase())) ||
            (student.nickname && student.nickname.includes(searchDisplay)) ||
+           (student.contactMethod && student.contactMethod.includes(searchDisplay)) ||
            (student.notes && student.notes.includes(searchDisplay));
   });
 
@@ -2915,6 +3729,7 @@ function StudentList() {
     (student.nameZh && student.nameZh.includes(searchFilter)) ||
     (student.nameEn && student.nameEn.toLowerCase().includes(searchFilter.toLowerCase())) ||
     (student.nickname && student.nickname.includes(searchFilter)) ||
+    (student.contactMethod && student.contactMethod.includes(searchFilter)) ||
     (student.notes && student.notes.includes(searchFilter))
   );
 
@@ -2938,6 +3753,15 @@ function StudentList() {
     },
     { name: 'phone', label: '電話號碼', type: 'text' },
     { name: 'wechat', label: '微信號碼', type: 'text' },
+    {
+      name: 'contactMethod',
+      label: '聯絡方式',
+      type: 'select',
+      options: [
+        { value: 'WhatsApp', label: 'WhatsApp' },
+        { value: '微信', label: '微信' }
+      ]
+    },
     { name: 'school', label: '學校', type: 'text' },
     { name: 'notes', label: '備註', type: 'textarea' }
   ];
@@ -2945,7 +3769,7 @@ function StudentList() {
   if (isLoading) {
     return (
       <div className="content">
-        <h1>學生列表</h1>
+        {!embedded && <h1>學生列表</h1>}
         <p>資料載入中...</p>
       </div>
     );
@@ -2953,7 +3777,7 @@ function StudentList() {
 
   return (
     <div className="content">
-      <h1>學生列表</h1>
+      {!embedded && <h1>學生列表</h1>}
       
       <div className="filter-section">
         <div className="filter-container">
@@ -3018,6 +3842,7 @@ function StudentList() {
               <th>年級</th>
               <th>電話號碼</th>
               <th>微信號碼</th>
+              <th>聯絡方式</th>
               <th>學校</th>
               <th>備註</th>
               <th>操作</th>
@@ -3033,6 +3858,7 @@ function StudentList() {
                 <td>{student.grade}</td>
                 <td>{student.phone || '-'}</td>
                 <td>{student.wechat || '-'}</td>
+                <td>{student.contactMethod || '-'}</td>
                 <td>{student.school || '-'}</td>
                 <td>{student.notes || '-'}</td>
                 <td>
@@ -3068,7 +3894,7 @@ function StudentList() {
   );
 }
 
-function CourseList() {
+function CourseList({ embedded = false }) {
   const [courses, setCourses] = React.useState([]);
   const [teachers, setTeachers] = React.useState([]);
   const [isLoading, setIsLoading] = React.useState(true);
@@ -3278,7 +4104,7 @@ function CourseList() {
   if (isLoading) {
     return (
       <div className="content">
-        <h1>課程列表</h1>
+        {!embedded && <h1>課程列表</h1>}
         <p>資料載入中...</p>
       </div>
     );
@@ -3286,7 +4112,7 @@ function CourseList() {
 
   return (
     <div className="content">
-      <h1>課程列表</h1>
+      {!embedded && <h1>課程列表</h1>}
       
       <div className="filter-section">
         <div className="filter-container">
@@ -3514,7 +4340,7 @@ function CourseList() {
   );
 }
 
-function TeacherList() {
+function TeacherList({ embedded = false }) {
   const [teachers, setTeachers] = React.useState([]);
   const [isLoading, setIsLoading] = React.useState(true);
   const [deleteTarget, setDeleteTarget] = React.useState(null);
@@ -3632,7 +4458,7 @@ function TeacherList() {
   if (isLoading) {
     return (
       <div className="content">
-        <h1>教師列表</h1>
+        {!embedded && <h1>教師列表</h1>}
         <p>資料載入中...</p>
       </div>
     );
@@ -3640,7 +4466,7 @@ function TeacherList() {
 
   return (
     <div className="content">
-      <h1>教師列表</h1>
+      {!embedded && <h1>教師列表</h1>}
       
       <div className="filter-section">
         <div className="filter-container">
@@ -3801,26 +4627,32 @@ function App() {
       <div className="main-content">
         <Routes>
           {/* 教師和管理員都可以訪問的新增功能 */}
-          <Route path="/add-class" element={<AddClass />} />
-          <Route path="/add-course" element={<AddCourse />} />
-          <Route path="/add-student" element={<AddStudent />} />
-          <Route path="/add-teacher" element={<AddTeacher />} />
+          <Route path="/classes" element={<ClassPage />} />
+          <Route path="/add-class" element={<ClassPage initialTab="add" />} />
+          <Route path="/add-group" element={<AddGroup />} />
+          <Route path="/courses" element={<CoursePage />} />
+          <Route path="/add-course" element={<CoursePage initialTab="add" />} />
+          <Route path="/students" element={<StudentPage />} />
+          <Route path="/add-student" element={<StudentPage initialTab="add" />} />
+          <Route path="/teachers" element={<TeacherPage />} />
+          <Route path="/add-teacher" element={<TeacherPage initialTab="add" />} />
 
           {/* 管理員專用路由 */}
           {isLoggedIn.userType === 'admin' && (
             <>
-              <Route path="/manage-classes" element={<ClassList />} />
-              <Route path="/manage-students" element={<StudentList />} />
-              <Route path="/manage-courses" element={<CourseList />} />
-              <Route path="/manage-teachers" element={<TeacherList />} />
+              <Route path="/manage-classes" element={<ClassPage initialTab="manage" />} />
+              <Route path="/manage-groups" element={<AddGroup initialTab="manage" />} />
+              <Route path="/manage-students" element={<StudentPage initialTab="manage" />} />
+              <Route path="/manage-courses" element={<CoursePage initialTab="manage" />} />
+              <Route path="/manage-teachers" element={<TeacherPage initialTab="manage" />} />
               <Route path="/user-management" element={<UserManagement />} />
-              <Route path="/login-management" element={<LoginManagement />} />
               <Route path="/revenue-overview" element={<RevenueStatistics />} />
               <Route path="/revenue-teacher" element={<RevenueStatistics />} />
               <Route path="/revenue-student" element={<RevenueStatistics />} />
               <Route path="/revenue-daily" element={<RevenueStatistics />} />
-              <Route path="/billing-student" element={<BillingSystem />} />
-              <Route path="/billing-teacher" element={<TeacherBillingSystem />} />
+              <Route path="/billing-system" element={<BillingPage />} />
+              <Route path="/billing-student" element={<BillingPage initialTab="student" />} />
+              <Route path="/billing-teacher" element={<BillingPage initialTab="teacher" />} />
               <Route path="/cost-management" element={<CostManagement />} />
             </>
           )}

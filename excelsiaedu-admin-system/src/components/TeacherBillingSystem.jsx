@@ -4,7 +4,7 @@ import html2pdf from 'html2pdf.js';
 import JSZip from 'jszip';
 import config from '../config';
 
-const TeacherBillingSystem = () => {
+const TeacherBillingSystem = ({ tabSwitch = null }) => {
   const [teachers, setTeachers] = useState([]);
   const [classes, setClasses] = useState([]);
   const [courses, setCourses] = useState([]);
@@ -713,6 +713,7 @@ const TeacherBillingSystem = () => {
               ))}
             </select>
           </div>
+          {tabSwitch}
           {selectedMonth && billingData.length > 0 && (
             <button
               className="export-button"
