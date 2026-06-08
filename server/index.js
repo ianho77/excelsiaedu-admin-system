@@ -1,3 +1,5 @@
+require('dotenv').config();
+
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
@@ -25,16 +27,22 @@ app.use(express.json());
 // 添加預檢請求處理
 app.options('*', cors(corsOptions));
 
-// 連接MongoDB Atlas
-const MONGODB_URI = process.env.MONGODB_URI || 'mongodb+srv://ian20051102:LxMgTBnGVt3ygblv@excelsiaedu.xxjs6v7.mongodb.net/?retryWrites=true&w=majority&appName=excelsiaedu';
+// 本地開發預設使用本機 MongoDB；線上/Render 必須透過 MONGODB_URI 連接 MongoDB Atlas。
+const DEFAULT_LOCAL_MONGODB_URI = 'mongodb://127.0.0.1:27017/excelsiaedu-local';
+const isHostedEnvironment = process.env.NODE_ENV === 'production' || process.env.RENDER;
+const MONGODB_URI = process.env.MONGODB_URI || (isHostedEnvironment ? null : DEFAULT_LOCAL_MONGODB_URI);
+
+if (!MONGODB_URI) {
+  throw new Error('MONGODB_URI is required in production. Set it to your MongoDB Atlas connection string.');
+}
 
 mongoose.connect(MONGODB_URI, {
   useNewUrlParser: true,
   useUnifiedTopology: true,
 }).then(() => {
-  console.log('✅ 成功連接到MongoDB Atlas');
+  console.log('✅ 成功連接到MongoDB');
 }).catch((error) => {
-  console.error('❌ 連接MongoDB Atlas失敗:', error);
+  console.error('❌ 連接MongoDB失敗:', error);
 });
 
 // ==================== 數據模型定義 ====================
@@ -58,6 +66,7 @@ const StudentSchema = new mongoose.Schema({
   nickname: String, // 新增暱稱
   phone: String,    // 新增電話號碼
   wechat: String,   // 新增微信號碼
+  contactMethod: String, // 聯絡方式：WhatsApp / 微信
   school: String,   // 新增學校
   notes: String,    // 新增備註
 });
@@ -77,6 +86,15 @@ const ClassSchema = new mongoose.Schema({
   date: String,
   price: Number,
   studentId: String, // 改為單一學生ID
+});
+
+// 群組模型
+const GroupSchema = new mongoose.Schema({
+  groupName: { type: String, required: true },
+  studentCount: Number,
+  studentIds: [String],
+  createdAt: { type: Date, default: Date.now },
+  updatedAt: { type: Date, default: Date.now }
 });
 
 // 教師模型
@@ -127,6 +145,7 @@ const User = mongoose.model('User', UserSchema);
 const Student = mongoose.model('Student', StudentSchema);
 const Course = mongoose.model('Course', CourseSchema);
 const Class = mongoose.model('Class', ClassSchema);
+const Group = mongoose.model('Group', GroupSchema);
 const Teacher = mongoose.model('Teacher', TeacherSchema);
 const StudentBillingStatus = mongoose.model('StudentBillingStatus', StudentBillingStatusSchema);
 const TeacherBillingStatus = mongoose.model('TeacherBillingStatus', TeacherBillingStatusSchema);
@@ -323,6 +342,81 @@ app.delete('/students/:id', async (req, res) => {
     const student = await Student.findByIdAndDelete(req.params.id);
     if (!student) {
       return res.status(404).json({ message: '學生不存在' });
+    }
+    res.json({ message: '刪除成功' });
+  } catch (error) {
+    res.status(500).json({ message: '刪除失敗', error: error.message });
+  }
+});
+
+// ==================== 群組API ====================
+
+app.get('/groups', async (req, res) => {
+  try {
+    const groups = await Group.find().sort({ createdAt: -1 });
+    res.json(groups);
+  } catch (error) {
+    res.status(500).json({ message: '獲取群組失敗', error: error.message });
+  }
+});
+
+app.post('/groups', async (req, res) => {
+  try {
+    const { groupName, studentIds = [] } = req.body;
+    if (!groupName || !groupName.trim()) {
+      return res.status(400).json({ message: '請輸入群組名稱' });
+    }
+    if (!Array.isArray(studentIds) || studentIds.length === 0) {
+      return res.status(400).json({ message: '請至少選擇一位學生' });
+    }
+
+    const group = new Group({
+      groupName: groupName.trim(),
+      studentCount: studentIds.length,
+      studentIds,
+      updatedAt: new Date()
+    });
+    await group.save();
+    res.status(201).json(group);
+  } catch (error) {
+    res.status(500).json({ message: '創建群組失敗', error: error.message });
+  }
+});
+
+app.put('/groups/:id', async (req, res) => {
+  try {
+    const { groupName, studentIds = [] } = req.body;
+    if (!groupName || !groupName.trim()) {
+      return res.status(400).json({ message: '請輸入群組名稱' });
+    }
+    if (!Array.isArray(studentIds) || studentIds.length === 0) {
+      return res.status(400).json({ message: '請至少選擇一位學生' });
+    }
+
+    const group = await Group.findByIdAndUpdate(
+      req.params.id,
+      {
+        groupName: groupName.trim(),
+        studentCount: studentIds.length,
+        studentIds,
+        updatedAt: new Date()
+      },
+      { new: true }
+    );
+    if (!group) {
+      return res.status(404).json({ message: '群組不存在' });
+    }
+    res.json(group);
+  } catch (error) {
+    res.status(500).json({ message: '更新群組失敗', error: error.message });
+  }
+});
+
+app.delete('/groups/:id', async (req, res) => {
+  try {
+    const group = await Group.findByIdAndDelete(req.params.id);
+    if (!group) {
+      return res.status(404).json({ message: '群組不存在' });
     }
     res.json({ message: '刪除成功' });
   } catch (error) {
