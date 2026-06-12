@@ -59,6 +59,15 @@
   box-shadow: none !important;
 }
 
+.unpaid-export-button {
+  background: linear-gradient(135deg, #b45309 0%, #f59e0b 50%, #92400e 100%);
+}
+
+.unpaid-export-button:hover {
+  background: linear-gradient(135deg, #92400e 0%, #b45309 50%, #78350f 100%);
+  box-shadow: 0 4px 12px rgba(180, 83, 9, 0.3);
+}
+
 /* 月結單功能樣式 */
 .monthly-statement-section {
   background: white;
@@ -76,8 +85,11 @@
 }
 
 .statement-filters {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  flex: 1;
   min-width: 300px;
-  flex-shrink: 0;
 }
 
 .monthly-statement-section .filter-group {
@@ -105,7 +117,8 @@
   font-size: 16px;
 }
 
-.monthly-statement-section .filter-group input {
+.monthly-statement-section .filter-group input,
+.monthly-statement-section .filter-group select {
   flex: 1;
   min-width: 0;
   padding: 8px 12px;
@@ -115,10 +128,16 @@
   transition: all 0.2s ease;
 }
 
-.monthly-statement-section .filter-group input:focus {
+.monthly-statement-section .filter-group input:focus,
+.monthly-statement-section .filter-group select:focus {
   outline: none;
   border-color: #0f766e;
   box-shadow: 0 0 0 3px rgba(15, 118, 110, 0.1);
+}
+
+.filter-select {
+  min-width: 120px !important;
+  cursor: pointer;
 }
 
 /* 学生搜索下拉框样式 */
@@ -549,7 +568,7 @@
   .statement-filters {
     min-width: auto;
     width: 100%;
-    flex-shrink: 0;
+    flex: none;
   }
   
   .monthly-statement-section .filter-group {

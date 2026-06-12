@@ -1,22 +1,18 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import html2pdf from 'html2pdf.js';
 import JSZip from 'jszip';
+import * as XLSX from 'xlsx';
 import './BillingSystem.css';
 import api from '../services/api';
+
+const formatDollarAmount = (amount) => `$${Number(amount || 0).toLocaleString()}`;
+const normalizeStatementStatus = (status) => (status === '已發送' ? '已發送' : '未發送');
 
 // Excel匯出功能
 const exportToExcel = async (billingData, statistics, selectedMonth, setExporting) => {
   setExporting(true);
   
   try {
-  // 創建工作簿數據（暫時不使用）
-  // const workbook = {
-  //   SheetNames: ['賬單詳情'],
-  //   Sheets: {
-  //     '賬單詳情': {}
-  //   }
-  // };
-
   // 準備表頭
   const headers = [
     '學生ID',
@@ -33,8 +29,8 @@ const exportToExcel = async (billingData, statistics, selectedMonth, setExportin
     item.studentId,
     item.studentName,
     item.school,
-    `$${item.totalAmount.toLocaleString()}`,
-    item.statementStatus,
+    formatDollarAmount(item.totalAmount),
+    normalizeStatementStatus(item.statementStatus),
     item.paymentStatus,
     item.paymentMethod
   ]);
@@ -43,9 +39,9 @@ const exportToExcel = async (billingData, statistics, selectedMonth, setExportin
   const summaryRows = [
     [], // 空行
     ['統計摘要'],
-    ['當月學費總額', `$${statistics.totalAmount.toLocaleString()}`],
-    ['已繳金額', `$${statistics.paidAmount.toLocaleString()}`],
-    ['未交金額', `$${statistics.unpaidAmount.toLocaleString()}`],
+    ['當月學費總額', formatDollarAmount(statistics.totalAmount)],
+    ['已繳金額', formatDollarAmount(statistics.paidAmount)],
+    ['未交金額', formatDollarAmount(statistics.unpaidAmount)],
     ['已繳學生數', billingData.filter(item => item.paymentStatus === '已繳交').length],
     ['未繳學生數', billingData.filter(item => item.paymentStatus === '未繳交').length],
     ['總學生數', billingData.length]
@@ -54,34 +50,58 @@ const exportToExcel = async (billingData, statistics, selectedMonth, setExportin
   // 合併所有數據
   const allData = [headers, ...dataRows, ...summaryRows];
 
-  // 創建CSV內容
-  const csvContent = allData.map(row => 
-    row.map(cell => {
-      // 處理包含逗號、引號或換行的內容
-      if (typeof cell === 'string' && (cell.includes(',') || cell.includes('"') || cell.includes('\n'))) {
-        return `"${cell.replace(/"/g, '""')}"`;
-      }
-      return cell;
-    }).join(',')
-  ).join('\n');
+  const worksheet = XLSX.utils.aoa_to_sheet(allData);
+  worksheet['!cols'] = [
+    { wch: 16 },
+    { wch: 28 },
+    { wch: 24 },
+    { wch: 16 },
+    { wch: 14 },
+    { wch: 14 },
+    { wch: 18 }
+  ];
 
-  // 添加BOM以支持中文
-  const BOM = '\uFEFF';
-  const csvWithBOM = BOM + csvContent;
-
-    // 創建並下載文件
-    const blob = new Blob([csvWithBOM], { type: 'text/csv;charset=utf-8;' });
-    const link = document.createElement('a');
-    const url = URL.createObjectURL(blob);
-    link.setAttribute('href', url);
-    link.setAttribute('download', `賬單詳情_${selectedMonth.replace('-', '年')}月.csv`);
-    link.style.visibility = 'hidden';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+  const workbook = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(workbook, worksheet, '賬單詳情');
+  XLSX.writeFile(workbook, `賬單詳情_${selectedMonth.replace('-', '年')}月.xlsx`);
     
   } catch (error) {
     console.error('匯出失敗:', error);
+  } finally {
+    setExporting(false);
+  }
+};
+
+const exportSentUnpaidStudentsToExcel = async (billingData, selectedMonth, setExporting) => {
+  setExporting(true);
+
+  try {
+    const sentUnpaidStudents = billingData
+      .filter(item => item.statementStatus === '已發送' && item.paymentStatus === '未繳交')
+      .map(item => ({
+        '學生ID': item.studentId,
+        '學生名稱': item.studentName
+      }));
+
+    if (sentUnpaidStudents.length === 0) {
+      alert('沒有「已發送月結單但未繳費」的學生');
+      return;
+    }
+
+    const worksheet = XLSX.utils.json_to_sheet(sentUnpaidStudents);
+    worksheet['!cols'] = [
+      { wch: 16 },
+      { wch: 28 }
+    ];
+
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, '已發送未繳費學生');
+    XLSX.writeFile(
+      workbook,
+      `已發送未繳費學生_${selectedMonth.replace('-', '年')}月.xlsx`
+    );
+  } catch (error) {
+    console.error('匯出已發送未繳費學生失敗:', error);
   } finally {
     setExporting(false);
   }
@@ -119,6 +139,8 @@ const BillingSystem = ({ tabSwitch = null }) => {
     `${sanitizeFileNamePart(student.studentId)}-${sanitizeFileNamePart(student.nameZh)}-${year}-${monthNum}.pdf`
   );
   const [studentFilter, setStudentFilter] = useState('');
+  const [statementStatusFilter, setStatementStatusFilter] = useState('');
+  const [paymentStatusFilter, setPaymentStatusFilter] = useState('');
   const [showStudentDropdown, setShowStudentDropdown] = useState(false);
   const [filteredStudents, setFilteredStudents] = useState([]);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
@@ -178,7 +200,7 @@ const BillingSystem = ({ tabSwitch = null }) => {
             totalAmount: 0,
             paymentStatus: status ? status.paymentStatus : '未繳交',
             paymentMethod: status ? status.paymentMethod : 'N/A',
-            statementStatus: status ? status.statementStatus : '未生成',
+            statementStatus: normalizeStatementStatus(status ? status.statementStatus : '未發送'),
             notes: status ? status.notes : ''
           };
         }
@@ -295,6 +317,8 @@ const BillingSystem = ({ tabSwitch = null }) => {
   // 清除筛选
   const clearStudentFilter = () => {
     setStudentFilter('');
+    setStatementStatusFilter('');
+    setPaymentStatusFilter('');
     setFilteredStudents([]);
     setShowStudentDropdown(false);
   };
@@ -378,11 +402,10 @@ const BillingSystem = ({ tabSwitch = null }) => {
   };
 
   const formatCurrency = (amount) => {
-    return `$${amount.toLocaleString()}`;
+    return formatDollarAmount(amount);
   };
 
-  // 計算篩選後的統計數據
-  const getFilteredStatistics = () => {
+  const getFilteredBillingData = () => {
     let filteredBillingData = billingData;
     
     if (studentFilter && studentFilter.trim() !== '') {
@@ -395,11 +418,30 @@ const BillingSystem = ({ tabSwitch = null }) => {
       }
       
       // 篩選出匹配的學生
-      filteredBillingData = billingData.filter(item => 
+      filteredBillingData = filteredBillingData.filter(item => 
         item.studentId === studentId ||
         item.studentName.includes(studentFilter)
       );
     }
+
+    if (statementStatusFilter) {
+      filteredBillingData = filteredBillingData.filter(
+        item => normalizeStatementStatus(item.statementStatus) === statementStatusFilter
+      );
+    }
+
+    if (paymentStatusFilter) {
+      filteredBillingData = filteredBillingData.filter(
+        item => item.paymentStatus === paymentStatusFilter
+      );
+    }
+
+    return filteredBillingData;
+  };
+
+  // 計算篩選後的統計數據
+  const getFilteredStatistics = () => {
+    const filteredBillingData = getFilteredBillingData();
     
     const totalAmount = filteredBillingData.reduce((sum, item) => sum + item.totalAmount, 0);
     const paidAmount = filteredBillingData
@@ -987,29 +1029,25 @@ const BillingSystem = ({ tabSwitch = null }) => {
           </div>
           {tabSwitch}
           {selectedMonth && billingData.length > 0 && (
-            <button
-              className="export-button"
-              onClick={() => {
-                // 根據篩選條件獲取要匯出的數據
-                let filteredBillingData = billingData;
-                if (studentFilter && studentFilter.trim() !== '') {
-                  let studentId = null;
-                  if (studentFilter.includes(' - ')) {
-                    studentId = studentFilter.split(' - ')[0];
-                  } else {
-                    studentId = studentFilter;
-                  }
-                  filteredBillingData = billingData.filter(item => 
-                    item.studentId === studentId ||
-                    item.studentName.includes(studentFilter)
-                  );
-                }
-                exportToExcel(filteredBillingData, getFilteredStatistics(), selectedMonth, setExporting);
-              }}
-              disabled={exporting}
-            >
-              {exporting ? '匯出中...' : '匯出Excel'}
-            </button>
+            <>
+              <button
+                className="export-button"
+                onClick={() => {
+                  exportToExcel(getFilteredBillingData(), getFilteredStatistics(), selectedMonth, setExporting);
+                }}
+                disabled={exporting}
+              >
+                {exporting ? '匯出中...' : '匯出Excel'}
+              </button>
+              <button
+                className="export-button unpaid-export-button"
+                onClick={() => exportSentUnpaidStudentsToExcel(billingData, selectedMonth, setExporting)}
+                disabled={exporting}
+                title="匯出已發送月結單但未繳費的學生名單"
+              >
+                {exporting ? '匯出中...' : '匯出已發送未繳'}
+              </button>
+            </>
           )}
         </div>
       </div>
@@ -1074,6 +1112,32 @@ const BillingSystem = ({ tabSwitch = null }) => {
                     )}
                   </div>
                 </div>
+                <div className="filter-group">
+                  <label htmlFor="statement-status-filter">月結單狀態：</label>
+                  <select
+                    id="statement-status-filter"
+                    value={statementStatusFilter}
+                    onChange={(e) => setStatementStatusFilter(e.target.value)}
+                    className="filter-select"
+                  >
+                    <option value="">全部</option>
+                    <option value="已發送">已發送</option>
+                    <option value="未發送">未發送</option>
+                  </select>
+                </div>
+                <div className="filter-group">
+                  <label htmlFor="payment-status-filter">繳費狀態：</label>
+                  <select
+                    id="payment-status-filter"
+                    value={paymentStatusFilter}
+                    onChange={(e) => setPaymentStatusFilter(e.target.value)}
+                    className="filter-select"
+                  >
+                    <option value="">全部</option>
+                    <option value="已繳交">已繳交</option>
+                    <option value="未繳交">未繳交</option>
+                  </select>
+                </div>
               </div>
               
               <div className="statement-buttons">
@@ -1125,27 +1189,7 @@ const BillingSystem = ({ tabSwitch = null }) => {
               </tr>
             </thead>
             <tbody>
-              {(() => {
-                // 篩選表格數據
-                let filteredBillingData = billingData;
-                
-                if (studentFilter && studentFilter.trim() !== '') {
-                  // 從 studentFilter 中提取學生ID
-                  let studentId = null;
-                  if (studentFilter.includes(' - ')) {
-                    studentId = studentFilter.split(' - ')[0];
-                  } else {
-                    studentId = studentFilter;
-                  }
-                  
-                  // 篩選出匹配的學生
-                  filteredBillingData = billingData.filter(item => {
-                    return item.studentId === studentId ||
-                           item.studentName.includes(studentFilter);
-                  });
-                }
-                
-                return filteredBillingData.map((item) => (
+              {getFilteredBillingData().map((item) => (
                   <tr key={item.studentId}>
                     <td className="student-info">
                       <div className="student-id">ID: {item.studentId}</div>
@@ -1155,9 +1199,9 @@ const BillingSystem = ({ tabSwitch = null }) => {
                     <td className="amount">{formatCurrency(item.totalAmount)}</td>
                     <td>
                       <select
-                        value={item.statementStatus}
+                        value={normalizeStatementStatus(item.statementStatus)}
                         onChange={(e) => updateBillingStatus(item.studentId, 'statementStatus', e.target.value)}
-                        className={`status-select ${item.statementStatus === '已發送' ? 'status-sent' : 'status-not-sent'}`}
+                        className={`status-select ${normalizeStatementStatus(item.statementStatus) === '已發送' ? 'status-sent' : 'status-not-sent'}`}
                       >
                         <option value="未發送">未發送</option>
                         <option value="已發送">已發送</option>
@@ -1208,8 +1252,7 @@ const BillingSystem = ({ tabSwitch = null }) => {
                       </button>
                     </td>
                   </tr>
-                ));
-              })()}
+              ))}
             </tbody>
           </table>
         </div>
