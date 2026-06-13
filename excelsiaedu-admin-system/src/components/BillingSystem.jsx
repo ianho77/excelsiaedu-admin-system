@@ -79,8 +79,8 @@ const exportSentUnpaidStudentsToExcel = async (billingData, selectedMonth, setEx
     const sentUnpaidStudents = billingData
       .filter(item => item.statementStatus === '已發送' && item.paymentStatus === '未繳交')
       .map(item => ({
-        '學生ID': item.studentId,
-        '學生名稱': item.studentName
+        student_id: item.studentId,
+        student_name: item.nameZh
       }));
 
     if (sentUnpaidStudents.length === 0) {
@@ -96,10 +96,7 @@ const exportSentUnpaidStudentsToExcel = async (billingData, selectedMonth, setEx
 
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, '已發送未繳費學生');
-    XLSX.writeFile(
-      workbook,
-      `已發送未繳費學生_${selectedMonth.replace('-', '年')}月.xlsx`
-    );
+    XLSX.writeFile(workbook, `late_${selectedMonth}.xlsx`);
   } catch (error) {
     console.error('匯出已發送未繳費學生失敗:', error);
   } finally {
@@ -195,6 +192,7 @@ const BillingSystem = ({ tabSwitch = null }) => {
           
           studentBilling[student.studentId] = {
             studentId: student.studentId,
+            nameZh: student.nameZh,
             studentName: `${student.nameZh} (${student.nameEn})`,
             school: student.school || '未知學校',
             totalAmount: 0,
